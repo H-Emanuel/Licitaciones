@@ -1,0 +1,1 @@
+# Elimina la importación de signals aquí, ya está en apps.py

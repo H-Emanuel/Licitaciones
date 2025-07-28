@@ -1,0 +1,427 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Bitácora de Licitación</title>
+    <link rel="stylesheet" href="{% static 'licitaciones/gestion_licitaciones.css' %}">
+    <link rel="stylesheet" href="{% static 'licitaciones/bitacora_licitacion.css' %}?v=1.1">
+</head>
+<body>
+    {% include 'licitaciones/sidebar.html' %}    <div class="main-content">
+        <div class="bitacora-container">
+            <div class="bitacora-header">
+                <h1 class="bitacora-titulo">📋 BITÁCORA DE LICITACIÓN</h1>                <div class="bitacora-info">
+                    <div class="info-item" data-tipo="pedido">
+                        <span class="info-label">N° Pedido:</span>
+                        <span class="info-value">{{ licitacion.numero_pedido }}</span>
+                    </div>
+                    <div class="info-item" data-tipo="proyecto">
+                        <span class="info-label">Proyecto:</span>
+                        <span class="info-value">{{ licitacion.iniciativa }}</span>
+                    </div>
+                    <div class="info-item" data-tipo="tipo-licitacion">
+                        <span class="info-label">Tipo de Licitación:</span>
+                        <span class="info-value">{{ licitacion.tipo_licitacion.nombre|default:'No especificado' }}</span>
+                    </div>
+                    <div class="info-item" data-tipo="estado">
+                        <span class="info-label">Estado Actual:</span>
+                        <span class="info-value estado-{{ licitacion.estado_fk.nombre|slugify|default:'sin-estado' }}">
+                            {{ licitacion.estado_fk.nombre|default:'Sin estado' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel integrado para agregar observación (solo operadores) -->
+            {% if es_operador or es_operador_manual %}
+            <div class="bitacora-panel-operador" id="panelObservacionOperador">
+                <div class="panel-header">
+                    <h3 class="panel-titulo">
+                        <span class="panel-icono">✍️</span>
+                        Agregar Nueva Observación
+                    </h3>
+                    <button type="button" class="panel-toggle" id="togglePanelObservacion" title="Minimizar/Expandir">
+                        <span class="toggle-icono">▼</span>
+                    </button>
+                </div>
+                
+                <div class="panel-contenido" id="contenidoPanelObservacion">
+                    <form id="formObservacionBitacora" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="hidden" name="licitacion_id" value="{{ licitacion.id }}">
+                        
+                        <!-- Información de etapa actual -->
+                        <div class="etapa-actual-info">
+                            <div class="etapa-label">Etapa actual:</div>
+                            <div class="etapa-display">
+                                <span id="nombreEtapaActual" class="etapa-nombre" data-etapa-id="{{ licitacion.etapa_fk.id }}">
+                                    {{ licitacion.etapa_fk.nombre|default:'Sin etapa' }}
+                                </span>
+                                <button type="button" id="btnRetrocederEtapa" class="btn-retroceder-etapa hidden" title="Retroceder a etapa anterior">
+                                    <span class="btn-flecha">←</span>
+                                    <span class="btn-texto">Retroceder</span>
+                                </button>
+                                <button type="button" id="btnAvanzarEtapa" class="btn-avanzar-etapa" title="Avanzar a siguiente etapa">
+                                    <span class="btn-texto">Avanzar</span>
+                                    <span class="btn-flecha">→</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <input type="hidden" id="accionEtapa" name="accion_etapa" value="none">
+                        
+                        <!-- Campo ID Mercado Público - se muestra solo en etapa "Publicacion en portal" -->
+                        <div id="idMercadoPublicoContainer" class="id-mercado-publico-container hidden">
+                            <label for="idMercadoPublicoInput" class="campo-label">
+                                <span class="label-icono">🏛️</span>
+                                ID Mercado Público:
+                            </label>
+                            <input 
+                                type="text" 
+                                id="idMercadoPublicoInput" 
+                                name="id_mercado_publico" 
+                                class="id-mercado-publico-input"
+                                placeholder="Ingresa el ID del mercado público (ej: 1234-56-LQ21)"
+                                maxlength="50"
+                                value="{{ licitacion.id_mercado_publico|default:'' }}"
+                            >
+                            <div class="campo-ayuda">
+                                <span class="ayuda-icono">💡</span>
+                                <span class="ayuda-texto">ID único asignado por el portal de mercado público</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Campos específicos para "Recepción de Ofertas" -->
+                        <div id="recepcionOfertasContainer" class="recepcion-ofertas-container hidden">
+                            <div class="campo-grupo">
+                                <label for="numeroOfertasInput" class="campo-label">
+                                    <span class="label-icono">📊</span>
+                                    N° de Ofertas Recibidas:
+                                </label>
+                                <input 
+                                    type="number" 
+                                    id="numeroOfertasInput" 
+                                    name="numero_ofertas" 
+                                    class="numero-ofertas-input"
+                                    placeholder="Ej: 5"
+                                    min="0"
+                                    max="999"
+                                >
+                                <div class="campo-ayuda">
+                                    <span class="ayuda-icono">💡</span>
+                                    <span class="ayuda-texto">Cantidad total de ofertas recibidas para esta licitación</span>
+                                </div>
+                            </div>
+                            
+                            <div class="campo-grupo">
+                                <label for="empresaNombreInput" class="campo-label">
+                                    <span class="label-icono">🏢</span>
+                                    Nombre de Empresa:
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="empresaNombreInput" 
+                                    name="empresa_nombre" 
+                                    class="empresa-nombre-input"
+                                    placeholder="Ej: Constructora ABC Ltda."
+                                    maxlength="200"
+                                >
+                            </div>
+                            
+                            <div class="campo-grupo">
+                                <label for="empresaRutInput" class="campo-label">
+                                    <span class="label-icono">🆔</span>
+                                    RUT de Empresa:
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="empresaRutInput" 
+                                    name="empresa_rut" 
+                                    class="empresa-rut-input"
+                                    placeholder="Ej: 12.345.678-9"
+                                    maxlength="12"
+                                >
+                                <div class="campo-ayuda">
+                                    <span class="ayuda-icono">💡</span>
+                                    <span class="ayuda-texto">RUT de la empresa adjudicataria o principal participante</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Campo de observación -->
+                        <div class="observacion-campo">
+                            <label for="observacionTexto" class="campo-label">
+                                <span class="label-icono">💭</span>
+                                Observación:
+                            </label>
+                            <textarea 
+                                id="observacionTexto" 
+                                name="texto" 
+                                rows="4" 
+                                class="observacion-textarea"
+                                placeholder="Describe aquí los avances, comentarios o situaciones relevantes de la licitación..."
+                                required></textarea>
+                        </div>
+                        
+                        <!-- Campo de archivos -->
+                        <div class="archivos-campo">
+                            <label class="campo-label">
+                                <span class="label-icono">📎</span>
+                                Archivos adjuntos:
+                            </label>
+                            <div class="dropzone-bitacora" id="dropzoneBitacora">
+                                <div class="dropzone-contenido">
+                                    <span class="dropzone-icono">📁</span>
+                                    <span class="dropzone-texto">Arrastra archivos aquí o haz clic para seleccionar</span>
+                                </div>
+                                <input type="file" id="observacionArchivos" name="archivos" multiple class="file-input-hidden">
+                            </div>
+                            <div id="previewArchivosBitacora" class="preview-archivos"></div>
+                        </div>
+                        
+                        <!-- Opciones adicionales -->
+                        <div class="opciones-adicionales">
+                            <div class="opcion-item">
+                                <input type="checkbox" id="marcarFallidaCheckbox" name="marcar_fallida" class="opcion-checkbox">
+                                <label for="marcarFallidaCheckbox" class="opcion-label opcion-fallida">
+                                    <span class="opcion-icono">⚠️</span>
+                                    Marcar licitación como <strong>FALLIDA</strong>
+                                </label>
+                            </div>
+                            
+                            <!-- Tipo de falla - se muestra solo si está marcado como fallida -->
+                            <div id="tipoFallidaContainer" class="tipo-falla-container hidden">
+                                <label for="tipoFallidaSelect" class="campo-label">
+                                    <span class="label-icono">🔍</span>
+                                    Tipo de falla:
+                                </label>
+                                <select id="tipoFallidaSelect" name="tipo_fallida" class="tipo-falla-select">
+                                    <option value="">Selecciona un tipo de falla</option>
+                                    <option value="revocada">🚫 Revocada</option>
+                                    <option value="anulada">❌ Anulada</option>
+                                    <option value="desierta">📋 Desierta</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Botones de acción -->
+                        <div class="panel-acciones">
+                            <button type="button" id="btnLimpiarObservacion" class="btn-accion btn-secundario">
+                                <span class="btn-icono">🧹</span>
+                                Limpiar
+                            </button>
+                            <button type="submit" id="btnEnviarObservacion" class="btn-accion btn-primario">
+                                <span class="btn-icono">💾</span>
+                                Guardar Observación
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="bitacora-entradas">
+                {% for b in bitacoras %}
+                <div class="bitacora-entrada">
+                    <div class="entrada-fecha">
+                        <div class="fecha-dia">{{ b.fecha|date:"d" }}</div>
+                        <div class="fecha-mes">{{ b.fecha|date:"M" }}</div>
+                        <div class="fecha-ano">{{ b.fecha|date:"Y" }}</div>
+                        <div class="fecha-hora">{{ b.fecha|date:"H:i" }}</div>
+                    </div>
+                    
+                    <div class="entrada-contenido">
+                        <div class="entrada-header">
+                            <div class="entrada-operador">
+                                <span class="operador-icono">👤</span>
+                                <span class="operador-nombre">
+                                    {% if b.operador_user %}
+                                        {{ b.operador_user.get_full_name|default:b.operador_user.username }}
+                                    {% elif 'admin' in b.texto|lower %}
+                                        Administrador
+                                    {% elif licitacion.operador_user %}
+                                        {{ licitacion.operador_user.get_full_name|default:licitacion.operador_user.username }}
+                                    {% else %}Sistema{% endif %}
+                                </span>
+                            </div>
+                            
+                            {% if b.etapa %}
+                            <div class="entrada-etapa">
+                                <span class="etapa-icono">🎯</span>
+                                <span class="etapa-nombre">{{ b.etapa.nombre }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="entrada-texto">
+                            {{ b.texto|linebreaksbr }}
+                        </div>
+                        
+                        {% if b.archivos.all %}
+                        <div class="entrada-archivos">
+                            <div class="archivos-titulo">📎 Archivos adjuntos:</div>
+                            <div class="archivos-lista">
+                                {% for doc in b.archivos.all %}
+                                <div class="archivo-item">
+                                    <span class="archivo-icono">📄</span>
+                                    <span class="archivo-nombre">{{ doc.nombre|default:doc.archivo.name|cut:'documentos_licitacion/' }}</span>
+                                    <div class="archivo-acciones">
+                                        <a href="{{ doc.archivo.url }}" target="_blank" class="archivo-btn archivo-ver" title="Ver">👁️</a>
+                                        <a href="{{ doc.archivo.url }}" target="_blank" class="archivo-btn archivo-descargar" title="Descargar">⬇️</a>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if b.observacion or es_admin %}
+                        <div class="entrada-observaciones">
+                            {% if b.observacion %}
+                            <div class="observacion-contenido">
+                                <div class="observacion-titulo">💭 Observación:</div>
+                                <div class="observacion-texto">{{ b.observacion.texto }}</div>
+                                {% if es_admin %}
+                                <div class="observacion-acciones">
+                                    <button class="btn-emoji editar-observacion-mini" data-id="{{ b.id }}" title="Editar observación">✏️</button>
+                                    <button class="btn-emoji eliminar-observacion-mini" data-id="{{ b.id }}" title="Eliminar observación">🗑️</button>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% else %}
+                                {% if es_admin %}
+                                <button class="btn-agregar-observacion-bitacora" data-id="{{ b.id }}">
+                                    💭 Agregar observación
+                                </button>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        
+                        {% if es_admin %}
+                        <div class="entrada-admin">
+                            <button class="btn-eliminar-entrada" data-id="{{ b.id }}" title="Eliminar entrada">
+                                🗑️ Eliminar entrada
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <div class="bitacora-vacia">
+                    <div class="vacia-icono">📝</div>
+                    <div class="vacia-texto">Aún no hay entradas en esta bitácora</div>
+                    <div class="vacia-subtexto">Las acciones y observaciones aparecerán aquí</div>
+                </div>
+                {% endfor %}
+            </div>            </div>
+            
+            {% if paginator.num_pages > 1 %}
+            <div class="bitacora-paginacion">
+                <div class="paginacion-info">
+                    Mostrando entradas {{ bitacoras.start_index }} - {{ bitacoras.end_index }} de {{ paginator.count }} total
+                </div>
+                <div class="paginacion-controles">
+                    {% if bitacoras.has_previous %}
+                        <a href="?page={{ bitacoras.previous_page_number }}" class="paginacion-btn paginacion-prev">
+                            ⬅️ Anteriores
+                        </a>
+                    {% endif %}
+                    
+                    <div class="paginacion-numeros">
+                        {% for num in paginator.page_range %}
+                            {% if bitacoras.number == num %}
+                                <span class="paginacion-numero paginacion-actual">{{ num }}</span>
+                            {% elif num > bitacoras.number|add:'-3' and num < bitacoras.number|add:'3' %}
+                                <a href="?page={{ num }}" class="paginacion-numero">{{ num }}</a>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    
+                    {% if bitacoras.has_next %}
+                        <a href="?page={{ bitacoras.next_page_number }}" class="paginacion-btn paginacion-next">
+                            Siguientes ➡️
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="bitacora-footer">
+                {% if es_admin %}
+                    <a href="{% url 'vista_admin' %}" class="btn-volver">⬅️ Volver al Panel Admin</a>
+                {% elif es_operador_manual %}
+                    <a href="{% url 'vista_operador_manual' %}" class="btn-volver">⬅️ Volver al Panel Operador</a>
+                {% elif es_operador %}
+                    <a href="{% url 'vista_operador' %}" class="btn-volver">⬅️ Volver al Panel Operador</a>
+                {% else %}
+                    <a href="/" class="btn-volver">⬅️ Volver</a>
+                {% endif %}
+            </div>
+        </div>
+        {{ etapas|json_script:"etapas-licitacion-data" }}
+        <script>
+            window.etapasLicitacion = JSON.parse(document.getElementById('etapas-licitacion-data').textContent);
+        </script>
+        <script src="{% static 'licitaciones/bitacora_licitacion.js' %}"></script>
+    </div>    <!-- Modal para agregar/editar observación -->
+    <div id="modalObservacion">
+        <div class="modal-container">
+            <span id="cerrarModalObservacion">&times;</span>
+            <h2 id="tituloModalObservacion">💭 Observación</h2>
+            <form id="formModalObservacion" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="bitacora_id" id="observacionBitacoraId">
+                
+                <div class="modal-field-container">
+                    <label for="modalObservacionTexto" class="modal-field-label">Observación:</label>
+                    <textarea id="modalObservacionTexto" name="texto" rows="4" class="modal-textarea" required {% if not es_admin %}readonly{% endif %} placeholder="Escribe tu observación aquí..."></textarea>
+                </div>
+                
+                <!-- Sección de archivos adjuntos en el modal -->
+                {% if es_admin %}
+                <div class="modal-field-container">
+                    <label class="modal-field-label">
+                        <span class="modal-label-icon">📎</span>
+                        Archivos adjuntos:
+                    </label>
+                    
+                    <!-- Dropzone mejorada para el modal -->
+                    <div class="modal-dropzone" id="modalDropzone">
+                        <div class="modal-dropzone-content">
+                            <div class="modal-dropzone-icon">📁</div>
+                            <div class="modal-dropzone-text">
+                                <div class="modal-dropzone-main">Arrastra archivos aquí</div>
+                                <div class="modal-dropzone-sub">o haz clic para seleccionar</div>
+                            </div>
+                            <div class="modal-dropzone-button">
+                                <span class="modal-btn-icon">📎</span>
+                                Seleccionar archivos
+                            </div>
+                        </div>
+                        <input type="file" id="modalArchivos" name="archivos" multiple class="file-input-hidden" accept="*/*">
+                    </div>
+                    
+                    <!-- Vista previa de archivos del modal -->
+                    <div id="modalPreviewArchivos" class="modal-preview-archivos"></div>
+                    
+                    <!-- Información de ayuda -->
+                    <div class="modal-file-help">
+                        <span class="help-icon">💡</span>
+                        <span class="help-text">Puedes seleccionar múltiples archivos. Tipos soportados: documentos, imágenes, PDF, etc.</span>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="modal-buttons">
+                    <button type="button" id="btnCancelarObservacion">Cancelar</button>
+                    {% if es_admin %}
+                    <button type="submit" id="btnGuardarObservacion">💾 Guardar</button>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

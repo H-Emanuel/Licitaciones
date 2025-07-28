@@ -1,0 +1,396 @@
+{% load static %}
+{% load humanize %}
+{% load chile_filters %}
+<!DOCTYPE                    </div>
+                    <td data-campo="etapa" data-col="etapa" data-label="Etapa" title="{{ licitacion.etapa_fk.nombre|default:'' }}">
+                        {{ licitacion.etapa_fk.nombre|default:'' }}
+                    </td>l>
+<html lang="es">
+<head>    <meta charset="UTF-8">
+    <title>Seguimiento de Licitaciones - Operador</title>    <link rel="stylesheet" href="{% static 'licitaciones/gestion_licitaciones.css' %}">
+    <link rel="stylesheet" href="{% static 'licitaciones/gestion_licitaciones_operador_botones.css' %}">
+    <link rel="stylesheet" href="{% static 'licitaciones/gestion_licitaciones_operador.css' %}?v=2.3">
+</head>
+<body>
+    {% include 'licitaciones/sidebar.html' %}
+    <div class="main-content">
+        <h1 class="titulo">SEGUIMIENTO DE LICITACIONES (Operador)</h1>
+        <!-- Botones de filtro superiores -->
+        <div class="botones-superiores">
+            <button id="btnFiltrarAnuales" class="btn{% if request.GET.solo_anuales == '1' %} active{% endif %}">
+                Anuales
+            </button>
+            <button id="btnFiltrarFallidas" class="btn{% if request.GET.solo_fallidas == '1' %} active{% endif %}">
+                Fallidas
+            </button>
+            {% if request.GET.solo_anuales == '1' or request.GET.solo_fallidas == '1' %}
+            <button id="btnMostrarTodas" class="btn mostrar-todas">
+                <span class="btn-icon">🔄</span>
+                Mostrar Todas
+            </button>
+            {% endif %}
+        </div>
+        <div class="tabla-wrapper">
+            <div class="tabla-scroll">
+                <table class="tabla-proyectos">
+                    <thead>
+                        <tr>
+                            <th data-col="numero_pedido">N° de pedido</th>
+                            <th data-col="id_mercado_publico">ID Mercado Público</th>
+                            <th data-col="operadores">Profesionales a Cargo</th>
+                            <th data-col="etapa">Etapa</th>
+                            <th data-col="estado">Status</th>
+                            <th data-col="tipo_licitacion">Tipo de Licitación</th>
+                            <th data-col="moneda">Moneda</th>
+                            <th data-col="categoria">Categoría</th>
+                            <th data-col="financiamiento">Financiamiento</th>
+                            <th data-col="numero_cuenta">N° de cuenta</th>
+                            <th data-col="en_plan_anual">En plan anual</th>
+                            <th data-col="iniciativa">Iniciativa</th>
+                            <th data-col="direccion">Dirección</th>
+                            <th data-col="institucion">Institución</th>
+                            <th data-col="departamento">Depto.</th>
+                            <th data-col="monto_presupuestado">Monto Presupuestado general</th>
+                            <th data-col="llamado_cotizacion">Llamado Cotización</th>
+                            <th data-col="fecha_creacion">Fecha de Asignación</th>
+                            <th data-col="licitacion_fallida_linkeada">Licitación Fallida Linkeada</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                {% for licitacion in proyectos %}
+                <tr>
+                    <td data-campo="numero_pedido" data-col="numero_pedido" data-label="N° de pedido">{{ licitacion.numero_pedido }}</td>
+                    <td data-campo="id_mercado_publico" data-col="id_mercado_publico" data-label="ID Mercado Público">{{ licitacion.id_mercado_publico|default:"-" }}</td>
+                    <td data-campo="operadores" data-col="operadores" data-label="Profesionales a Cargo">
+                        <div class="operadores-container">
+                            <span class="operador-badge operador-1 {% if licitacion.get_numero_operador_activo == 1 %}activo{% endif %}" title="Operador 1: Gestiona hasta Evaluación de Ofertas">
+                                OP1: {{ licitacion.operador_user.get_full_name|default:licitacion.operador_user.username|default:"No asignado" }}
+                            </span>
+                            {% if licitacion.operador_2 %}
+                                <span class="operador-badge operador-2 {% if licitacion.get_numero_operador_activo == 2 %}activo{% endif %}" title="Operador 2: Gestiona desde después de Evaluación de Ofertas">
+                                    OP2: {{ licitacion.operador_2.get_full_name|default:licitacion.operador_2.username }}
+                                </span>
+                            {% else %}
+                                <span class="operador-badge operador-2 no-asignado" title="Operador 2 no asignado">
+                                    OP2: No asignado
+                                </span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td data-campo="etapa" data-col="etapa" data-label="Etapa">
+                        {{ licitacion.etapa_fk.nombre|default:'' }}
+                    </td>
+                    <td data-campo="estado" data-col="estado" data-label="Estado">
+                        {% if licitacion.estado_fk %}
+                            {% if licitacion.estado_fk.nombre == 'Fallida' and licitacion.tipo_fallida %}
+                                <span class="estado-badge estado-fallida">
+                                    {{ licitacion.get_tipo_fallida_display }}
+                                </span>
+                            {% else %}
+                                <span class="estado-badge estado-{{ licitacion.estado_fk.nombre|slugify }}">
+                                    {{ licitacion.estado_fk.nombre }}
+                                </span>
+                            {% endif %}
+                        {% else %}
+                            <span class="estado-badge estado-vacio">Sin estado</span>
+                        {% endif %}
+                    </td>
+                    <td data-campo="tipo_licitacion" data-col="tipo_licitacion" data-label="Tipo de Licitación">{{ licitacion.tipo_licitacion.nombre }}</td>
+                    <td data-campo="moneda" data-col="moneda" data-label="Moneda">{{ licitacion.moneda.nombre|default:'' }}</td>
+                    <td data-campo="categoria" data-col="categoria" data-label="Categoría">{{ licitacion.categoria.nombre|default:'' }}</td>
+                    <td data-campo="financiamiento" data-col="financiamiento" data-label="Financiamiento">
+                        {% for fin in licitacion.financiamiento.all %}
+                            <span class="badge badge-info" style="margin:1px 2px;">{{ fin.nombre }}</span>{% if not forloop.last %}<span style="color:#888; font-weight:bold; font-size:1.1em;"> / </span>{% endif %}
+                        {% empty %}
+                            <span style="color:#bbb;">-</span>
+                        {% endfor %}
+                    </td>
+                    <td data-campo="numero_cuenta" data-col="numero_cuenta" data-label="N° de cuenta">{{ licitacion.numero_cuenta }}</td>
+                    <td data-campo="en_plan_anual" data-col="en_plan_anual" data-label="En plan anual">{% if licitacion.en_plan_anual %}Sí{% else %}No{% endif %}</td>
+                    <td data-campo="iniciativa" data-col="iniciativa" data-label="Iniciativa" title="{{ licitacion.iniciativa }}">{{ licitacion.iniciativa }}</td>
+                    <td data-campo="direccion" data-col="direccion" data-label="Dirección">{{ licitacion.direccion|default:"-" }}</td>
+                    <td data-campo="institucion" data-col="institucion" data-label="Institución">{{ licitacion.institucion|default:"-" }}</td>
+                    <td data-campo="departamento" data-col="departamento" data-label="Departamento">{{ licitacion.departamento.nombre|default:licitacion.departamento }}</td>
+                    <td data-campo="monto_presupuestado" data-col="monto_presupuestado" data-label="Monto Presupuestado">${{ licitacion.monto_presupuestado|floatformat:"0"|chilean_thousands }}</td>
+                    <td data-campo="llamado_cotizacion" data-col="llamado_cotizacion" data-label="Llamado Cotización">{{ licitacion.get_llamado_cotizacion_display|default:"-" }}</td>
+                    <td data-campo="fecha_creacion" data-col="fecha_creacion" data-label="Fecha de creación">{{ licitacion.fecha_creacion|date:"d/m/Y H:i" }}</td>
+                    <td data-campo="licitacion_fallida_linkeada" data-col="licitacion_fallida_linkeada" data-label="Licitación Fallida Linkeada">
+                        {% if licitacion.licitacion_fallida_linkeada %}
+                            {{ licitacion.licitacion_fallida_linkeada.numero_pedido }}
+                        {% else %}
+                            <span style="color:#bbb;">-</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        
+        <!-- Botón sticky para mostrar/ocultar acciones -->
+        <button id="btnToggleAcciones" class="btn-toggle-acciones" title="Mostrar/Ocultar Acciones">
+            <span class="toggle-icon">⚙️</span>
+        </button>
+        
+        <!-- Columna sticky separada para acciones -->
+        <div class="acciones-sticky" id="accionesSticky" style="display: none;">
+            <div class="acciones-header">
+                <div class="acciones-header-cell">Acciones</div>
+            </div>
+            <div class="acciones-body">
+                {% for licitacion in proyectos %}
+                <div class="acciones-row">
+                    <button class="btn btn-accion ultima-obs-fila icon-btn" data-id="{{ licitacion.id }}" title="Ver última observación">
+                        <span class="icono-accion">📝</span>
+                    </button>
+                    
+                    {% if not licitacion.estado_fk or licitacion.estado_fk.id != 3 %}
+                        <button class="btn btn-accion cerrar-licitacion-fila icon-btn" data-id="{{ licitacion.id }}" title="Cerrar licitación">
+                            <span class="icono-accion">🔒</span>
+                        </button>
+                    {% else %}
+                        <button class="btn btn-accion cerrar-licitacion-fila icon-btn" data-id="{{ licitacion.id }}" title="Licitación ya cerrada" disabled>
+                            <span class="icono-accion">🔒</span>
+                        </button>
+                    {% endif %}
+                    
+                    <a href="{% url 'bitacora_licitacion' licitacion.id %}?from=operador" class="btn icon-btn" title="Ver bitácora">
+                        <span class="icono-accion">📒</span>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        </div>
+        <div class="paginator">
+            {% if proyectos.has_previous %}
+                <a href="?page={{ proyectos.previous_page_number }}" class="btn">Anterior</a>
+            {% endif %}
+            {% for num in proyectos.paginator.page_range %}
+                {% if proyectos.number == num %}
+                    <span class="btn active">{{ num }}</span>
+                {% else %}
+                    <a href="?page={{ num }}" class="btn">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+            {% if proyectos.has_next %}
+                <a href="?page={{ proyectos.next_page_number }}" class="btn">Siguiente</a>
+            {% endif %}
+        </div>
+        <!-- Modal Añadir Observación -->
+        <div id="modalObservacion" class="modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:3500;">
+            <div style="background:#fff; padding:30px; border-radius:12px; min-width:340px; max-width:95vw; position:relative; min-height:120px;">
+                <span id="cerrarModalObservacion" class="btn-cerrar" style="position:absolute; top:10px; right:15px; cursor:pointer; font-size:22px;">&times;</span>                <h2 style="color:#28a745; text-align:center; margin-bottom:18px;">Añadir Observación</h2>
+                <form id="formObservacion" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" id="observacionLicitacionId" name="licitacion_id">                    <div id="etapaActualContainer">
+                        <label style="font-weight:600; display:block; text-align:center; margin-bottom:8px;">Etapa actual:</label>                        <span id="nombreEtapaActual" style="display:block; text-align:center; margin-bottom:15px;"></span>
+                          <!-- Contenedor centrado para los botones usando la clase btn-container -->
+                        <div class="btn-container">
+                            <button type="button" id="btnRetrocederEtapa" class="btn-etapa btn-retroceder" title="Retroceder etapa" style="display:none;">
+                                <span class="arrow">&#8592;</span>
+                                <span class="btn-text">Retroceder</span>
+                            </button>
+                            <button type="button" id="btnAvanzarEtapa" class="btn-etapa" title="Avanzar etapa">
+                                <span class="btn-text">Avanzar</span>
+                                <span class="arrow">&#8594;</span>
+                            </button>
+                        </div>
+                    </div>
+                    <input type="hidden" id="accionEtapa" name="accion_etapa" value="none">
+                    <div style="margin-bottom:12px;">
+                        <label for="observacionTexto">Observación:</label>
+                        <textarea id="observacionTexto" name="texto" rows="4" style="width:100%;"></textarea>
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <label for="observacionArchivos">Archivos adjuntos:</label>
+                        <div class="drop-zone" id="dropZoneObservacion">
+                            <div class="drop-zone-prompt">
+                                <span class="drop-zone-prompt-icon" style="font-size:3.5em; color:#0275d8;">📁</span>
+                                <span>Arrastra archivos aquí o haz clic para seleccionar</span>
+                            </div>
+                            <input type="file" id="observacionArchivos" name="archivos" multiple style="display:none;">
+                        </div>
+                        <div id="filePreviewObservacion" class="file-preview-container"></div>
+                    </div>
+                    <div style="margin-bottom:18px; display:flex; align-items:center; gap:10px;">
+                        <input type="checkbox" id="marcarFallidaCheckbox" name="marcar_fallida" style="width:20px; height:20px;">
+                        <label for="marcarFallidaCheckbox" style="font-weight:600; color:#d32f2f; margin-bottom:0; cursor:pointer;">Marcar licitación como <span style='color:#d32f2f;'>FALLIDA</span></label>
+                    </div>
+                    <div style="display:flex; justify-content:flex-end; gap:10px;">
+                        <button type="button" id="btnCancelarObservacion" class="modal-action-btn">Cancelar</button>
+                        <button type="submit" id="btnEnviarObservacion" class="modal-action-btn" style="background:#16c96a; color:#fff;">Enviar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- Modal Última Observación -->
+        <div id="modalUltimaObs" class="modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:3500;">
+            <div style="background:#fff; padding:30px; border-radius:12px; min-width:340px; max-width:95vw; position:relative; min-height:120px;">
+                <span id="cerrarModalUltimaObs" class="btn-cerrar" style="position:absolute; top:10px; right:15px; cursor:pointer; font-size:22px;">&times;</span>
+                <h2 style="color:#28a745; text-align:center; margin-bottom:18px;">Última observación</h2>
+                <div>
+                    <h3 style="color:#0275d8;">Del Operador:</h3>
+                    <div id="contenidoUltimaObsOperador" style="min-height:60px; color:#222; font-size:1.08em; text-align:left; margin-bottom:10px;"></div>
+                    <div id="fechaUltimaObsOperador" style="color:#888; font-size:0.98em; text-align:right;"></div>
+                </div>
+                <div>
+                    <h3 style="color:#d9534f;">Del Administrador:</h3>
+                    <div id="contenidoUltimaObsAdmin" style="min-height:60px; color:#222; font-size:1.08em; text-align:left; margin-bottom:10px;"></div>
+                    <div id="fechaUltimaObsAdmin" style="color:#888; font-size:0.98em; text-align:right;"></div>
+                </div>
+            </div>        </div>
+        
+        <!-- Modal Cerrar Licitación -->
+        <div id="modalCerrarLicitacion" class="modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:3500;">
+            <div class="modal-content" style="background:#fff; padding:30px; border-radius:12px; min-width:500px; max-width:95vw; position:relative; min-height:120px; box-shadow: 0 8px 32px rgba(0,0,0,0.12);">
+                <div class="modal-header" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; padding-bottom:15px; border-bottom:2px solid #e9ecef;">
+                    <h2 style="margin:0; color:#495057; font-size:24px; font-weight:600; display:flex; align-items:center; gap:10px;">
+                        <span style="color:#d32f2f; font-size:28px;">🔒</span>
+                        Cerrar Licitación
+                    </h2>
+                    <span id="cerrarModalCerrarLicitacion" class="modal-close-btn" style="cursor:pointer; font-size:24px; color:#6c757d; background:none; border:none; padding:5px; border-radius:50%; transition:all 0.2s;" title="Cerrar">&times;</span>
+                </div>
+                
+                <form id="formCerrarLicitacion" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" id="cerrarLicitacionId" name="licitacion_id">
+                    
+                    <div style="margin-bottom:20px;">
+                        <label for="cerrarLicitacionTexto" style="font-weight:600; display:block; margin-bottom:8px; color:#495057;">
+                            <span style="color:#d32f2f;">✍️</span> Motivo del cierre:
+                        </label>
+                        <textarea id="cerrarLicitacionTexto" name="texto" rows="4" style="width:100%; border:2px solid #dee2e6; border-radius:8px; padding:12px; font-size:14px; resize:vertical; transition:border-color 0.2s;" placeholder="Describe el motivo del cierre de la licitación..."></textarea>
+                    </div>
+                    
+                    <div style="margin-bottom:20px; padding:20px; background:#f8f9fa; border-radius:12px; border-left:4px solid #6c757d;">
+                        <h4 style="margin:0 0 15px 0; color:#495057; font-size:16px; font-weight:600; display:flex; align-items:center; gap:8px;">
+                            <span style="font-size:18px;">⚙️</span> Estado de la licitación:
+                        </h4>
+                        
+                        <div style="margin-bottom:8px; display:flex; align-items:center; gap:12px;">
+                            <input type="checkbox" id="licitacionFallidaCheckbox" name="licitacion_fallida" style="width:20px; height:20px; cursor:pointer;">
+                            <label for="licitacionFallidaCheckbox" style="font-weight:500; color:#d32f2f; margin-bottom:0; cursor:pointer; font-size:15px;">
+                                ❌ Licitación fue <span style='color:#d32f2f; font-weight:700;'>FALLIDA</span>
+                            </label>
+                        </div>
+                        
+                        <!-- Tipo de falla - se muestra solo si está marcado como fallida -->
+                        <div id="tipoFallidaContainer" style="display:none; margin-top:15px; padding-left:32px;">
+                            <label for="tipoFallidaSelect" style="font-weight:500; display:block; margin-bottom:8px; color:#495057; font-size:14px;">
+                                <span style="margin-right:5px;">🔍</span> Tipo de falla:
+                            </label>
+                            <select id="tipoFallidaSelect" name="tipo_fallida" style="width:100%; padding:10px; border:2px solid #dee2e6; border-radius:6px; background:#fff; font-size:14px;">
+                                <option value="">Selecciona un tipo de falla</option>
+                                <option value="revocada">🚫 Revocada</option>
+                                <option value="anulada">❌ Anulada</option>
+                                <option value="desierta">📋 Desierta</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div style="background:#fff3cd; border:2px solid #ffeaa7; border-radius:8px; padding:15px; margin-bottom:25px;">
+                        <p style="margin:0; color:#856404; font-size:14px; line-height:1.5;">
+                            <strong style="color:#856404;">⚠️ Atención:</strong> Al cerrar la licitación, su estado cambiará a "CERRADA" y se registrará en la bitácora. Esta acción no se puede deshacer fácilmente.
+                        </p>
+                    </div>
+                    
+                    <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:12px; margin-top:25px;">
+                        <button type="button" id="btnCancelarCerrarLicitacion" class="btn" style="background:#6c757d; color:#fff; padding:10px 20px; border:none; border-radius:6px; font-weight:500; cursor:pointer; transition:all 0.2s;">
+                            <span style="margin-right:5px;">❌</span> Cancelar
+                        </button>
+                        <button type="submit" id="btnConfirmarCerrarLicitacion" class="btn" style="background:#d32f2f; color:#fff; padding:10px 20px; border:none; border-radius:6px; font-weight:500; cursor:pointer; transition:all 0.2s;">
+                            <span style="margin-right:5px;">🔒</span> Cerrar Licitación
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Exportar etapas y tipos al JS -->
+        {{ etapas|json_script:"etapas-licitacion-data" }}
+        {{ tipos_licitacion|json_script:"tipos-licitacion-data" }}
+        {{ tipos_licitacion_etapa_raw|json_script:"tipos-licitacion-etapa-raw-data" }}
+        
+        <script>
+            // Funcionalidad del botón toggle para mostrar/ocultar acciones
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('DOM cargado - Inicializando toggle de acciones');
+                
+                const btnToggle = document.getElementById('btnToggleAcciones');
+                const accionesSticky = document.getElementById('accionesSticky');
+                
+                if (!btnToggle || !accionesSticky) {
+                    console.error('No se encontraron los elementos del toggle');
+                    return;
+                }
+                
+                console.log('Elementos encontrados - Configurando evento click');
+                
+                // Función para toggle
+                function toggleAcciones() {
+                    console.log('Toggle ejecutado');
+                    
+                    const isVisible = accionesSticky.style.display !== 'none';
+                    console.log('Estado actual:', isVisible ? 'visible' : 'oculto');
+                    
+                    if (isVisible) {
+                        // Ocultar
+                        accionesSticky.classList.remove('show');
+                        accionesSticky.classList.add('hide');
+                        setTimeout(() => {
+                            accionesSticky.style.display = 'none';
+                        }, 300);
+                        btnToggle.classList.remove('active');
+                        btnToggle.querySelector('.toggle-icon').textContent = '⚙️';
+                        console.log('Columna ocultada');
+                    } else {
+                        // Mostrar
+                        accionesSticky.style.display = 'flex';
+                        setTimeout(() => {
+                            accionesSticky.classList.remove('hide');
+                            accionesSticky.classList.add('show');
+                        }, 10);
+                        btnToggle.classList.add('active');
+                        btnToggle.querySelector('.toggle-icon').textContent = '✕';
+                        console.log('Columna mostrada');
+                    }
+                }
+                
+                // Crear nuevo botón para evitar listeners duplicados
+                const newBtn = btnToggle.cloneNode(true);
+                btnToggle.parentNode.replaceChild(newBtn, btnToggle);
+                
+                // Agregar evento al nuevo botón
+                newBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Click en botón toggle detectado');
+                    toggleAcciones();
+                });
+                
+                console.log('Toggle de acciones inicializado correctamente');
+            });
+        </script>
+        
+        <script>
+            window.etapasLicitacion = JSON.parse(document.getElementById('etapas-licitacion-data').textContent);
+            window.tiposLicitacion = JSON.parse(document.getElementById('tipos-licitacion-data').textContent);
+            // Relación tipo-etapa (ordenada)
+            function buildTiposLicitacionEtapaRaw(raw) {
+                const out = {};
+                raw.forEach(rel => {
+                    if (!out[rel.tipo_licitacion_id]) out[rel.tipo_licitacion_id] = [];
+                    out[rel.tipo_licitacion_id].push({id: rel.etapa_id, orden: rel.orden});
+                });
+                Object.keys(out).forEach(tipoId => {
+                    out[tipoId] = out[tipoId].sort((a,b) => a.orden-b.orden).map(e => e.id);
+                });
+                return out;
+            }
+            window.tiposLicitacionEtapaRaw = buildTiposLicitacionEtapaRaw(JSON.parse(document.getElementById('tipos-licitacion-etapa-raw-data').textContent));
+        </script>
+        <script src="{% static 'licitaciones/gestion_licitaciones_operador.js' %}"></script>
+    </div>
+</body>
+</html>

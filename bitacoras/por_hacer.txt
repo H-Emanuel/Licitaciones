@@ -1,0 +1,6 @@
+los operadores como se agregan? o ya están agregados, y donde? o se agregan manualmente
+
+*arreglar buscador*
+*crear área de logueo*
+*cambiar datos*
+*ver la bd*

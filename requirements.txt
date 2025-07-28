@@ -1,0 +1,46 @@
+# ======================================================================
+# Requisitos del proyecto de licitaciones municipales
+# Este archivo contiene todas las dependencias necesarias para el
+# correcto funcionamiento del sistema de licitaciones municipales.
+# ======================================================================
+
+# Framework principal
+Django>=3.2,<5.0
+
+# Base de datos PostgreSQL
+psycopg2-binary>=2.8
+
+# Variables de entorno
+python-dotenv>=0.19
+
+# Para manejo de imágenes y archivos multimedia
+Pillow>=8.0
+
+# Para formularios mejorados
+django-crispy-forms>=1.11
+
+# Para widgets personalizados
+django-widget-tweaks>=1.4
+
+# Para servir archivos estáticos en producción
+whitenoise>=5.2
+
+# Para formateo de números y fechas en español
+django-humanize>=1.0
+
+# Para exportación a Excel (implementado por Cristóbal Andres Astudillo Castillo)
+openpyxl>=3.0
+xlsxwriter>=3.0
+
+# Para validación de archivos
+python-magic>=0.4.24
+
+# Para paginación avanzada
+django-pure-pagination>=0.3.0
+
+# ======================================================================
+# NOTAS PARA MANTENIMIENTO FUTURO:
+# - Todas las dependencias han sido probadas en Python 3.8+
+# - Se recomienda usar entorno virtual para instalación
+# - Para producción, considerar usar versiones específicas (sin >=)
+# ======================================================================

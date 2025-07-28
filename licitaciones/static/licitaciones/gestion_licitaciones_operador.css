@@ -1,0 +1,466 @@
+/* Estilos base compartidos del proyecto */
+@import url('gestion_licitaciones.css');
+
+/* Adaptaciones para operador */
+.botones-superiores .btn { background: #fff; color: #0275d8; border: 1.5px solid #e0e7ef; }
+.btn-accion.ultima-obs-fila { background: #28a745; }
+.btn-accion.observacion-fila { background: #ffc107; color: #222; }
+.table-responsive { overflow-x: auto; }
+.botones-superiores .btn.active {
+    background: #0275d8 !important;
+    color: #fff !important;
+    border-color: #0275d8 !important;
+    box-shadow: 0 2px 8px #b3c6e033;
+}
+
+/* --- DROPZONE PARA ARCHIVOS EN MODAL OBSERVACIÓN OPERADOR --- */
+.drop-zone {
+    min-height: 120px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: #f8fafc;
+    cursor: pointer;
+    border: 2.5px dashed #b3c6e0;
+    border-radius: 18px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    margin: 0 auto;
+}
+.drop-zone-prompt {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    color: #0275d8;
+    max-width: 320px;
+    margin: 0 auto;
+    width: 100%;
+    height: 100%;
+    opacity: 1;
+    cursor: pointer;
+    justify-content: center;
+}
+.drop-zone-prompt-icon {
+    font-size: 3.5em;
+    margin-bottom: 8px;
+    color: #0275d8;
+    filter: drop-shadow(0 2px 8px #b3c6e0);
+    transition: transform 0.2s;
+}
+.drop-zone:hover .drop-zone-prompt-icon {
+    transform: scale(1.12) rotate(-8deg);
+}
+.file-preview-container {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+    flex-wrap: wrap;
+}
+.file-preview {
+    position: relative;
+    background: #fff;
+    border: 1px solid #b3c6e0;
+    border-radius: 8px;
+    padding: 8px 4px 8px 1px;
+    font-size: 0.95em;
+    width: auto;
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+.file-preview:hover {
+    background: #f8fafc;
+    border-color: #0275d8;
+    transform: translateX(4px);
+}
+.file-preview-icon {
+    font-size: 1.4em;
+    min-width: 24px;
+    text-align: center;
+}
+.file-preview-name {
+    color: #333;
+    flex: 1;
+}
+.file-preview-remove {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #d32f2f;
+    cursor: pointer;
+    padding: 4px;
+    font-size: 1.1em;
+    line-height: 1;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+.file-preview-remove:hover {
+    background: rgba(211, 47, 47, 0.1);
+    transform: translateY(-50%) scale(1.1);
+}
+
+/* --- ESTILOS PARA BOTONES DE ETAPA --- */
+#btnRetrocederEtapa {
+    background: #fff0f0;
+    color: #d32f2f;
+    border: 1px solid #ffcccc;
+    padding: 8px 16px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    min-width: 120px;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    margin: 0 10px;
+}
+
+#btnRetrocederEtapa:hover {
+    background: #ffebeb;
+    box-shadow: 0 2px 5px rgba(211, 47, 47, 0.2);
+    transform: translateY(-1px);
+}
+
+#btnRetrocederEtapa .arrow {
+    color: #d32f2f;
+    font-size: 1.3em;
+    margin-right: 5px;
+}
+
+#btnAvanzarEtapa {
+    background: #f0fff0;
+    color: #28a745;
+    border: 1px solid #ccffcc;
+    padding: 8px 16px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    min-width: 120px;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    margin: 0 10px;
+}
+
+#btnAvanzarEtapa:hover {
+    background: #e6ffe6;
+    box-shadow: 0 2px 5px rgba(40, 167, 69, 0.2);
+    transform: translateY(-1px);
+}
+
+#btnAvanzarEtapa .arrow {
+    color: #28a745;
+    font-size: 1.3em;
+    margin-left: 5px;
+}
+
+/* --- MEJORA DEL CONTENEDOR DE ETAPA ACTUAL --- */
+#etapaActualContainer {
+    margin-bottom: 14px; 
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    text-align: center;
+    display: block !important;
+}
+
+#nombreEtapaActual {
+    font-weight: 600; 
+    color: #0275d8;
+    background: white;
+    padding: 8px 15px;
+    border-radius: 3px;
+    margin: 0 auto;
+    margin-top: 5px;
+    border: 1px solid #e9ecef;
+    min-width: 250px;
+    display: inline-block;
+    text-align: center;
+    font-size: 1.05em;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* --- CONTENEDOR DE BOTONES CENTRADO --- */
+.btn-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 15px 0;
+    text-align: center;
+    width: 100%;
+}
+
+/* --- MODAL OBSERVACIÓN --- */
+#modalObservacion > div {
+    min-width: 600px !important;
+    max-width: 600px !important;
+    width: 600px !important;
+}
+
+/* === TABLA CON COLUMNA STICKY SEPARADA === */
+
+/* Wrapper principal con flexbox */
+.tabla-wrapper {
+    display: flex;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+/* Contenedor scrolleable de la tabla principal */
+.tabla-scroll {
+    flex: 1;
+    overflow-x: auto;
+    background: #fff;
+}
+
+/* Tabla principal sin columna de acciones */
+.tabla-proyectos {
+    min-width: 1600px;
+    background: #fff;
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0;
+}
+
+/* Columna sticky de acciones separada */
+.acciones-sticky {
+    width: 220px;
+    min-width: 220px;
+    background: #f8f9fa;
+    border-left: 3px solid #0275d8;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -4px 0 10px rgba(0,0,0,0.15);
+}
+
+/* Header de la columna de acciones */
+.acciones-header {
+    background: #f1f3f5;
+    border-bottom: 2px solid #dee2e6;
+    height: 60px; /* Ajustar según altura del header de la tabla */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #495057;
+    font-size: 14px;
+}
+
+.acciones-header-cell {
+    text-align: center;
+    padding: 0 10px;
+}
+
+/* Body de la columna de acciones */
+.acciones-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Filas de acciones */
+.acciones-row {
+    height: 60px; /* Ajustar según altura de las filas de la tabla */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px;
+    border-bottom: 1px solid #dee2e6;
+    background: #fff;
+}
+
+/* Hover en filas de acciones */
+.acciones-row:hover {
+    background: #f8f9fa;
+}
+
+/* Botones en la columna de acciones */
+.acciones-row .btn {
+    margin: 0 1px;
+    white-space: nowrap;
+    font-size: 12px;
+    padding: 6px 8px;
+}
+
+/* Scrollbar personalizada para la tabla */
+.tabla-scroll::-webkit-scrollbar {
+    height: 10px;
+}
+
+.tabla-scroll::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 5px;
+}
+
+.tabla-scroll::-webkit-scrollbar-thumb {
+    background: #0275d8;
+    border-radius: 5px;
+}
+
+.tabla-scroll::-webkit-scrollbar-thumb:hover {
+    background: #0056b3;
+}
+
+/* Asegurar que el contenedor principal no interfiera */
+.main-content {
+    background: #fff;
+    position: relative;
+    overflow: visible;
+}
+
+/* Sincronizar hover entre tabla y acciones con JavaScript */
+.tabla-proyectos tbody tr:hover {
+    background: #f8f9fa;
+}
+
+/* Eliminar estilos anteriores que ya no se usan */
+.tabla-proyectos thead th[data-col="acciones"],
+.tabla-proyectos tbody td[data-campo="acciones"] {
+    display: none !important;
+}
+
+/* === QUITAR FONDOS DE COLOR EN FINANCIAMIENTOS === */
+/* Para que coincida con la vista de admin, quitar todos los estilos de badge en financiamientos */
+td[data-campo="financiamiento"] .badge,
+td[data-campo="financiamiento"] .badge-info {
+    background: transparent !important;
+    color: #495057 !important;
+    border: none !important;
+    padding: 0 !important;
+    font-weight: normal !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+    font-size: inherit !important;
+    border-radius: 0 !important;
+    display: inline !important;
+}
+
+/* Quitar cualquier estilo de hover de los badges de financiamiento */
+td[data-campo="financiamiento"] .badge:hover,
+td[data-campo="financiamiento"] .badge-info:hover {
+    background: transparent !important;
+    color: #495057 !important;
+    transform: none !important;
+}
+
+/* Estilos para truncado y tooltip */
+.cell-truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    position: relative;
+}
+
+.tooltip {
+    position: absolute;
+    background-color: #333;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    max-width: 200px;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    word-wrap: break-word;
+}
+
+/* ===== BOTÓN TOGGLE PARA MOSTRAR/OCULTAR ACCIONES (OPERADOR) ===== */
+
+/* Botón sticky para toggle de acciones */
+.btn-toggle-acciones {
+    position: fixed;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    background: linear-gradient(135deg, #0275d8 0%, #025aa5 100%);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 56px;
+    height: 56px;
+    font-size: 18px;
+    cursor: pointer !important;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(2, 117, 216, 0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    outline: none;
+}
+
+.btn-toggle-acciones:hover {
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 6px 20px rgba(2, 117, 216, 0.4);
+    background: linear-gradient(135deg, #025aa5 0%, #0275d8 100%);
+}
+
+.btn-toggle-acciones:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+.btn-toggle-acciones.active {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.btn-toggle-acciones.active:hover {
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+}
+
+.toggle-icon {
+    transition: transform 0.3s ease;
+    pointer-events: none;
+    font-size: 18px;
+    line-height: 1;
+}
+
+.btn-toggle-acciones.active .toggle-icon {
+    transform: rotate(180deg);
+}
+
+/* Animaciones para la columna de acciones - optimizadas para operador */
+.acciones-sticky {
+    width: 220px;
+    min-width: 220px;
+    background: #f8f9fa;
+    border-left: 3px solid #0275d8;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -4px 0 10px rgba(0,0,0,0.15);
+    transition: transform 0.3s ease;
+    transform: translateX(0);
+    will-change: transform;
+}
+
+.acciones-sticky.show {
+    transform: translateX(0);
+    display: flex !important;
+}
+
+.acciones-sticky.hide {
+    transform: translateX(100%);
+}
