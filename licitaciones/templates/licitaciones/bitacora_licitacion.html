@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Bitácora de Licitación</title>
-    <link rel="stylesheet" href="{% static 'licitaciones/gestion_licitaciones.css' %}">
-    <link rel="stylesheet" href="{% static 'licitaciones/bitacora_licitacion.css' %}?v=1.1">
+    <link rel="stylesheet" href="{% static 'licitaciones/css/gestion_licitaciones.css' %}">
+    <link rel="stylesheet" href="{% static 'licitaciones/css/bitacora_licitacion.css' %}?v=1.1">
 </head>
 <body>
     {% include 'licitaciones/sidebar.html' %}    <div class="main-content">
@@ -364,11 +364,11 @@
         <script>
             window.etapasLicitacion = JSON.parse(document.getElementById('etapas-licitacion-data').textContent);
         </script>
-        <script src="{% static 'licitaciones/bitacora_licitacion.js' %}"></script>
+        <script src="{% static 'licitaciones/js/bitacora_licitacion.js' %}"></script>
     </div>    <!-- Modal para agregar/editar observación -->
     <div id="modalObservacion">
         <div class="modal-container">
-            <span id="cerrarModalObservacion">&times;</span>
+            <span id="cerrarModalObservacion" class="btn-close">&times;</span>
             <h2 id="tituloModalObservacion">💭 Observación</h2>
             <form id="formModalObservacion" method="post" enctype="multipart/form-data">
                 {% csrf_token %}

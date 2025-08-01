@@ -3,18 +3,18 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Licitaciones - Acceso</title>
-    <link rel="stylesheet" href="{% static 'licitaciones/gestion_licitaciones.css' %}">
+    <link rel="stylesheet" href="{% static 'licitaciones/css/gestion_licitaciones.css' %}">
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #17aedc 0%, #004E7C 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-            padding: 20px;
         }
         
         .login-container {
@@ -22,8 +22,9 @@
             padding: 40px;
             border-radius: 16px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            max-width: 420px;
-            width: 100%;
+            min-width: 250px;
+            max-width: 400px;
+            width: 50%;
         }
         
         .login-header {
@@ -70,8 +71,8 @@
         }
         
         .login-tab.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: #D6E4F0;
+            color: black;
         }
         
         .login-tab:not(.active) {
@@ -80,7 +81,7 @@
         }
         
         .login-tab:not(.active):hover {
-            background: #e2e8f0;
+            background: #dddddd83;
         }
         
         .form-group {
@@ -114,7 +115,7 @@
         .btn-login {
             width: 100%;
             padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #066ca7;
             color: white;
             border: none;
             border-radius: 8px;
@@ -122,14 +123,14 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            box-shadow: 6px 6px 16px #066ca793;
         }
+        
         
         .btn-login:hover {
-            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+            background: #055583;
+            transform: scale(1.05);
         }
-        
         .error-message {
             background: #fee2e2;
             color: #dc2626;
@@ -162,27 +163,23 @@
         </div>
         
         <!-- Formulario unificado -->
-        <form id="loginForm" method="post" action="/login/">
+        <form id="loginForm" method="post">
             {% csrf_token %}
             <input type="hidden" id="login_type" name="login_type" value="{% if login_type %}{{ login_type }}{% else %}admin{% endif %}">
             
             <div class="form-group">
                 <label for="username" class="form-label" id="usernameLabel">
-                    {% if login_type == 'operador' %}Nombre de Usuario{% else %}Usuario{% endif %}
+                    Usuario
                 </label>
                 <input type="text" id="username" name="username" class="form-control" 
-                       placeholder="{% if login_type == 'operador' %}Ingrese su nombre{% else %}Ingrese su usuario{% endif %}" required>
-                <div class="form-hint" id="usernameHint">
-                    {% if login_type == 'operador' %}Nombre del operador{% else %}Credenciales de admin{% endif %}
-                </div>
+                       placeholder="Ingrese su usuario" required autocomplete="username" required>
             </div>
             
             <div class="form-group">
                 <label for="password" class="form-label">Contraseña</label>
                 <input type="password" id="password" name="password" class="form-control" 
-                       placeholder="{% if login_type == 'operador' %}Ingrese su clave{% else %}Ingrese su contraseña{% endif %}" required>
+                       placeholder="Ingrese su contraseña" required autocomplete="current-password" required>
             </div>
-            
             <button type="submit" class="btn-login" id="loginButton">
                 {% if login_type == 'operador' %}👤 Acceder como Operador{% else %}🔐 Acceder como Administrador{% endif %}
             </button>
@@ -210,28 +207,17 @@
             
             // Actualizar elementos del formulario
             const loginTypeInput = document.getElementById('login_type');
-            const usernameLabel = document.getElementById('usernameLabel');
-            const usernameHint = document.getElementById('usernameHint');
-            const loginButton = document.getElementById('loginButton');
             const usernameInput = document.getElementById('username');
             const passwordInput = document.getElementById('password');
-            
+
             if (type === 'admin') {
                 document.querySelector('.login-tab:first-child').classList.add('active');
                 loginTypeInput.value = 'admin';
-                usernameLabel.textContent = 'Usuario';
-                usernameHint.textContent = 'Credenciales de admin';
                 loginButton.innerHTML = '🔐 Acceder como Administrador';
-                usernameInput.placeholder = 'Ingrese su usuario';
-                passwordInput.placeholder = 'Ingrese su contraseña';
             } else {
                 document.querySelector('.login-tab:last-child').classList.add('active');
                 loginTypeInput.value = 'operador';
-                usernameLabel.textContent = 'Nombre de Usuario';
-                usernameHint.textContent = 'Nombre del operador';
                 loginButton.innerHTML = '👤 Acceder como Operador';
-                usernameInput.placeholder = 'Ingrese su nombre';
-                passwordInput.placeholder = 'Ingrese su clave';
             }
             
             console.log('login_type set to:', loginTypeInput.value);

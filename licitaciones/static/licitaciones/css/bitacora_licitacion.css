@@ -845,21 +845,6 @@
     box-shadow: 0 10px 40px rgba(0,0,0,0.2);
 }
 
-/* Modal close button */
-#cerrarModalObservacion {
-    position: absolute;
-    top: 15px;
-    right: 20px;
-    cursor: pointer;
-    font-size: 24px;
-    color: #7f8c8d;
-    transition: color 0.2s;
-}
-
-#cerrarModalObservacion:hover {
-    color: #e74c3c;
-}
-
 /* Modal title */
 #tituloModalObservacion {
     color: #2c3e50;

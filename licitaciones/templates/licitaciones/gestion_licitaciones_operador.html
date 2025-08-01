@@ -1,15 +1,15 @@
 {% load static %}
 {% load humanize %}
 {% load chile_filters %}
-<!DOCTYPE                    </div>
-                    <td data-campo="etapa" data-col="etapa" data-label="Etapa" title="{{ licitacion.etapa_fk.nombre|default:'' }}">
-                        {{ licitacion.etapa_fk.nombre|default:'' }}
-                    </td>l>
+<!DOCTYPE html>
 <html lang="es">
-<head>    <meta charset="UTF-8">
-    <title>Seguimiento de Licitaciones - Operador</title>    <link rel="stylesheet" href="{% static 'licitaciones/gestion_licitaciones.css' %}">
-    <link rel="stylesheet" href="{% static 'licitaciones/gestion_licitaciones_operador_botones.css' %}">
-    <link rel="stylesheet" href="{% static 'licitaciones/gestion_licitaciones_operador.css' %}?v=2.3">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seguimiento de Licitaciones - Operador</title>
+    <link rel="stylesheet" href="{% static 'licitaciones/css/gestion_licitaciones.css' %}">
+    <link rel="stylesheet" href="{% static 'licitaciones/css/gestion_licitaciones_operador_botones.css' %}">
+    <link rel="stylesheet" href="{% static 'licitaciones/css/gestion_licitaciones_operador.css' %}">
 </head>
 <body>
     {% include 'licitaciones/sidebar.html' %}
@@ -23,12 +23,20 @@
             <button id="btnFiltrarFallidas" class="btn{% if request.GET.solo_fallidas == '1' %} active{% endif %}">
                 Fallidas
             </button>
-            {% if request.GET.solo_anuales == '1' or request.GET.solo_fallidas == '1' %}
+            {% if request.GET.solo_anuales == '1' or request.GET.solo_fallidas == '1' or request.GET.q %}
             <button id="btnMostrarTodas" class="btn mostrar-todas">
-                <span class="btn-icon">🔄</span>
+                <span class="btn-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Capa_1" x="0px" y="0px" height="18" width="18" viewBox="0 0 525.166 525.166" style="enable-background:new 0 0 525.166 525.166;" xml:space="preserve">
+                            <path d="M448.245,76.92l69.626-69.626H332.186v185.685l69.648-69.648c76.847,76.825,76.847,201.659,0,278.484   c-23.413,23.457-51.509,39.977-81.224,48.686v67.788c46.695-10.437,91.201-33.588,127.656-70.02   C550.803,345.623,550.803,179.543,448.245,76.92z M123.351,401.814c-76.847-76.825-76.847-201.659,0-278.484   c23.413-23.457,51.487-39.955,81.224-48.664V6.878c-46.695,10.437-91.201,33.588-127.656,70.02   c-102.558,102.624-102.558,268.703,0,371.349L7.292,517.873h185.685V332.188L123.351,401.814z"/>
+                    </svg>
+                </span>
                 Mostrar Todas
             </button>
             {% endif %}
+        </div>
+        <div class="botones-accion-principales">
+            <input style="border-radius: 26px; border: none; height: 3vh; width: auto; padding: 1vh 0.5vw;" class="" type="search" placeholder="Nº de pedido" aria-label="Nº de pedido" id="numeroPedido">
+            <button class="btn-moderno" id="btnFiltrarPedido" type="submit">Buscar</button>
         </div>
         <div class="tabla-wrapper">
             <div class="tabla-scroll">
@@ -133,7 +141,7 @@
         </button>
         
         <!-- Columna sticky separada para acciones -->
-        <div class="acciones-sticky" id="accionesSticky" style="display: none;">
+        <div class="acciones-sticky" id="accionesSticky">
             <div class="acciones-header">
                 <div class="acciones-header-cell">Acciones</div>
             </div>
@@ -164,23 +172,23 @@
         </div>
         <div class="paginator">
             {% if proyectos.has_previous %}
-                <a href="?page={{ proyectos.previous_page_number }}" class="btn">Anterior</a>
+                <a href="?page={{ proyectos.previous_page_number }}{% if request.GET.solo_anuales %}&solo_anuales={{ request.GET.solo_anuales }}{% endif %}{% if request.GET.solo_fallidas %}&solo_fallidas={{ request.GET.solo_fallidas }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="btn">Anterior</a>
             {% endif %}
             {% for num in proyectos.paginator.page_range %}
                 {% if proyectos.number == num %}
                     <span class="btn active">{{ num }}</span>
                 {% else %}
-                    <a href="?page={{ num }}" class="btn">{{ num }}</a>
+                    <a href="?page={{ num }}{% if request.GET.solo_anuales %}&solo_anuales={{ request.GET.solo_anuales }}{% endif %}{% if request.GET.solo_fallidas %}&solo_fallidas={{ request.GET.solo_fallidas }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="btn">{{ num }}</a>
                 {% endif %}
             {% endfor %}
             {% if proyectos.has_next %}
-                <a href="?page={{ proyectos.next_page_number }}" class="btn">Siguiente</a>
+                <a href="?page={{ proyectos.next_page_number }}{% if request.GET.solo_anuales %}&solo_anuales={{ request.GET.solo_anuales }}{% endif %}{% if request.GET.solo_fallidas %}&solo_fallidas={{ request.GET.solo_fallidas }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="btn">Siguiente</a>
             {% endif %}
         </div>
         <!-- Modal Añadir Observación -->
-        <div id="modalObservacion" class="modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:3500;">
+        <div id="modalObservacion" class="modal">
             <div style="background:#fff; padding:30px; border-radius:12px; min-width:340px; max-width:95vw; position:relative; min-height:120px;">
-                <span id="cerrarModalObservacion" class="btn-cerrar" style="position:absolute; top:10px; right:15px; cursor:pointer; font-size:22px;">&times;</span>                <h2 style="color:#28a745; text-align:center; margin-bottom:18px;">Añadir Observación</h2>
+                <span id="cerrarModalObservacion" class="btn-close" style="position:absolute; top:10px; right:15px; cursor:pointer; font-size:22px;">&times;</span>                <h2 style="color:#28a745; text-align:center; margin-bottom:18px;">Añadir Observación</h2>
                 <form id="formObservacion" method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     <input type="hidden" id="observacionLicitacionId" name="licitacion_id">                    <div id="etapaActualContainer">
@@ -225,9 +233,9 @@
             </div>
         </div>
         <!-- Modal Última Observación -->
-        <div id="modalUltimaObs" class="modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:3500;">
+        <div id="modalUltimaObs" class="modal">
             <div style="background:#fff; padding:30px; border-radius:12px; min-width:340px; max-width:95vw; position:relative; min-height:120px;">
-                <span id="cerrarModalUltimaObs" class="btn-cerrar" style="position:absolute; top:10px; right:15px; cursor:pointer; font-size:22px;">&times;</span>
+                <span id="cerrarModalUltimaObs" class="btn-close" style="position:absolute; top:10px; right:15px; cursor:pointer; font-size:22px;">&times;</span>
                 <h2 style="color:#28a745; text-align:center; margin-bottom:18px;">Última observación</h2>
                 <div>
                     <h3 style="color:#0275d8;">Del Operador:</h3>
@@ -239,17 +247,18 @@
                     <div id="contenidoUltimaObsAdmin" style="min-height:60px; color:#222; font-size:1.08em; text-align:left; margin-bottom:10px;"></div>
                     <div id="fechaUltimaObsAdmin" style="color:#888; font-size:0.98em; text-align:right;"></div>
                 </div>
-            </div>        </div>
+            </div>
+        </div>
         
         <!-- Modal Cerrar Licitación -->
-        <div id="modalCerrarLicitacion" class="modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:3500;">
-            <div class="modal-content" style="background:#fff; padding:30px; border-radius:12px; min-width:500px; max-width:95vw; position:relative; min-height:120px; box-shadow: 0 8px 32px rgba(0,0,0,0.12);">
-                <div class="modal-header" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; padding-bottom:15px; border-bottom:2px solid #e9ecef;">
-                    <h2 style="margin:0; color:#495057; font-size:24px; font-weight:600; display:flex; align-items:center; gap:10px;">
-                        <span style="color:#d32f2f; font-size:28px;">🔒</span>
+        <div id="modalCerrarLicitacion" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>
+                        <span>🔒</span>
                         Cerrar Licitación
                     </h2>
-                    <span id="cerrarModalCerrarLicitacion" class="modal-close-btn" style="cursor:pointer; font-size:24px; color:#6c757d; background:none; border:none; padding:5px; border-radius:50%; transition:all 0.2s;" title="Cerrar">&times;</span>
+                    <span id="cerrarModalCerrarLicitacion" class="btn-close" title="Cerrar">&times;</span>
                 </div>
                 
                 <form id="formCerrarLicitacion" method="post">
@@ -306,91 +315,11 @@
                 </form>
             </div>
         </div>
-        
         <!-- Exportar etapas y tipos al JS -->
         {{ etapas|json_script:"etapas-licitacion-data" }}
         {{ tipos_licitacion|json_script:"tipos-licitacion-data" }}
         {{ tipos_licitacion_etapa_raw|json_script:"tipos-licitacion-etapa-raw-data" }}
-        
-        <script>
-            // Funcionalidad del botón toggle para mostrar/ocultar acciones
-            document.addEventListener('DOMContentLoaded', function() {
-                console.log('DOM cargado - Inicializando toggle de acciones');
-                
-                const btnToggle = document.getElementById('btnToggleAcciones');
-                const accionesSticky = document.getElementById('accionesSticky');
-                
-                if (!btnToggle || !accionesSticky) {
-                    console.error('No se encontraron los elementos del toggle');
-                    return;
-                }
-                
-                console.log('Elementos encontrados - Configurando evento click');
-                
-                // Función para toggle
-                function toggleAcciones() {
-                    console.log('Toggle ejecutado');
-                    
-                    const isVisible = accionesSticky.style.display !== 'none';
-                    console.log('Estado actual:', isVisible ? 'visible' : 'oculto');
-                    
-                    if (isVisible) {
-                        // Ocultar
-                        accionesSticky.classList.remove('show');
-                        accionesSticky.classList.add('hide');
-                        setTimeout(() => {
-                            accionesSticky.style.display = 'none';
-                        }, 300);
-                        btnToggle.classList.remove('active');
-                        btnToggle.querySelector('.toggle-icon').textContent = '⚙️';
-                        console.log('Columna ocultada');
-                    } else {
-                        // Mostrar
-                        accionesSticky.style.display = 'flex';
-                        setTimeout(() => {
-                            accionesSticky.classList.remove('hide');
-                            accionesSticky.classList.add('show');
-                        }, 10);
-                        btnToggle.classList.add('active');
-                        btnToggle.querySelector('.toggle-icon').textContent = '✕';
-                        console.log('Columna mostrada');
-                    }
-                }
-                
-                // Crear nuevo botón para evitar listeners duplicados
-                const newBtn = btnToggle.cloneNode(true);
-                btnToggle.parentNode.replaceChild(newBtn, btnToggle);
-                
-                // Agregar evento al nuevo botón
-                newBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('Click en botón toggle detectado');
-                    toggleAcciones();
-                });
-                
-                console.log('Toggle de acciones inicializado correctamente');
-            });
-        </script>
-        
-        <script>
-            window.etapasLicitacion = JSON.parse(document.getElementById('etapas-licitacion-data').textContent);
-            window.tiposLicitacion = JSON.parse(document.getElementById('tipos-licitacion-data').textContent);
-            // Relación tipo-etapa (ordenada)
-            function buildTiposLicitacionEtapaRaw(raw) {
-                const out = {};
-                raw.forEach(rel => {
-                    if (!out[rel.tipo_licitacion_id]) out[rel.tipo_licitacion_id] = [];
-                    out[rel.tipo_licitacion_id].push({id: rel.etapa_id, orden: rel.orden});
-                });
-                Object.keys(out).forEach(tipoId => {
-                    out[tipoId] = out[tipoId].sort((a,b) => a.orden-b.orden).map(e => e.id);
-                });
-                return out;
-            }
-            window.tiposLicitacionEtapaRaw = buildTiposLicitacionEtapaRaw(JSON.parse(document.getElementById('tipos-licitacion-etapa-raw-data').textContent));
-        </script>
-        <script src="{% static 'licitaciones/gestion_licitaciones_operador.js' %}"></script>
+        <script src="{% static 'licitaciones/js/gestion_licitaciones_operador.js' %}"></script>
     </div>
 </body>
 </html>

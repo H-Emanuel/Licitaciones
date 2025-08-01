@@ -1,10 +1,14 @@
 {% load static %}
 
 <!-- CSS específico para sidebar -->
-<link rel="stylesheet" href="{% static 'licitaciones/sidebar.css' %}">
+<link rel="stylesheet" href="{% static 'licitaciones/css/sidebar.css' %}">
 
 <!-- Barra lateral -->
-<div class="sidebar">
+
+<div class="sidebar" id="sidebar">
+    <button class="btn-toggle-sidebar" id="btnToggleSidebar">
+        <span class="toggle-sidebar-icon">✕</span>
+    </button>
     <div class="sidebar-header">
         <div class="sidebar-user">
             <span class="sidebar-user-icon">👤</span>
@@ -19,42 +23,70 @@
             </span>
         </div>
         <a href="{% url 'logout' %}" class="sidebar-logout" title="Cerrar sesión">⏻ Cerrar sesión</a>
-    </div>    <nav class="sidebar-nav">
+    </div>
+    <nav class="sidebar-nav">
+            <a {% if es_admin %} href="{% url 'gestion_licitaciones' %}" {% elif es_operador %} href="{% url 'vista_operador' %}" {% elif es_operador_manual %} href="{% url 'vista_operador_manual' %}"
+            {% else %} href="#" {% endif %} class="sidebar-link">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="#066ca7" x="0px" y="0px" width="30" height="30" viewBox="0 0 32 32">
+                    <path d="M 16 2.59375 L 15.28125 3.28125 L 2.28125 16.28125 L 3.71875 17.71875 L 5 16.4375 L 5 28 L 14 28 L 14 18 L 18 18 L 18 28 L 27 28 L 27 16.4375 L 28.28125 17.71875 L 29.71875 16.28125 L 16.71875 3.28125 Z M 16 5.4375 L 25 14.4375 L 25 26 L 20 26 L 20 16 L 12 16 L 12 26 L 7 26 L 7 14.4375 Z"></path>
+                </svg>
+                Panel principal
+            </a>
         {% if es_admin %}
-            <a href="{% url 'gestion_licitaciones' %}" class="sidebar-link">🏠 Panel principal</a>
-        {% elif es_operador %}
-            <a href="{% url 'vista_operador' %}" class="sidebar-link">🏠 Panel principal</a>
-        {% elif es_operador_manual %}
-            <a href="{% url 'vista_operador_manual' %}" class="sidebar-link">🏠 Panel principal</a>
-        {% else %}
-            <a href="#" class="sidebar-link">🏠 Panel principal</a>
-        {% endif %}
-        {% if es_admin %}
-        <a href="{% url 'estadisticas' %}" class="sidebar-link">📊 Estadísticas</a>
-        <a href="{% url 'calendario_actividad' %}" class="sidebar-link">📅 Calendario de Actividad</a>
+        <a href="{% url 'estadisticas' %}" class="sidebar-link">
+            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#066ca7" version="1.1" id="Capa_1" width="26" height="26" viewBox="0 0 46.419 46.419" xml:space="preserve">
+                <g>
+                    <g>
+                        <path d="M12.317,27.654c1.828,0,3.31-1.482,3.31-3.311c0-0.504-0.114-0.982-0.316-1.411l3.821-4.305    c0.353,0.128,0.732,0.198,1.129,0.198c0.715,0,1.376-0.228,1.917-0.612l4.51,3.073c-0.017,0.134-0.027,0.27-0.027,0.409    c0,1.828,1.482,3.31,3.311,3.31c1.829,0,3.311-1.481,3.311-3.31c0-0.378-0.064-0.741-0.182-1.079l4.237-5.335    c0.521-0.655,0.411-1.608-0.245-2.128c-0.654-0.519-1.607-0.411-2.128,0.245l-4.067,5.12c-0.293-0.086-0.604-0.133-0.927-0.133    c-0.569,0-1.108,0.144-1.575,0.399l-4.825-3.287c-0.011-1.819-1.488-3.291-3.31-3.291c-1.828,0-3.31,1.482-3.31,3.31    c0,0.303,0.041,0.595,0.117,0.874L12.9,21.087c-0.189-0.034-0.384-0.052-0.583-0.052c-1.829,0-3.312,1.481-3.312,3.311    C9.005,26.174,10.488,27.654,12.317,27.654z"/>
+                        <path d="M46.419,6.75c0-3.463-2.808-6.271-6.271-6.271H6.271C2.808,0.479,0,3.286,0,6.75V8.67c0,0.942,0.764,1.707,1.707,1.707    h0.085v21.707c0,2.555,2.078,4.659,4.634,4.659h3.472l-2.841,6.364c-0.455,1.02,0.003,2.207,1.022,2.66    c0.268,0.121,0.546,0.173,0.822,0.173c0.772,0,1.511-0.448,1.845-1.2l3.451-7.73c0.041-0.092,0.074-0.182,0.1-0.267h17.909    c0.026,0.085,0.06,0.175,0.1,0.267l3.45,7.736c0.335,0.752,1.074,1.194,1.846,1.194c0.274,0,0.555-0.058,0.821-0.177    c1.021-0.455,1.478-1.637,1.022-2.655l-2.842-6.365h3.473c2.556,0,4.635-2.104,4.635-4.659V10.377    c0.941,0,1.707-0.764,1.707-1.707L46.419,6.75L46.419,6.75z M40.445,31.111c0,0.932-0.729,1.707-1.66,1.707H7.718    c-0.932,0-1.659-0.773-1.659-1.707V10.377h34.386V31.111z"/>
+                    </g>
+                </g>
+            </svg>
+            Estadísticas
+        </a>
+        <a href="{% url 'calendario_actividad' %}" class="sidebar-link">
+            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#066ca7" version="1.1" id="Capa_1" width="26" height="26" viewBox="0 0 610.398 610.398" xml:space="preserve">
+                <g>
+                    <g>
+                        <path d="M159.567,0h-15.329c-1.956,0-3.811,0.411-5.608,0.995c-8.979,2.912-15.616,12.498-15.616,23.997v10.552v27.009v14.052    c0,2.611,0.435,5.078,1.066,7.44c2.702,10.146,10.653,17.552,20.158,17.552h15.329c11.724,0,21.224-11.188,21.224-24.992V62.553    V35.544V24.992C180.791,11.188,171.291,0,159.567,0z"/>
+                        <path d="M461.288,0h-15.329c-11.724,0-21.224,11.188-21.224,24.992v10.552v27.009v14.052c0,13.804,9.5,24.992,21.224,24.992    h15.329c11.724,0,21.224-11.188,21.224-24.992V62.553V35.544V24.992C482.507,11.188,473.007,0,461.288,0z"/>
+                        <path d="M539.586,62.553h-37.954v14.052c0,24.327-18.102,44.117-40.349,44.117h-15.329c-22.247,0-40.349-19.79-40.349-44.117    V62.553H199.916v14.052c0,24.327-18.102,44.117-40.349,44.117h-15.329c-22.248,0-40.349-19.79-40.349-44.117V62.553H70.818    c-21.066,0-38.15,16.017-38.15,35.764v476.318c0,19.784,17.083,35.764,38.15,35.764h468.763c21.085,0,38.149-15.984,38.149-35.764    V98.322C577.735,78.575,560.671,62.553,539.586,62.553z M527.757,557.9l-446.502-0.172V173.717h446.502V557.9z"/>
+                        <path d="M353.017,266.258h117.428c10.193,0,18.437-10.179,18.437-22.759s-8.248-22.759-18.437-22.759H353.017    c-10.193,0-18.437,10.179-18.437,22.759C334.58,256.074,342.823,266.258,353.017,266.258z"/>
+                        <path d="M353.017,348.467h117.428c10.193,0,18.437-10.179,18.437-22.759c0-12.579-8.248-22.758-18.437-22.758H353.017    c-10.193,0-18.437,10.179-18.437,22.758C334.58,338.288,342.823,348.467,353.017,348.467z"/>
+                        <path d="M353.017,430.676h117.428c10.193,0,18.437-10.18,18.437-22.759s-8.248-22.759-18.437-22.759H353.017    c-10.193,0-18.437,10.18-18.437,22.759S342.823,430.676,353.017,430.676z"/>
+                        <path d="M353.017,512.89h117.428c10.193,0,18.437-10.18,18.437-22.759c0-12.58-8.248-22.759-18.437-22.759H353.017    c-10.193,0-18.437,10.179-18.437,22.759C334.58,502.71,342.823,512.89,353.017,512.89z"/>
+                        <path d="M145.032,266.258H262.46c10.193,0,18.436-10.179,18.436-22.759s-8.248-22.759-18.436-22.759H145.032    c-10.194,0-18.437,10.179-18.437,22.759C126.596,256.074,134.838,266.258,145.032,266.258z"/>
+                        <path d="M145.032,348.467H262.46c10.193,0,18.436-10.179,18.436-22.759c0-12.579-8.248-22.758-18.436-22.758H145.032    c-10.194,0-18.437,10.179-18.437,22.758C126.596,338.288,134.838,348.467,145.032,348.467z"/>
+                        <path d="M145.032,430.676H262.46c10.193,0,18.436-10.18,18.436-22.759s-8.248-22.759-18.436-22.759H145.032    c-10.194,0-18.437,10.18-18.437,22.759S134.838,430.676,145.032,430.676z"/>
+                        <path d="M145.032,512.89H262.46c10.193,0,18.436-10.18,18.436-22.759c0-12.58-8.248-22.759-18.436-22.759H145.032    c-10.194,0-18.437,10.179-18.437,22.759C126.596,502.71,134.838,512.89,145.032,512.89z"/>
+                    </g>
+                </g>
+            </svg>
+            Calendario
+        </a>
         {% endif %}
     </nav>
     
     <div class="sidebar-spacer"></div>
     
-    {% if es_admin %}
-    <!-- Botón de notificaciones solo para admin -->
-    <div class="sidebar-notificaciones">
-        <button class="notificaciones-btn-sidebar" id="notificacionesToggle">
-            <span class="notificaciones-icono">🔔</span>
-            <span class="notificaciones-texto">Notificaciones</span>
-            <span class="notificaciones-badge" id="notificacionesBadge" style="display: none;">0</span>
-        </button>
-    </div>
-    {% endif %}
-    
-    <div id="sidebar-clock" class="sidebar-clock">
-        <span id="clock-time">--:--:--</span><br>
-        <span id="clock-date">--/--/----</span>
-    </div>
+        {% if es_admin %}
+        <!-- Botón de notificaciones solo para admin -->
+        <div class="sidebar-notificaciones">
+            <button class="notificaciones-btn-sidebar" id="notificacionesToggle">
+                <span class="notificaciones-icono">🔔</span>
+                <span class="notificaciones-texto">Notificaciones</span>
+                <span class="notificaciones-badge" id="notificacionesBadge" style="display: none;">0</span>
+            </button>
+        </div>
+        {% endif %}
+        
+        <div id="sidebar-clock" class="sidebar-clock">
+            <span id="clock-time">--:--:--</span><br>
+            <span id="clock-date">--/--/----</span>
+        </div>
 </div>
 <script>
     // Error de django, funciona correctamente...
     window.esAdmin = {% if es_admin %}true{% else %}false{% endif %};
 </script>
-<script src="{% static 'licitaciones/sidebar.js' %}"></script>
+<script src="{% static 'licitaciones/js/sidebar.js' %}"></script>

@@ -4,14 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <title>Calendario de Actividad - Sistema de Licitaciones</title>
-    <link rel="stylesheet" href="{% static 'licitaciones/gestion_licitaciones.css' %}?v=2.0">
-    <link rel="stylesheet" href="{% static 'licitaciones/calendario_actividad.css' %}?v=1.0">
+    <link rel="stylesheet" href="{% static 'licitaciones/css/gestion_licitaciones.css' %}?v=2.0">
+    <link rel="stylesheet" href="{% static 'licitaciones/css/calendario_actividad.css' %}?v=1.0">
 </head>
 <body>
     {% include 'licitaciones/sidebar.html' %}
     <div class="main-content">
         <div class="calendario-header">
-            <h1 class="titulo">📅 Calendario de Actividad</h1>
+            <h1 class="titulo" style="color: white;">📅 Calendario de Actividad</h1>
             <p class="calendario-descripcion">Visualiza la actividad diaria del sistema de licitaciones</p>
         </div>
         
@@ -47,8 +47,8 @@
                     <button id="btnMesAnterior" class="btn btn-nav">◀ Anterior</button>
                     <button id="btnMesSiguiente" class="btn btn-nav">Siguiente ▶</button>
                 </div>
-                <button id="btnFiltrar" class="btn btn-primary">🔍 Filtrar</button>
-                <button id="btnHoy" class="btn btn-secondary">📍 Hoy</button>
+                <button id="btnFiltrar" class="btn-primary">🔍 Filtrar</button>
+                <button id="btnHoy" class="btn-secondary">📍 Hoy</button>
             </div>
             
             <div class="vista-controles">
@@ -138,7 +138,7 @@
                     <span class="modal-notificaciones-icon">🔔</span>
                     Notificaciones
                 </h3>
-                <button id="cerrarModalNotificaciones" class="modal-notificaciones-close">&times;</button>
+                <button id="cerrarModalNotificaciones" class="btn-close">&times;</button>
             </div>
             <div class="modal-notificaciones-body">
                 <div class="notificaciones-vacia" id="notificacionesVacia">
@@ -166,7 +166,7 @@
                     <span class="modal-icon" id="eventoIcono">📅</span>
                     <span class="modal-title-text" id="eventoTitulo">Detalles del Evento</span>
                 </h2>
-                <div class="modal-close-btn" id="cerrarModalEvento">&times;</div>
+                <div class="btn-close" id="cerrarModalEvento">&times;</div>
             </div>
             
             <div class="modal-body">
@@ -208,7 +208,7 @@
     </div>
     
     {% csrf_token %}
-    <script src="{% static 'licitaciones/sidebar.js' %}?v=1.0"></script>
-    <script src="{% static 'licitaciones/calendario_actividad.js' %}?v=1.0"></script>
+    <script src="{% static 'licitaciones/js/sidebar.js' %}?v=1.0"></script>
+    <script src="{% static 'licitaciones/js/calendario_actividad.js' %}?v=1.0"></script>
 </body>
 </html>

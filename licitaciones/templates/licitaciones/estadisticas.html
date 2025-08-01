@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Estadísticas de Licitaciones</title>
-    <link rel="stylesheet" href="{% static 'licitaciones/gestion_licitaciones.css' %}">
-    <link rel="stylesheet" href="{% static 'licitaciones/estadisticas.css' %}">
+    <link rel="stylesheet" href="{% static 'licitaciones/css/gestion_licitaciones.css' %}">
+    <link rel="stylesheet" href="{% static 'licitaciones/css/estadisticas.css' %}">
 </head>
 <body>
     {% include 'licitaciones/sidebar.html' %}
@@ -77,7 +77,7 @@
                     <span class="modal-notificaciones-icon">🔔</span>
                     Notificaciones
                 </h3>
-                <button id="cerrarModalNotificaciones" class="modal-notificaciones-close">&times;</button>
+                <button id="cerrarModalNotificaciones" class="btn-close">&times;</button>
             </div>
             <div class="modal-notificaciones-body">
                 <div class="notificaciones-vacia" id="notificacionesVacia">
@@ -103,7 +103,7 @@
         window.estadisticasData = [{% for op in licitaciones_por_operador %}{{ op.num_licitaciones }}{% if not forloop.last %}, {% endif %}{% endfor %}];
     </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="{% static 'licitaciones/sidebar.js' %}"></script>
-    <script src="{% static 'licitaciones/estadisticas.js' %}"></script>
+    <script src="{% static 'licitaciones/js/sidebar.js' %}"></script>
+    <script src="{% static 'licitaciones/js/estadisticas.js' %}"></script>
 </body>
 </html>

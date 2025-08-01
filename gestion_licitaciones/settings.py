@@ -49,6 +49,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'licitaciones.middleware.GlobalExceptionMiddleware',
 ]
 
 ROOT_URLCONF = 'gestion_licitaciones.urls'
@@ -78,9 +79,9 @@ WSGI_APPLICATION = 'gestion_licitaciones.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'licitaciones_db',  
+        'NAME': 'licitaciones',  
         'USER': 'postgres', 
-        'PASSWORD': 'Practica_2024',  
+        'PASSWORD': '1234',  
         'HOST': 'localhost', 
         'PORT': '5432',
     }

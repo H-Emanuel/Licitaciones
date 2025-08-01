@@ -23,6 +23,165 @@ function gestionarOverflowBody() {
         document.body.style.overflow = '';
     }
 }
+// Relación tipo-etapa (ordenada)
+function buildTiposLicitacionEtapaRaw(raw) {
+    const out = {};
+    raw.forEach(rel => {
+        if (!out[rel.tipo_licitacion_id]) out[rel.tipo_licitacion_id] = [];
+        out[rel.tipo_licitacion_id].push({id: rel.etapa_id, orden: rel.orden});
+    });
+    Object.keys(out).forEach(tipoId => {
+        out[tipoId] = out[tipoId].sort((a,b) => a.orden-b.orden).map(e => e.id);
+    });
+    return out;
+}
+window.tiposLicitacionEtapaRaw = buildTiposLicitacionEtapaRaw(JSON.parse(document.getElementById('tipos-licitacion-etapa-raw-data').textContent));
+
+// Control de selección de checkboxes (máximo 1 seleccionados)
+const checkboxes = document.querySelectorAll('tbody input[type="checkbox"][id="licitacion"]');
+const selectAll = document.getElementById('select-all-licitaciones');
+
+function handleSingleSelection(e) {
+    if (e.target.checked) {
+        checkboxes.forEach(cb => {
+            if (cb !== e.target) cb.checked = false;
+        });
+    }
+}
+
+checkboxes.forEach(cb => {
+    cb.addEventListener('change', handleSingleSelection);
+});
+
+if (selectAll) {
+    selectAll.addEventListener('change', function() {
+        checkboxes.forEach(cb => {
+            cb.checked = selectAll.checked;
+        });
+    });
+}
+
+
+
+
+
+
+
+
+
+
+
+// Función para toggle de acciones - definida globalmente
+function initToggleAcciones() {
+    console.log('Inicializando toggle de acciones...');
+    
+    const btnToggle = document.getElementById('btnToggleAcciones');
+    const accionesSticky = document.getElementById('accionesSticky');
+    
+    console.log('btnToggle:', btnToggle);
+    console.log('accionesSticky:', accionesSticky);
+    
+    if (btnToggle && accionesSticky) {
+        let isVisible = false;
+        let isAnimating = false; // Prevenir clics durante animación
+        console.log('Elementos encontrados, configurando event listener...');
+        
+        function toggleAcciones(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Prevenir clics múltiples durante animación
+            if (isAnimating) {
+                console.log('Animación en progreso, ignorando clic');
+                return;
+            }
+            
+            console.log('Toggle clicked! Estado actual:', isVisible);
+            
+            isVisible = !isVisible;
+            
+            // Obtener la referencia actual del botón después del replaceWith
+            const currentBtnToggle = document.getElementById('btnToggleAcciones');
+            
+            if (isVisible) {
+                isAnimating = true;
+                console.log('Mostrando columna de acciones...');
+                // Mostrar columna de acciones
+                accionesSticky.style.display = 'block';
+                setTimeout(() => {
+                    accionesSticky.classList.add('show');
+                    accionesSticky.classList.remove('hide');
+                }, 10);
+                
+                currentBtnToggle.classList.add('active');
+                currentBtnToggle.title = 'Ocultar Acciones';
+                currentBtnToggle.querySelector('.toggle-icon').textContent = '✕';
+                
+                // Permitir nuevos clics después de la animación
+                setTimeout(() => {
+                    isAnimating = false;
+                }, 450);
+            } else {
+                isAnimating = true;
+                console.log('Ocultando columna de acciones...');
+                // Ocultar columna de acciones
+                accionesSticky.classList.add('hide');
+                accionesSticky.classList.remove('show');
+                
+                setTimeout(() => {
+                    accionesSticky.style.display = 'none';
+                    isAnimating = false; // Permitir nuevos clics
+                }, 400);
+                
+                currentBtnToggle.classList.remove('active');
+                currentBtnToggle.title = 'Mostrar Acciones';
+                currentBtnToggle.querySelector('.toggle-icon').textContent = '⚙️';
+            }
+        }
+        
+        // Limpiar eventos anteriores
+        btnToggle.replaceWith(btnToggle.cloneNode(true));
+        const newBtnToggle = document.getElementById('btnToggleAcciones');
+        newBtnToggle.addEventListener('click', toggleAcciones);
+        
+        console.log('Event listener configurado correctamente');
+    } else {
+        console.error('No se encontraron los elementos necesarios');
+        if (!btnToggle) console.error('btnToggleAcciones no encontrado');
+        if (!accionesSticky) console.error('accionesSticky no encontrado');
+    }
+};
+
+// Inicializar cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, inicializando toggle...');
+    setTimeout(() => {
+        initToggleAcciones();
+    }, 100);
+});
+
+// También inicializar cuando la página esté completamente cargada
+window.addEventListener('load', function() {
+    console.log('Window loaded, re-inicializando toggle...');
+    setTimeout(() => {
+        initToggleAcciones();
+    }, 200);
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 document.addEventListener("DOMContentLoaded", function () {
     console.log('DOM cargado - Inicializando gestión de licitaciones');
@@ -980,12 +1139,14 @@ window.addEventListener('click', function(event) {
         
         // Mostrar notificación de inicio
         let mensajeInicio = 'Generando archivo Excel con ';
-        if (currentUrl.searchParams.get('solo_anuales') === '1' && currentUrl.searchParams.get('solo_fallidas') === '1') {
+        if (currentUrl.searchParams.get('solo_anuales') === '1' && currentUrl.searchParams.get('solo_fallidas') === '1'  && currentUrl.searchParams.get('q')) {
             mensajeInicio += 'licitaciones anuales fallidas';
         } else if (currentUrl.searchParams.get('solo_anuales') === '1') {
             mensajeInicio += 'licitaciones anuales';
         } else if (currentUrl.searchParams.get('solo_fallidas') === '1') {
             mensajeInicio += 'licitaciones fallidas';
+        }  else if (currentUrl.searchParams.get('q')) {
+            mensajeInicio += 'licitaciones que coinciden con la búsqueda "' + currentUrl.searchParams.get('q') + '"';
         } else {
             mensajeInicio += 'todas las licitaciones';
         }
@@ -1005,6 +1166,9 @@ window.addEventListener('click', function(event) {
         if (currentUrl.searchParams.get('solo_fallidas') === '1') {
             fileName += '_fallidas';
         }
+        if (currentUrl.searchParams.get('q')) {
+            fileName += `_${currentUrl.searchParams.get('q').replace(/\s+/g, '_')}`;
+        } 
         fileName += '.xlsx';
         
         link.download = fileName;
@@ -1020,6 +1184,8 @@ window.addEventListener('click', function(event) {
             mensaje += 'licitaciones anuales';
         } else if (currentUrl.searchParams.get('solo_fallidas') === '1') {
             mensaje += 'licitaciones fallidas';
+        } else if (currentUrl.searchParams.get('q')) {
+            mensajeInicio += 'licitaciones que coinciden con la búsqueda "' + currentUrl.searchParams.get('q') + '"';
         } else {
             mensaje += 'todas las licitaciones';
         }
@@ -1162,13 +1328,25 @@ window.addEventListener('click', function(event) {
         window.location.href = url.toString();
     });
 
+    document.getElementById('btnFiltrarPedido')?.addEventListener('click', function() {
+        const numeroPedido = document.getElementById('numeroPedido');
+        const url = new URL(window.location.href);
+        const actual = url.searchParams.get('q');
+        url.searchParams.set('q', numeroPedido.value.trim());
+        url.searchParams.delete('page');
+        console.log('Filtro aplicado para número de pedido:', numeroPedido.value.trim());
+        window.location.href = url.toString();
+    });
+
     // Botón Mostrar Todas - Limpiar todos los filtros
     document.getElementById('btnMostrarTodas')?.addEventListener('click', function() {
         const url = new URL(window.location.href);
         // Eliminar todos los filtros
         url.searchParams.delete('solo_anuales');
         url.searchParams.delete('solo_fallidas');
+        url.searchParams.delete('q');
         url.searchParams.delete('page');
+        console.log(url.searchParams);
         window.location.href = url.toString();
     });    // Movemos la validación al evento onsubmit principal para evitar conflictos
     // La función validarNumeroPedido se usará dentro del onsubmit
@@ -1457,6 +1635,8 @@ window.addEventListener('click', function(event) {
         selectTipoLicitacion: !!document.getElementById('selectTipoLicitacion')
     });
 });
+
+
 
 let licitacionFallidaSeleccionada = null; // Variable global para almacenar el ID de la licitación fallida seleccionada
 
@@ -1891,24 +2071,24 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Verificar si venimos del modal de documentos
-    if (sessionStorage.getItem('from_documents') === '1') {
-        const licitacionId = sessionStorage.getItem('open_documents_for_licitacion');
-        if (licitacionId) {
-            // Limpiar el sessionStorage
-            sessionStorage.removeItem('from_documents');
-            sessionStorage.removeItem('open_documents_for_licitacion');
-            
-            // Abrir el modal de documentos para la licitación específica
-            setTimeout(() => {
-                // Buscar el botón de documentos para esa licitación
-                document.querySelectorAll('.documentos-fila').forEach(btn => {
-                    if (btn.getAttribute('data-id') === licitacionId) {
-                        btn.click();
-                    }
-                });
-            }, 300);
-        }
+if (sessionStorage.getItem('from_documents') === '1') {
+    const licitacionId = sessionStorage.getItem('open_documents_for_licitacion');
+    if (licitacionId) {
+        // Limpiar el sessionStorage
+        sessionStorage.removeItem('from_documents');
+        sessionStorage.removeItem('open_documents_for_licitacion');
+        
+        // Abrir el modal de documentos para la licitación específica
+        setTimeout(() => {
+            // Buscar el botón de documentos para esa licitación
+            document.querySelectorAll('.documentos-fila').forEach(btn => {
+                if (btn.getAttribute('data-id') === licitacionId) {
+                    btn.click();
+                }
+            });
+        }, 300);
     }
+}
 
 window.addEventListener('resize', function() {
     // Ajustar el modal de documentos al tamaño de la ventana

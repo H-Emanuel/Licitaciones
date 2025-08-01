@@ -1,7 +1,7 @@
 /* Archivo de estilos adicionales para botones del operador */
 
 /* Botón Mostrar Todas - estilo especial para destacar que limpia filtros */
-.btn-reset {
+.mostrar-todas {
     background: linear-gradient(135deg, #6c757d 0%, #495057 100%) !important;
     color: white !important;
     border: 2px solid #6c757d !important;
@@ -10,14 +10,14 @@
     transition: all 0.3s ease;
 }
 
-.btn-reset:hover {
+.mostrar-todas:hover {
     background: linear-gradient(135deg, #5a6268 0%, #343a40 100%) !important;
     border-color: #5a6268 !important;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
 }
 
-.btn-reset:before {
+.mostrar-todas:before {
     content: "✕";
     position: absolute;
     left: 8px;
@@ -27,12 +27,12 @@
     opacity: 0.8;
 }
 
-.btn-reset {
+.mostrar-todas {
     padding-left: 28px !important;
 }
 
 /* Animación al hacer clic */
-.btn-reset:active {
+.mostrar-todas:active {
     transform: translateY(0);
     box-shadow: 0 2px 6px rgba(108, 117, 125, 0.2);
 }
