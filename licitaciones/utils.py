@@ -35,7 +35,9 @@ def get_filtered_projects_list(base_queryset, request):
     q = request.GET.get('q', '').strip()
     if q:
         if q.isdigit():
-            base_queryset = base_queryset.filter(id=int(q))
+            base_queryset = base_queryset.filter(
+                Q(numero_pedido__icontains=q)
+            )
         else:
             base_queryset = base_queryset.filter(iniciativa__icontains=q)
             

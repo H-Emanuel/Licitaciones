@@ -42,6 +42,7 @@ from datetime import datetime
 from .models import Licitacion, Etapa, BitacoraLicitacion, Estado, DocumentoLicitacion, TipoLicitacion, Moneda, Categoria, Financiamiento, ObservacionBitacora, Departamento, DocumentoBitacora, Notificacion
 from .models import TipoLicitacionEtapa
 from django.db import models
+from django.http import JsonResponse
 
 @login_required
 def gestion_licitaciones(request):
@@ -51,9 +52,9 @@ def gestion_licitaciones(request):
         return redirect('vista_operador')
     return redirect('vista_admin')
 
+@login_required
 @csrf_exempt
 def modificar_licitacion(request, licitacion_id):
-    from .models import Etapa, BitacoraLicitacion, Estado
     if request.method == 'POST':
         data = json.loads(request.body)
         licitacion = Licitacion.objects.get(id=licitacion_id)
@@ -348,7 +349,10 @@ def fecha_creacion_api(request, licitacion_id):
 @login_required
 def vista_admin(request):
     from .utils import get_filtered_projects_list, get_paginated_projects, get_catalog_data
-    
+    # Verificar que el usuario es un administrador
+    perfil = getattr(request.user, 'perfil', None)
+    if not perfil or (perfil.rol or '').strip().lower() != 'admin':
+        return redirect('login')
     # Obtener todas las licitaciones ordenadas por ID descendente
     proyectos_list = Licitacion.objects.select_related(
         'operador_user', 'operador_2', 'etapa_fk', 'estado_fk', 'tipo_licitacion',
@@ -422,6 +426,7 @@ def licitaciones_operador(request):
     
     return render(request, 'licitaciones/gestion_licitaciones_operador.html', context)
 
+@csrf_exempt
 def login_view(request):
     from .models import Perfil
     import logging
@@ -439,10 +444,14 @@ def login_view(request):
             
             if user and user.is_authenticated:
                 perfil = getattr(user, 'perfil', None)
-                if perfil and perfil.rol == 'operador':
+                # Verificar si el usuario es operador manual
+                if perfil and perfil.rol == 'admin':
                     login(request, user)
                     request.session['operador_manual_id'] = user.id
                     return redirect('vista_operador_manual')
+                elif perfil and perfil.rol == 'operador':
+                    login(request, user)
+                    return redirect('vista_operador')
                 else:
                     error_msg = 'Usuario no tiene permisos de operador.'
                     return render(request, 'licitaciones/login.html', {
@@ -503,7 +512,7 @@ def login_view(request):
     
     return render(request, 'licitaciones/login.html', {'form': form})
 
-
+@login_required
 def logout_view(request):
     logout(request)
     return redirect('login')
@@ -542,14 +551,6 @@ def estadisticas_view(request):
         'es_operador_manual': False,
         'operador_sidebar_nombre': None,
     })
-
-# Legacy function removed - now using User-based authentication
-
-def logout_operador(request):
-    # Legacy function - now using standard Django logout
-    logout(request)
-    return redirect('login')
-
 
 def logout_operador_manual(request):
     if 'operador_manual_id' in request.session:
@@ -1204,9 +1205,6 @@ def eliminar_bitacora(request, bitacora_id):
     bitacora.delete()
     return JsonResponse({'ok': True})
 
-@csrf_exempt
-@csrf_exempt
-
 
 @require_GET
 @login_required
@@ -1289,8 +1287,6 @@ def exportar_licitacion_excel(request, licitacion_id):
     response['Content-Disposition'] = f'attachment; filename={filename}'
     return response
 
-@require_GET
-@login_required
 @require_GET
 @login_required
 def exportar_todas_licitaciones_excel(request):
@@ -1405,10 +1401,6 @@ def exportar_todas_licitaciones_excel(request):
     except Exception as e:
         # En caso de error, mostrar un mensaje de error
         return HttpResponse(f"Error al exportar las licitaciones: {str(e)}", status=500)
-
-from django.http import JsonResponse
-from .models import Licitacion
-from django.views.decorators.http import require_GET
 
 @require_GET
 def api_validar_numero_pedido(request):
@@ -1882,14 +1874,14 @@ def obtener_eventos_calendario(request):
         # Aplicar el mismo filtro de fechas para bitácoras
         if mes:
             bitacoras_query = BitacoraLicitacion.objects.select_related(
-                'licitacion', 'operador', 'etapa'
+                'licitacion', 'operador_user', 'etapa'
             ).filter(
                 fecha__gte=fecha_inicio,
                 fecha__lt=fecha_fin
             )
         else:
             bitacoras_query = BitacoraLicitacion.objects.select_related(
-                'licitacion', 'operador', 'etapa'
+                'licitacion', 'operador_user', 'etapa'
             ).filter(
                 fecha__gte=fecha_inicio,
                 fecha__lt=fecha_fin

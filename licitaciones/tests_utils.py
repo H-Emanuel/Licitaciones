@@ -1,6 +1,7 @@
 from django.test import TestCase, RequestFactory
 from django.http import HttpRequest
-from .models import Licitacion, Operador, Etapa, Estado, TipoLicitacion
+from django.contrib.auth.models import User
+from .models import Licitacion, Etapa, Estado, TipoLicitacion, Perfil
 from .utils import get_filtered_projects_list, get_paginated_projects, get_catalog_data, get_operator_view_context
 
 class UtilsTestCase(TestCase):
@@ -9,14 +10,26 @@ class UtilsTestCase(TestCase):
         self.etapa = Etapa.objects.create(nombre="Etapa prueba")
         self.estado_normal = Estado.objects.create(nombre="Estado normal")
         self.estado_fallido = Estado.objects.create(nombre="Estado fallido")
-        self.operador = Operador.objects.create(nombre="Operador Test", clave="123")
-          # Crear tipo de licitación
+        
+        # Crear usuario operador
+        self.operador_user = User.objects.create_user(
+            username='operador_test',
+            password='123',
+            first_name='Operador',
+            last_name='Test'
+        )
+        self.perfil_operador = Perfil.objects.create(
+            user=self.operador_user,
+            rol='operador'
+        )
+        
+        # Crear tipo de licitación
         self.tipo_licitacion = TipoLicitacion.objects.create(nombre="Tipo Test")
         
         # Crear licitaciones de prueba
         self.licitacion1 = Licitacion.objects.create(
             iniciativa="Licitación 1", 
-            operador=self.operador,
+            operador_user=self.operador_user,
             etapa_fk=self.etapa,
             estado_fk=self.estado_normal,
             en_plan_anual=True,
@@ -27,7 +40,7 @@ class UtilsTestCase(TestCase):
         
         self.licitacion2 = Licitacion.objects.create(
             iniciativa="Licitación 2", 
-            operador=self.operador,
+            operador_user=self.operador_user,
             etapa_fk=self.etapa,
             estado_fk=self.estado_fallido,
             en_plan_anual=False,
@@ -76,10 +89,10 @@ class UtilsTestCase(TestCase):
         
     def test_get_operator_view_context(self):
         request = self.factory.get('/')
-        context = get_operator_view_context(self.operador, request)
+        context = get_operator_view_context(self.operador_user, request)
         
         self.assertIn('proyectos', context)
         self.assertIn('operadores', context)
         self.assertEqual(context['es_admin'], False)
-        self.assertEqual(context['operador_sidebar_nombre'], self.operador.nombre)
+        self.assertEqual(context['operador_sidebar_nombre'], self.operador_user.get_full_name())
         self.assertEqual(context['proyectos'].count(), 2)

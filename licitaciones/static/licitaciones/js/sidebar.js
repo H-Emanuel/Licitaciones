@@ -304,3 +304,86 @@
     }
 
 })();
+
+function initToggleSidebar() {
+    const btnToggle = document.getElementById('btnToggleSidebar');
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.querySelector('.main-content');
+    
+    if (btnToggle && sidebar) {
+        console.log('Inicializando toggle de sidebar...');
+        console.log('btnToggle:', btnToggle);
+        console.log('sidebar:', sidebar);
+        let isVisible = true;
+        let isAnimating = false; // Prevenir clics durante animación
+        
+        function toggleSidebar(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Prevenir clics múltiples durante animación
+            if (isAnimating) {
+                console.log('Animación en progreso, ignorando clic');
+                return;
+            }
+            
+            console.log('Toggle clicked! Estado actual:', isVisible);
+            
+            isVisible = !isVisible;
+            const currentBtnToggle = document.getElementById('btnToggleSidebar');
+
+            if (isVisible) {
+                isAnimating = true;
+                setTimeout(() => {
+                    sidebar.classList.add('show');
+                    sidebar.classList.remove('hide');
+                }, 10);
+                
+                currentBtnToggle.classList.add('active');
+                mainContent.style = '';
+                currentBtnToggle.title = 'Ocultar sidebar';
+                currentBtnToggle.querySelector('.toggle-sidebar-icon').textContent = '✕';
+                
+                // Permitir nuevos clics después de la animación
+                setTimeout(() => {
+                    isAnimating = false;
+                }, 450);
+            } else {
+                isAnimating = true;
+                // Ocultar sidebar
+                sidebar.classList.add('hide');
+                sidebar.classList.remove('show');
+                mainContent.style.marginLeft = '0'; // Ajustar margen del contenido principal
+
+                setTimeout(() => {
+                    isAnimating = false; // Permitir nuevos clics
+                }, 400);
+                
+                currentBtnToggle.classList.remove('active');
+                currentBtnToggle.title = 'Mostrar sidebar';
+                currentBtnToggle.querySelector('.toggle-sidebar-icon').textContent = '☰';
+            }
+        }
+        
+        // Limpiar eventos anteriores
+        btnToggle.replaceWith(btnToggle.cloneNode(true));
+        const newBtnToggle = document.getElementById('btnToggleSidebar');
+        newBtnToggle.addEventListener('click', toggleSidebar);
+    }
+};
+
+// Inicializar cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, inicializando toggle...');
+    setTimeout(() => {
+        initToggleSidebar();
+    }, 100);
+});
+
+// También inicializar cuando la página esté completamente cargada
+window.addEventListener('load', function() {
+    console.log('Window loaded, re-inicializando toggle...');
+    setTimeout(() => {
+        initToggleSidebar();
+    }, 200);
+});

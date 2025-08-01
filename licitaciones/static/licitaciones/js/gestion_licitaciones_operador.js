@@ -1,3 +1,7 @@
+// Funcionalidad del botón toggle para mostrar/ocultar acciones
+
+
+
 document.addEventListener('DOMContentLoaded', function() {
     // Función para truncar texto y agregar tooltip
     function applyTruncation(selector, maxLength) {
@@ -77,7 +81,15 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.href = url.toString();
         });
     }
-
+    document.getElementById('btnFiltrarPedido')?.addEventListener('click', function() {
+        const numeroPedido = document.getElementById('numeroPedido');
+        const url = new URL(window.location.href);
+        const actual = url.searchParams.get('q');
+        url.searchParams.set('q', numeroPedido.value.trim());
+        url.searchParams.delete('page');
+        console.log('Filtro aplicado para número de pedido:', numeroPedido.value.trim());
+        window.location.href = url.toString();
+    });
     // Botón Mostrar Todas - para limpiar filtros
     const btnMostrarTodas = document.getElementById('btnMostrarTodas');
     if (btnMostrarTodas) {
@@ -85,6 +97,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const url = new URL(window.location.href);
             url.searchParams.delete('solo_anuales');
             url.searchParams.delete('solo_fallidas');
+            url.searchParams.delete('q');
             url.searchParams.delete('page');
             window.location.href = url.toString();
         });
@@ -337,4 +350,100 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // === FIN SINCRONIZACIÓN HOVER ===
+    
+    // toggle de acciones
+    console.log('DOM cargado - Inicializando toggle de acciones');
+    
+    const btnToggle = document.getElementById('btnToggleAcciones');
+    const accionesSticky = document.getElementById('accionesSticky');
+    
+    if (!btnToggle || !accionesSticky) {
+        console.error('No se encontraron los elementos del toggle');
+        return;
+    }
+    
+    console.log('Elementos encontrados - Configurando evento click');
+    let isVisible = false;
+    let isAnimating = false; // Prevenir clics durante animación
+    // Función para toggle
+    function toggleAcciones(e) {
+        // Prevenir clics múltiples durante animación
+        if (isAnimating) {
+            console.log('Animación en progreso, ignorando clic');
+            return;
+        }
+        
+        console.log('Toggle clicked! Estado actual:', isVisible);
+        
+        isVisible = !isVisible;
+        
+        // Obtener la referencia actual del botón después del replaceWith
+        const currentBtnToggle = document.getElementById('btnToggleAcciones');
+        
+        if (isVisible) {
+            isAnimating = true;
+            console.log('Mostrando columna de acciones...');
+            // Mostrar columna de acciones
+            accionesSticky.style.display = 'block';
+            setTimeout(() => {
+                accionesSticky.classList.add('show');
+                accionesSticky.classList.remove('hide');
+            }, 10);
+            
+            currentBtnToggle.classList.add('active');
+            currentBtnToggle.title = 'Ocultar Acciones';
+            currentBtnToggle.querySelector('.toggle-icon').textContent = '✕';
+            
+            // Permitir nuevos clics después de la animación
+            setTimeout(() => {
+                isAnimating = false;
+            }, 450);
+        } else {
+            isAnimating = true;
+            console.log('Ocultando columna de acciones...');
+            // Ocultar columna de acciones
+            accionesSticky.classList.add('hide');
+            accionesSticky.classList.remove('show');
+            
+            setTimeout(() => {
+                accionesSticky.style.display = 'none';
+                isAnimating = false; // Permitir nuevos clics
+            }, 400);
+            
+            currentBtnToggle.classList.remove('active');
+            currentBtnToggle.title = 'Mostrar Acciones';
+            currentBtnToggle.querySelector('.toggle-icon').textContent = '⚙️';
+        }
+    }
+        
+    // Limpiar eventos anteriores
+    btnToggle.replaceWith(btnToggle.cloneNode(true));
+    const newBtnToggle = document.getElementById('btnToggleAcciones');
+    newBtnToggle.addEventListener('click', toggleAcciones);
+    
+    console.log('Event listener configurado correctamente');
+    // Agregar evento al nuevo botón
+    newBtnToggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('Click en botón toggle detectado');
+        toggleAcciones();
+    });
+    
+    console.log('Toggle de acciones inicializado correctamente');
 });
+window.etapasLicitacion = JSON.parse(document.getElementById('etapas-licitacion-data').textContent);
+window.tiposLicitacion = JSON.parse(document.getElementById('tipos-licitacion-data').textContent);
+// Relación tipo-etapa (ordenada)
+function buildTiposLicitacionEtapaRaw(raw) {
+    const out = {};
+    raw.forEach(rel => {
+        if (!out[rel.tipo_licitacion_id]) out[rel.tipo_licitacion_id] = [];
+        out[rel.tipo_licitacion_id].push({id: rel.etapa_id, orden: rel.orden});
+    });
+    Object.keys(out).forEach(tipoId => {
+        out[tipoId] = out[tipoId].sort((a,b) => a.orden-b.orden).map(e => e.id);
+    });
+    return out;
+}
+window.tiposLicitacionEtapaRaw = buildTiposLicitacionEtapaRaw(JSON.parse(document.getElementById('tipos-licitacion-etapa-raw-data').textContent));

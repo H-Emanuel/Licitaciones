@@ -300,7 +300,6 @@
     margin: 0 1px;
     white-space: nowrap;
     font-size: 12px;
-    padding: 6px 8px;
 }
 
 /* Scrollbar personalizada para la tabla */
@@ -325,7 +324,6 @@
 /* Asegurar que el contenedor principal no interfiera */
 .main-content {
     background: #fff;
-    position: relative;
     overflow: visible;
 }
 
@@ -386,14 +384,11 @@ td[data-campo="financiamiento"] .badge-info:hover {
     word-wrap: break-word;
 }
 
-/* ===== BOTÓN TOGGLE PARA MOSTRAR/OCULTAR ACCIONES (OPERADOR) ===== */
-
 /* Botón sticky para toggle de acciones */
 .btn-toggle-acciones {
     position: fixed;
-    top: 50%;
+    bottom: 20px;
     right: 20px;
-    transform: translateY(-50%);
     background: linear-gradient(135deg, #0275d8 0%, #025aa5 100%);
     color: white;
     border: none;
@@ -413,13 +408,13 @@ td[data-campo="financiamiento"] .badge-info:hover {
 }
 
 .btn-toggle-acciones:hover {
-    transform: translateY(-50%) scale(1.1);
+    transform: scale(1.1);
     box-shadow: 0 6px 20px rgba(2, 117, 216, 0.4);
     background: linear-gradient(135deg, #025aa5 0%, #0275d8 100%);
 }
 
 .btn-toggle-acciones:active {
-    transform: translateY(-50%) scale(0.95);
+    transform: scale(1.1);
 }
 
 .btn-toggle-acciones.active {
@@ -445,20 +440,29 @@ td[data-campo="financiamiento"] .badge-info:hover {
 /* Animaciones para la columna de acciones - optimizadas para operador */
 .acciones-sticky {
     width: 220px;
-    min-width: 220px;
+    /*min-width: 220px;*/
     background: #f8f9fa;
     border-left: 3px solid #0275d8;
-    display: flex;
-    flex-direction: column;
-    box-shadow: -4px 0 10px rgba(0,0,0,0.15);
-    transition: transform 0.3s ease;
+    display: block;
+    /*flex-direction: column;*/
+    /*box-shadow: -4px 0 10px rgba(0,0,0,0.15);*/
+    /*transition: transform 0.3s ease;*/
     transform: translateX(0);
     will-change: transform;
+
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 100;
+    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    /*ransform: translateX(100%);*/
+    min-width: 200px;
+    max-width: 250px;
 }
 
 .acciones-sticky.show {
     transform: translateX(0);
-    display: flex !important;
 }
 
 .acciones-sticky.hide {
