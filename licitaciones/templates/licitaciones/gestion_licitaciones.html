@@ -130,7 +130,7 @@
         
         <!-- Botones de acción principales -->
         <div class="botones-accion-principales">
-            <button id="btnAgregarLicitacion" class="btn-moderno btn-agregar" {% if not es_admin %}style="display:none;"{% endif %}>
+            <button id="btnAgregarLicitacion" class="btn-moderno btn-agregar" title="Agregar licitación" {% if not es_admin %}style="display:none;"{% endif %}>
                 <span class="btn-icon">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
@@ -139,10 +139,10 @@
                 
             </button>
 
-            <input style="border-radius: 26px; border: none; height: 3vh; width: auto; padding: 1vh 0.5vw;" class="" type="search" placeholder="Nº de pedido" aria-label="Nº de pedido" id="numeroPedido">
+            <input style="border-radius: 26px; border: none; height: 3vh; width: auto; padding: 1vh 0.5vw;" class="" type="search" placeholder="Nº de pedido o iniciativa" aria-label="Nº de pedido" id="numeroPedido">
             <button class="btn-moderno" id="btnFiltrarPedido" type="submit">Buscar</button>
 
-            <button id="btnExportarTodasLicitaciones" class="btn-moderno btn-exportar">
+            <button id="btnExportarTodasLicitaciones" class="btn-moderno btn-exportar" title="Exportar todas las licitaciones">
                 <span class="btn-icon">
                     <svg xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Livello_1" x="0px" y="0px" viewBox="0 0 2289.75 2130" enable-background="new 0 0 2289.75 2130" xml:space="preserve">
                         <metadata>
@@ -177,9 +177,8 @@
                 <table class="tabla-proyectos">
                     <thead>
                         <tr>
-                            <th data-col="seleccionar" class="seleccionar-header">
-                                <input type="checkbox" id="select-all-licitaciones" />
-                            <th data-col="numero_pedido">N° de pedido</th>
+                            <th data-col="seleccionar" class="seleccionar-header"></th>
+                            <th data-col="numero_pedido">N° de pedido
                             <th data-col="id_mercado_publico">ID Mercado Público</th>
                             <th data-col="operadores">Profesionales a Cargo</th>
                             <th data-col="etapa">Etapa</th>
@@ -202,8 +201,9 @@
                     </thead>
                     <tbody>
                     {% for licitacion in proyectos %}
-                    <tr data-id="{{ licitacion.id }}">
-                        <td data-campo="seleccionar" data-col="seleccionar" data-label="Seleccionar"><input type="checkbox" value="{{ licitacion.id }}" id="licitacion" /></td>
+                    <tr data-id="{{ licitacion.id }}" onclick="document.getElementById('check-{{ licitacion.id }}').click();">
+                        <td data-campo="seleccionar" data-col="seleccionar" data-label="Seleccionar"><input type="checkbox" class="licitacion" value="{{ licitacion.id }}" id="check-{{ licitacion.id }}"
+    onclick="event.stopPropagation(); const btnStyle = document.getElementById('editar-fila-select').style; (btnStyle.display == 'flex') ? btnStyle.display='none' : btnStyle.display='flex'" /></td>
                         <td data-campo="numero_pedido" data-col="numero_pedido" data-label="N° de pedido">{{ licitacion.numero_pedido }}</td>
                         <td data-campo="id_mercado_publico" data-col="id_mercado_publico" data-label="ID Mercado Público">{{ licitacion.id_mercado_publico|default:"-" }}</td>
                         <td data-campo="operadores" data-col="operadores" data-label="Profesionales a Cargo">
@@ -222,7 +222,7 @@
                                 {% endif %}
                             </div>
                         </td>
-                        <td data-campo="etapa" data-col="etapa" data-label="Etapa" title="{{ licitacion.etapa_fk.nombre|default:'' }}">
+                        <td data-campo="etapa" data-col="etapa" data-label="Etapa">
                             {{ licitacion.etapa_fk.nombre|default:'' }}
                         </td>
                         <td data-campo="estado" data-col="estado" data-label="Estado">
@@ -274,6 +274,9 @@
             
             <!-- Botón sticky para mostrar/ocultar acciones (solo admin) -->
             {% if es_admin %}
+            <button class="btn-toggle-acciones editar-fila-select" id="editar-fila-select" title="Editar" style="right: 110px; display: none;" {% if not es_admin %}style="visibility: hidden;"{% endif %}>
+                <span class="icono-accion">✏️</span>
+            </button>
             <button id="btnToggleAcciones" class="btn-toggle-acciones" title="Mostrar/Ocultar Acciones">
                 <span class="toggle-icon">⚙️</span>
             </button>

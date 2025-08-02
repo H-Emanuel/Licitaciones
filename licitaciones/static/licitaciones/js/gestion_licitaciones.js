@@ -23,6 +23,7 @@ function gestionarOverflowBody() {
         document.body.style.overflow = '';
     }
 }
+
 // Relación tipo-etapa (ordenada)
 function buildTiposLicitacionEtapaRaw(raw) {
     const out = {};
@@ -36,40 +37,6 @@ function buildTiposLicitacionEtapaRaw(raw) {
     return out;
 }
 window.tiposLicitacionEtapaRaw = buildTiposLicitacionEtapaRaw(JSON.parse(document.getElementById('tipos-licitacion-etapa-raw-data').textContent));
-
-// Control de selección de checkboxes (máximo 1 seleccionados)
-const checkboxes = document.querySelectorAll('tbody input[type="checkbox"][id="licitacion"]');
-const selectAll = document.getElementById('select-all-licitaciones');
-
-function handleSingleSelection(e) {
-    if (e.target.checked) {
-        checkboxes.forEach(cb => {
-            if (cb !== e.target) cb.checked = false;
-        });
-    }
-}
-
-checkboxes.forEach(cb => {
-    cb.addEventListener('change', handleSingleSelection);
-});
-
-if (selectAll) {
-    selectAll.addEventListener('change', function() {
-        checkboxes.forEach(cb => {
-            cb.checked = selectAll.checked;
-        });
-    });
-}
-
-
-
-
-
-
-
-
-
-
 
 // Función para toggle de acciones - definida globalmente
 function initToggleAcciones() {
@@ -167,21 +134,6 @@ window.addEventListener('load', function() {
         initToggleAcciones();
     }, 200);
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 document.addEventListener("DOMContentLoaded", function () {
     console.log('DOM cargado - Inicializando gestión de licitaciones');
@@ -310,7 +262,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const modal = document.getElementById('modalProyecto');
     const cerrarModal = document.getElementById('cerrarModal');
     const formProyecto = document.getElementById('formProyecto');
-    const btnAgregar = document.getElementById('btnAgregarLicitacion');    const modalTitulo = document.getElementById('modalTitulo');    function abrirModal(titulo, datos = null) {
+    const btnAgregar = document.getElementById('btnAgregarLicitacion');
+    const modalTitulo = document.getElementById('modalTitulo');
+    function abrirModal(titulo, datos = null) {
         modalTitulo.textContent = titulo;
         formProyecto.reset();
         limpiarSeleccionLicitacionFallida(); // Limpiar selección de licitación fallida
@@ -701,6 +655,247 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
     };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// FUNCIONALIDAD DE PRUEBA: ACCIONES DINAMICAS
+
+
+const checkboxes = document.querySelectorAll('tbody input[type="checkbox"][class="licitacion"]');
+
+function handleSingleSelection(e) {
+    if (e.target.checked) {
+        checkboxes.forEach(cb => {
+            if (cb !== e.target) {
+                cb.checked = false;
+                cb.disabled = true; // Desactivar las demás
+            }
+        });
+    } else {
+        // Si se deselecciona, activar todas
+        checkboxes.forEach(cb => {
+            cb.disabled = false;
+        });
+    }
+}
+
+checkboxes.forEach(cb => {
+    cb.addEventListener('change', handleSingleSelection);
+});
+
+
+
+document.querySelectorAll('.editar-fila-select').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const checkboxes = document.querySelectorAll('.licitacion');
+        let id;
+        checkboxes.forEach((checkbox) => {
+            if (checkbox.checked) {
+                id = checkbox.value;
+            }
+        });
+        console.log(`El checkbox con ID ${id} está seleccionado.`);
+        
+        // Buscar la fila correspondiente por data-id en la tabla principal
+        const fila = document.querySelector(`tbody tr[data-id="${id}"]`);
+        
+        // Validar que se encontró la fila
+        if (!fila) {
+            console.error('No se pudo encontrar la fila correspondiente para el botón editar con ID:', id);
+            return;
+        }
+        
+        function parseChileanNumber(str) {
+            if (!str) return '';
+            str = str.replace(/[$\s]/g, '');
+            str = str.replace(/\./g, '').replace(/,/g, '.');
+            return str;
+        }
+        
+        // Obtener los operadores desde las celdas actualizadas con badges
+        const operadoresCell = fila.querySelector('[data-campo="operadores"]');
+        let operadorId = '';
+        let operador2Id = '';
+        
+        if (operadoresCell) {
+            // Buscar los badges de operadores para extraer la información
+            const operador1Badge = operadoresCell.querySelector('.operador-1');
+            const operador2Badge = operadoresCell.querySelector('.operador-2');
+            
+            // Para obtener los IDs reales, necesitamos buscar en la lista de operadores
+            // Extraer nombres de los badges
+            if (operador1Badge) {
+                const texto1 = operador1Badge.textContent.replace('OP1: ', '').trim();
+                if (texto1 !== 'No asignado') {
+                    const operador1 = (window.operadoresLicitacion || []).find(op => 
+                        op.full_name === texto1 || op.username === texto1
+                    );
+                    if (operador1) operadorId = operador1.id;
+                }
+            }
+            
+            if (operador2Badge && !operador2Badge.classList.contains('no-asignado')) {
+                const texto2 = operador2Badge.textContent.replace('OP2: ', '').trim();
+                if (texto2 !== 'No asignado') {
+                    const operador2 = (window.operadoresLicitacion || []).find(op => 
+                        op.full_name === texto2 || op.username === texto2
+                    );
+                    if (operador2) operador2Id = operador2.id;
+                }
+            }
+        }
+        const etapaCell = fila.querySelector('[data-campo="etapa"]');
+        const estadoBadge = fila.querySelector('[data-campo="estado"] .estado-badge');
+        const monedaCell = fila.querySelector('[data-campo="moneda"]');
+        const categoriaCell = fila.querySelector('[data-campo="categoria"]');
+        const financiamientoCell = fila.querySelector('[data-campo="financiamiento"]');
+        const numeroCuentaCell = fila.querySelector('[data-campo="numero_cuenta"]');
+        const enPlanAnualCell = fila.querySelector('[data-campo="en_plan_anual"]');
+        const pedidoDevueltoCell = fila.querySelector('[data-campo="pedido_devuelto"]');
+        const iniciativaCell = fila.querySelector('[data-campo="iniciativa"]');
+        const departamentoCell = fila.querySelector('[data-campo="departamento"]');
+        const montoCell = fila.querySelector('[data-campo="monto_presupuestado"]');
+        const llamadoCotizacionCell = fila.querySelector('[data-campo="llamado_cotizacion"]');
+        const numeroPedidoCell = fila.querySelector('[data-campo="numero_pedido"]');
+        const idMercadoPublicoCell = fila.querySelector('[data-campo="id_mercado_publico"]');
+        const direccionCell = fila.querySelector('[data-campo="direccion"]');
+        const institucionCell = fila.querySelector('[data-campo="institucion"]');
+
+        // Utilidad para obtener el id real por nombre
+        function getIdFromCell(cell, list, key='nombre') {
+            if (!cell) return '';
+            const nombre = cell.innerText.trim();
+            if (!nombre || nombre === '-') return '';
+            const found = (window[list] || []).find(e => e.nombre === nombre);
+            return found ? found.id : '';
+        }
+        
+        // Utilidad para obtener el key de choices por display value
+        function getKeyFromChoiceDisplay(cell, choicesMap) {
+            if (!cell) return '';
+            const display = cell.innerText.trim();
+            if (!display || display === '-') return '';
+            // Buscar en el mapa de choices el key que corresponde al display
+            for (const [key, value] of Object.entries(choicesMap || {})) {
+                if (value === display) {
+                    return key;
+                }
+            }
+            return '';
+        }
+        
+        // Mapeo de choices para llamado_cotizacion
+        const llamadoCotizacionChoices = {
+            'primer_llamado': 'Primer llamado',
+            'segundo_llamado': 'Segundo llamado',
+            'tercer_llamado': 'Tercer llamado',
+            'cuarto_llamado': 'Cuarto llamado',
+            'quinto_llamado': 'Quinto llamado'
+        };
+        // Obtener todos los IDs de financiamiento de la celda
+        function getIdsFromFinanciamientoCell(cell) {
+            if (!cell) return [];
+            
+            // Obtener el texto completo de la celda
+            let textoCompleto = cell.innerText.trim();
+            
+            // Si es solo un guión, retornar array vacío
+            if (textoCompleto === '-') return [];
+            
+            // Dividir por ' / ' ya que ese es el separador usado en el template
+            const nombres = textoCompleto.split(' / ').map(nombre => nombre.trim()).filter(nombre => nombre && nombre !== '-');
+            
+            // Buscar los IDs correspondientes en window.financiamientosLicitacion
+            return nombres.map(nombre => {
+                const found = (window.financiamientosLicitacion || []).find(e => e.nombre === nombre);
+                return found ? String(found.id) : null;
+            }).filter(Boolean);
+        }
+        // Estado
+        let estadoValue = '';
+        if (estadoBadge) {
+            const nombreEstado = estadoBadge.textContent.trim();
+            const foundEstado = (window.estadosLicitacion || []).find(e => e.nombre === nombreEstado);
+            if (foundEstado) estadoValue = foundEstado.id;
+        }
+        abrirModal('Editar Licitación', {
+            id: id,
+            operador: operadorId || '',
+            operador_2: operador2Id || '',
+            etapa: getIdFromCell(etapaCell, 'etapasLicitacion'),
+            estado: estadoValue,
+            moneda: getIdFromCell(monedaCell, 'monedasLicitacion'),
+            categoria: getIdFromCell(categoriaCell, 'categoriasLicitacion'),
+            financiamiento: getIdsFromFinanciamientoCell(financiamientoCell),
+            numero_cuenta: numeroCuentaCell ? numeroCuentaCell.innerText.trim() : '',
+            en_plan_anual: enPlanAnualCell ? (enPlanAnualCell.innerText.trim().toLowerCase() === 'sí' ? 'True' : 'False') : '',
+            pedido_devuelto: pedidoDevueltoCell ? (pedidoDevueltoCell.innerText.trim().toLowerCase() === 'sí' ? true : false) : false,
+            iniciativa: iniciativaCell ? iniciativaCell.innerText.trim() : '',
+            departamento: getIdFromCell(departamentoCell, 'departamentosLicitacion'),
+            monto_presupuestado: montoCell ? parseChileanNumber(montoCell.innerText.replace(/[^0-9.,-]/g, '')) : '',
+            llamado_cotizacion: getKeyFromChoiceDisplay(llamadoCotizacionCell, llamadoCotizacionChoices),
+            numero_pedido: numeroPedidoCell ? numeroPedidoCell.innerText.trim() : '',
+            id_mercado_publico: idMercadoPublicoCell ? (idMercadoPublicoCell.innerText.trim() === '-' ? '' : idMercadoPublicoCell.innerText.trim()) : '',
+            direccion: direccionCell ? (direccionCell.innerText.trim() === '-' ? '' : direccionCell.innerText.trim()) : '',
+            institucion: institucionCell ? (institucionCell.innerText.trim() === '-' ? '' : institucionCell.innerText.trim()) : '',
+            tipo_licitacion: getIdFromCell(fila.querySelector('[data-campo="tipo_licitacion"]'), 'tiposLicitacion')
+        });
+    });
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     // ---  BOTONES POR FILA ---
 document.querySelectorAll('.editar-fila').forEach(btn => {
@@ -1635,8 +1830,6 @@ window.addEventListener('click', function(event) {
         selectTipoLicitacion: !!document.getElementById('selectTipoLicitacion')
     });
 });
-
-
 
 let licitacionFallidaSeleccionada = null; // Variable global para almacenar el ID de la licitación fallida seleccionada
 
@@ -2658,41 +2851,3 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
-
-// Función para truncar texto y agregar tooltip
-function applyTruncation(selector, maxLength) {
-    const cells = document.querySelectorAll(selector);
-    cells.forEach(cell => {
-        const originalText = cell.textContent.trim();
-        if (originalText.length > maxLength) {
-            const truncatedText = originalText.slice(0, maxLength) + '...';
-            cell.innerHTML = `<span class='truncated-text'>${truncatedText}</span>`;
-            cell.setAttribute('title', originalText);
-            cell.classList.add('cell-truncate');
-
-            // Mostrar tooltip al hacer clic
-            cell.addEventListener('click', function() {
-                const tooltip = document.createElement('div');
-                tooltip.className = 'tooltip';
-                tooltip.textContent = originalText;
-                document.body.appendChild(tooltip);
-
-                const rect = cell.getBoundingClientRect();
-                tooltip.style.left = `${rect.left}px`;
-                tooltip.style.top = `${rect.bottom + 5}px`;
-
-                // Eliminar tooltip al hacer clic fuera
-                document.addEventListener('click', function removeTooltip(event) {
-                    if (!tooltip.contains(event.target)) {
-                        tooltip.remove();
-                        document.removeEventListener('click', removeTooltip);
-                    }
-                });
-            });
-        }
-    });
-}
-
-
-applyTruncation('td[data-col="etapa"]', 30);
-

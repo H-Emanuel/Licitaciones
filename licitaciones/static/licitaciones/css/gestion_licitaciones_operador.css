@@ -367,7 +367,6 @@ td[data-campo="financiamiento"] .badge-info:hover {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    cursor: pointer;
     position: relative;
 }
 

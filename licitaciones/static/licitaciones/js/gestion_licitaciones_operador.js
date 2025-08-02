@@ -1,45 +1,4 @@
-// Funcionalidad del botón toggle para mostrar/ocultar acciones
-
-
-
 document.addEventListener('DOMContentLoaded', function() {
-    // Función para truncar texto y agregar tooltip
-    function applyTruncation(selector, maxLength) {
-        const cells = document.querySelectorAll(selector);
-        cells.forEach(cell => {
-            const originalText = cell.textContent.trim();
-            if (originalText.length > maxLength) {
-                const truncatedText = originalText.slice(0, maxLength) + '...';
-                cell.innerHTML = `<span class='truncated-text'>${truncatedText}</span>`;
-                cell.setAttribute('title', originalText);
-                cell.classList.add('cell-truncate');
-
-                // Mostrar tooltip al hacer clic
-                cell.addEventListener('click', function() {
-                    const tooltip = document.createElement('div');
-                    tooltip.className = 'tooltip';
-                    tooltip.textContent = originalText;
-                    document.body.appendChild(tooltip);
-
-                    const rect = cell.getBoundingClientRect();
-                    tooltip.style.left = `${rect.left}px`;
-                    tooltip.style.top = `${rect.bottom + 5}px`;
-
-                    // Eliminar tooltip al hacer clic fuera
-                    document.addEventListener('click', function removeTooltip(event) {
-                        if (!tooltip.contains(event.target)) {
-                            tooltip.remove();
-                            document.removeEventListener('click', removeTooltip);
-                        }
-                    });
-                });
-            }
-        });
-    }
-
-    // Aplicar truncado inmediatamente después de que el DOM esté cargado/TRUNCADO
-    applyTruncation('td[data-col="etapa"]', 30);
-
     // Buscador - solo si existe (en operador no hay buscador)
     const buscador = document.querySelector('.buscador');
     if (buscador) {

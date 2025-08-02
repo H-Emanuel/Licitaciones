@@ -44,7 +44,7 @@ from .models import TipoLicitacionEtapa
 from django.db import models
 from django.http import JsonResponse
 
-@login_required
+
 def gestion_licitaciones(request):
     # Si el usuario es admin, redirige a vista_admin; si es operador, a vista_operador
     perfil = getattr(request.user, 'perfil', None)
@@ -53,7 +53,6 @@ def gestion_licitaciones(request):
     return redirect('vista_admin')
 
 @login_required
-@csrf_exempt
 def modificar_licitacion(request, licitacion_id):
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -393,6 +392,7 @@ def vista_operador(request):
     
     return render(request, 'licitaciones/gestion_licitaciones_operador.html', context)
 
+@login_required
 def vista_operador_manual(request):
     from .utils import get_operator_view_context
     
@@ -907,6 +907,7 @@ def etapas_licitacion_api(request, licitacion_id):
         'moneda': licitacion.moneda.nombre if licitacion.moneda else None,
         'monto': float(licitacion.monto_presupuestado) if licitacion.monto_presupuestado else None
     })
+
 @csrf_exempt
 def eliminar_documento_licitacion(request, licitacion_id, doc_id):
     licitacion = get_object_or_404(Licitacion, id=licitacion_id)
@@ -1111,6 +1112,7 @@ def cerrar_licitacion_operador(request, licitacion_id):
     except Exception as e:
         return JsonResponse({'ok': False, 'error': f'Error al cerrar la licitación: {str(e)}'}, status=500)
 
+@login_required
 @require_http_methods(["GET", "POST", "DELETE"])
 @csrf_exempt
 def observacion_bitacora_api(request, bitacora_id):
@@ -1204,7 +1206,6 @@ def eliminar_bitacora(request, bitacora_id):
     bitacora = get_object_or_404(BitacoraLicitacion, id=bitacora_id)
     bitacora.delete()
     return JsonResponse({'ok': True})
-
 
 @require_GET
 @login_required

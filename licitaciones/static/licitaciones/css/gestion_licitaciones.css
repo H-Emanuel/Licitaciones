@@ -3,6 +3,7 @@ body {
     margin: 0;
     background: #F5F7FA;
     min-height: 100vh;
+    cursor: default;
 }
 
 @keyframes spin {
@@ -132,15 +133,6 @@ body {
     100% {
         opacity: 1;
         transform: scale(1);
-    }
-}
-
-@keyframes rotate {
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
     }
 }
 
@@ -874,14 +866,15 @@ body {
 }
 
 .main-content {
-    padding: 1vh 1vw !important;
+    margin-left: 12vw;
+    padding: 0 1vw !important;
     background: #F5F7FA !important;
     transition: margin-left 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 @media (max-width: 2000px) {
     .main-content {
         margin-left: 250px;
-        padding: 1vh 2vw !important;
+        padding: 0 2vw !important;
     }
 }
 
@@ -2952,7 +2945,6 @@ td[data-campo="iniciativa"] {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    cursor: help;
 }
 
 td[data-campo="iniciativa"]:hover {
@@ -2998,10 +2990,8 @@ td[data-campo="iniciativa"][title]:hover::before {
 td[data-campo="etapa"] {
     max-width: 180px;
     min-width: 100px;
-    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    cursor: help;
 }
 
 td[data-campo="etapa"]:hover {
