@@ -44,7 +44,7 @@ from .models import TipoLicitacionEtapa
 from django.db import models
 from django.http import JsonResponse
 
-
+@login_required
 def gestion_licitaciones(request):
     # Si el usuario es admin, redirige a vista_admin; si es operador, a vista_operador
     perfil = getattr(request.user, 'perfil', None)
@@ -53,6 +53,7 @@ def gestion_licitaciones(request):
     return redirect('vista_admin')
 
 @login_required
+@csrf_exempt
 def modificar_licitacion(request, licitacion_id):
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -331,6 +332,7 @@ def modificar_licitacion(request, licitacion_id):
         return JsonResponse({'ok': True, 'monto_presupuestado': str(licitacion.monto_presupuestado)})
     return JsonResponse({'ok': False}, status=400)
 
+@login_required
 @csrf_exempt
 def eliminar_licitacion(request, licitacion_id):
     if request.method == 'POST':
