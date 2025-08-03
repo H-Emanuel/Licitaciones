@@ -866,27 +866,25 @@ body {
 }
 
 .main-content {
-    margin-left: 12vw;
+    margin-left: 0;
     padding: 0 1vw !important;
     background: #F5F7FA !important;
     transition: margin-left 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
+
+.m-sidebar {
+    margin-left: 12vw !important;
+}
+
 @media (max-width: 2000px) {
     .main-content {
-        margin-left: 250px;
         padding: 0 2vw !important;
+    }
+    .m-sidebar {
+        margin-left: 250px !important;
     }
 }
 
-@media (max-width: 900px) {
-    .sidebar .sidebar-user,
-    .sidebar .sidebar-link span {
-        display: none !important;
-    }
-    .sidebar .sidebar-link {
-        justify-content: center;
-    }
-}
 @media (max-width: 700px) {
     .tabla-proyectos {
         font-size: 0.89em;
@@ -981,21 +979,6 @@ body {
     display: flex;
     flex-direction: column;
     gap: 10px;
-}
-
-@media (max-width: 900px) {
-    .sidebar .sidebar-user,
-    .sidebar .sidebar-link span {
-        display: none !important;
-    }
-    .sidebar .sidebar-link {
-        justify-content: center;
-    }
-}
-@media (max-width: 600px) {
-    .sidebar .sidebar-link {
-        padding: 10px 0 !important;
-    }
 }
 
 
@@ -2807,13 +2790,18 @@ td[data-col="tipo_falla"] {
     overflow: hidden;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+}
+
+.btn-moderno:hover {
+    background: #e6e6e6;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }
 
 /* Botón de exportar Excel */
 .btn.exportar,
 .btn-moderno.btn-exportar {
-    background: linear-gradient(135deg, #217346 0%, #0f5132 100%);
+    background: linear-gradient(135deg, #217346 0%, #00ab5b 100%);
     color: white;
     border: none;
     box-shadow: 0 6px 20px rgba(33, 115, 70, 0.3);
@@ -2821,7 +2809,7 @@ td[data-col="tipo_falla"] {
 
 .btn.exportar:hover,
 .btn-moderno.btn-exportar:hover {
-    background: linear-gradient(135deg, #1e6b42 0%, #0d4529 100%);
+    background: linear-gradient(135deg, #1e6b42 0%, #00a256 100%);
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(33, 115, 70, 0.4);
 }

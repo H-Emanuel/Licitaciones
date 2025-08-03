@@ -54,46 +54,6 @@
         .acciones-row .icono-accion {
             font-size: 12px;
         }
-
-        /* Header de acciones sincronizado */
-        .acciones-header {
-            height: 65px !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            font-weight: bold !important;
-        }
-
-        /* Asegurar que las filas de la tabla tengan altura consistente */
-        .tabla-proyectos tbody td {
-            vertical-align: middle !important;
-            padding: 8px !important;
-        }
-
-        .toggle-icon {
-            transition: transform 0.3s ease;
-            pointer-events: none;
-            font-size: 18px;
-            line-height: 1;
-        }
-
-        .btn-toggle-acciones.active .toggle-icon {
-            transform: rotate(180deg);
-        }
-
-        /* Animaciones para la columna de acciones */
-        .acciones-sticky {
-            position: sticky;
-            top: 0;
-            right: 0;
-            background-color: #f8f9fa;
-            z-index: 100;
-            box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
-            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            transform: translateX(100%);
-            min-width: 200px;
-            max-width: 250px;
-        }
     </style>
 </head>
 <body>
@@ -202,8 +162,7 @@
                     <tbody>
                     {% for licitacion in proyectos %}
                     <tr data-id="{{ licitacion.id }}" onclick="document.getElementById('check-{{ licitacion.id }}').click();">
-                        <td data-campo="seleccionar" data-col="seleccionar" data-label="Seleccionar"><input type="checkbox" class="licitacion" value="{{ licitacion.id }}" id="check-{{ licitacion.id }}"
-    onclick="event.stopPropagation(); const btnStyle = document.getElementById('editar-fila-select').style; (btnStyle.display == 'flex') ? btnStyle.display='none' : btnStyle.display='flex'" /></td>
+                        <td data-campo="seleccionar" data-col="seleccionar" data-label="Seleccionar"><input type="checkbox" class="licitacion" value="{{ licitacion.id }}" id="check-{{ licitacion.id }}"/></td>
                         <td data-campo="numero_pedido" data-col="numero_pedido" data-label="N° de pedido">{{ licitacion.numero_pedido }}</td>
                         <td data-campo="id_mercado_publico" data-col="id_mercado_publico" data-label="ID Mercado Público">{{ licitacion.id_mercado_publico|default:"-" }}</td>
                         <td data-campo="operadores" data-col="operadores" data-label="Profesionales a Cargo">
@@ -283,7 +242,7 @@
             {% endif %}
             
             <!-- Columna sticky separada para acciones -->
-            <div class="acciones-sticky" id="accionesSticky" style="display: none;">
+            <div class="acciones-sticky hide" id="accionesSticky">
                 <div class="acciones-header">
                     <div class="acciones-header-cell">Acciones</div>
                 </div>

@@ -696,23 +696,23 @@ document.addEventListener("DOMContentLoaded", function () {
 const checkboxes = document.querySelectorAll('tbody input[type="checkbox"][class="licitacion"]');
 
 function handleSingleSelection(e) {
+    event.stopPropagation();
+    const btnStyle = document.getElementById('editar-fila-select').style;
     if (e.target.checked) {
         checkboxes.forEach(cb => {
             if (cb !== e.target) {
                 cb.checked = false;
-                cb.disabled = true; // Desactivar las demás
+                btnStyle.display='flex'
             }
         });
     } else {
-        // Si se deselecciona, activar todas
-        checkboxes.forEach(cb => {
-            cb.disabled = false;
-        });
+    btnStyle.display='none'
     }
 }
 
 checkboxes.forEach(cb => {
     cb.addEventListener('change', handleSingleSelection);
+    
 });
 
 

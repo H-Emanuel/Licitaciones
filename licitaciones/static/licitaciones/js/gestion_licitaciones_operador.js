@@ -343,7 +343,7 @@ document.addEventListener('DOMContentLoaded', function() {
             isAnimating = true;
             console.log('Mostrando columna de acciones...');
             // Mostrar columna de acciones
-            accionesSticky.style.display = 'block';
+            accionesSticky.style.display = 'flex';
             setTimeout(() => {
                 accionesSticky.classList.add('show');
                 accionesSticky.classList.remove('hide');
