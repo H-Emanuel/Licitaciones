@@ -58,6 +58,12 @@ class Licitacion(models.Model):
         ('cuarto_llamado', 'Cuarto llamado'),
         ('quinto_llamado', 'Quinto llamado'),
     ]
+
+    TIPO_PRESUPUESTO_CHOICES = [
+        ('le', 'LE'),
+        ('lp', 'LP'),
+        ('lr', 'LR'),
+    ]
     
     id = models.AutoField(primary_key=True)  
     operador_user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='licitaciones_asignadas', verbose_name="Operador 1")
@@ -81,6 +87,13 @@ class Licitacion(models.Model):
         blank=True, 
         null=True, 
         verbose_name="Llamado Cotización"
+    )
+    tipo_presupuesto = models.CharField(
+        max_length=2,
+        choices=TIPO_PRESUPUESTO_CHOICES,
+        default='le',
+        verbose_name="Tipo de presupuesto",
+        null=False
     )
     fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")
     fecha_vencimiento = models.DateField(blank=True, null=True, verbose_name="Fecha de vencimiento")

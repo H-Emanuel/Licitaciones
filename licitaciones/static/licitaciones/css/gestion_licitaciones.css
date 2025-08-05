@@ -867,7 +867,7 @@ body {
 
 .main-content {
     margin-left: 0;
-    padding: 0 1vw !important;
+    padding: 1vh 1vw !important;
     background: #F5F7FA !important;
     transition: margin-left 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
@@ -878,7 +878,7 @@ body {
 
 @media (max-width: 2000px) {
     .main-content {
-        padding: 0 2vw !important;
+        padding: 1vh 2vw !important;
     }
     .m-sidebar {
         margin-left: 250px !important;

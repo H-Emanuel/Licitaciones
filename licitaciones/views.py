@@ -306,6 +306,14 @@ def modificar_licitacion(request, licitacion_id):
                 valores_antes['Institución'] = str(licitacion.institucion or '')
                 valores_despues['Institución'] = str(institucion)
                 licitacion.institucion = institucion
+            # Tipo por presupuesto
+            tipo_presupuesto = data.get('tipo_presupuesto', '')
+            if licitacion.tipo_presupuesto != tipo_presupuesto:
+                cambios.append(f"Tipo por presupuesto: '{licitacion.tipo_presupuesto}' → '{tipo_presupuesto}'")
+                campos_modificados.append('N° de cuenta')
+                valores_antes['N° de cuenta'] = str(licitacion.tipo_presupuesto)
+                valores_despues['N° de cuenta'] = str(tipo_presupuesto)
+                licitacion.tipo_presupuesto = tipo_presupuesto
             # GUARDAR CAMBIOS EN LA BASE DE DATOS
             licitacion.save()
         # Registrar en bitácora si hubo cambios

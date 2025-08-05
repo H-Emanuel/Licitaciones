@@ -8,7 +8,7 @@
     bottom: 0;
     width: 12vw;
     min-width: 250px;
-    background: #004E7C;
+    background: #23272f;
     color: #e9f1f7;
     display: flex;
     flex-direction: column;
@@ -109,7 +109,7 @@
     position: absolute;
     padding: 10px 20px;
     cursor: pointer;
-    background: #004E7C;
+    background: #23272f;
     width: fit-content;
     left: 12vw;
     border: none;

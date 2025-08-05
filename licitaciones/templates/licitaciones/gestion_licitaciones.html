@@ -140,6 +140,7 @@
                             <th data-col="seleccionar" class="seleccionar-header"></th>
                             <th data-col="numero_pedido">N° de pedido
                             <th data-col="id_mercado_publico">ID Mercado Público</th>
+                            <th data-col="fecha_tentativa_termino">Fecha tentativa de término</th>
                             <th data-col="operadores">Profesionales a Cargo</th>
                             <th data-col="etapa">Etapa</th>
                             <th data-col="estado">Status</th>
@@ -154,6 +155,7 @@
                             <th data-col="institucion">Institución</th>
                             <th data-col="departamento">Depto.</th>
                             <th data-col="monto_presupuestado">Monto Presupuestado general</th>
+                            <th data-col="tipo_presupuesto">Tipo por presupuesto</th>
                             <th data-col="llamado_cotizacion">Llamado Cotización</th>
                             <th data-col="fecha_creacion">Fecha de Asignación</th>
                             <th data-col="licitacion_fallida_linkeada">Licitación Fallida Linkeada</th>
@@ -165,9 +167,10 @@
                         <td data-campo="seleccionar" data-col="seleccionar" data-label="Seleccionar"><input type="checkbox" class="licitacion" value="{{ licitacion.id }}" id="check-{{ licitacion.id }}"/></td>
                         <td data-campo="numero_pedido" data-col="numero_pedido" data-label="N° de pedido">{{ licitacion.numero_pedido }}</td>
                         <td data-campo="id_mercado_publico" data-col="id_mercado_publico" data-label="ID Mercado Público">{{ licitacion.id_mercado_publico|default:"-" }}</td>
+                        <td data-campo="fecha_tentativa_termino" data-col="fecha_tentativa_termino" data-label="Fecha tentativa de término"></td>
                         <td data-campo="operadores" data-col="operadores" data-label="Profesionales a Cargo">
                             <div class="operadores-container">
-                                <span class="operador-badge operador-1 {% if licitacion.get_numero_operador_activo == 1 %}activo{% endif %}" title="Operador 1: Gestiona hasta Evaluación de Ofertas">
+                                <span class="operador-badge operador-1 {% if licitacion.get_numero_operador_activo == 1 %}activo{% endif %}" title="Operador 1: Gestiona hasta Evaluación de Ofertas" data-id="{{ licitaciones. }}">
                                     OP1: {{ licitacion.operador_user.get_full_name|default:licitacion.operador_user.username|default:"No asignado" }}
                                 </span>
                                 {% if licitacion.operador_2 %}
@@ -216,6 +219,7 @@
                         <td data-campo="institucion" data-col="institucion" data-label="Institución">{{ licitacion.institucion|default:"-" }}</td>
                         <td data-campo="departamento" data-col="departamento" data-label="Departamento">{{ licitacion.departamento.nombre|default:licitacion.departamento }}</td>
                         <td data-campo="monto_presupuestado" data-col="monto_presupuestado" data-label="Monto Presupuestado">${{ licitacion.monto_presupuestado|floatformat:"0"|chilean_thousands }}</td>
+                        <td data-campo="tipo_presupuesto" data-col="tipo_presupuesto" data-label="Tipo de presupuesto">{{ licitacion.get_tipo_presupuesto_display }}</td>
                         <td data-campo="llamado_cotizacion" data-col="llamado_cotizacion" data-label="Llamado Cotización">{{ licitacion.get_llamado_cotizacion_display|default:"-" }}</td>
                         <td data-campo="fecha_creacion" data-col="fecha_creacion" data-label="Fecha de creación">{{ licitacion.fecha_creacion|date:"d/m/Y H:i" }}</td>
                         <td data-campo="licitacion_fallida_linkeada" data-col="licitacion_fallida_linkeada" data-label="Licitación Fallida Linkeada">
@@ -226,6 +230,33 @@
                             {% endif %}
                         </td>
                     </tr>
+                    <script>
+                        (function() {
+                            const fila = document.querySelector(`tr[data-id='{{ licitacion.id }}']`);
+                            const fechaCreacionStr = "{{ licitacion.fecha_creacion|date:'Y-m-d' }}";
+                            const fechaCreacion = new Date(fechaCreacionStr);
+                            switch (fila.querySelector("td[data-campo='tipo_presupuesto']").innerHTML){
+                                case 'LP':
+                                    fechaCreacion.setDate(fechaCreacion.getDate() + 130);
+                                    break;
+                                case 'LR':
+                                    fechaCreacion.setDate(fechaCreacion.getDate() + 150);
+                                    break;
+                                default:
+                                    fechaCreacion.setDate(fechaCreacion.getDate() + 80);
+                            }
+                            const dia = String(fechaCreacion.getDate()).padStart(2, '0');
+                            const mes = String(fechaCreacion.getMonth() + 1).padStart(2, '0'); // Mes empieza en 0
+                            const anio = fechaCreacion.getFullYear();
+                            const fechaFormateada = `${dia}/${mes}/${anio}`;
+                            if (fila) {
+                                const celda = fila.querySelector("td[data-campo='fecha_tentativa_termino']");
+                                if (celda) {
+                                    celda.textContent = fechaFormateada;
+                                }
+                            }
+                        })();
+                    </script>
                     {% endfor %}
                 </tbody>
             </table>
@@ -476,6 +507,15 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div class="form-field">
+                                    <label for="tipo_presupuesto">
+                                        <span class="field-icon">💵</span>
+                                        Tipo por presupuesto
+                                    </label>
+                                    <div style="display:flex; align-items:center; gap:15px; margin-top:8px;">
+                                        <input type="text" name="tipo_presupuesto" id="tipoPresupuesto" placeholder="Complete los campos anteriores" style="flex:1; min-width:200px;" readonly>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -593,7 +633,7 @@
                         <div class="additional-actions">
                             <button type="button" id="btnVerLicitacionesFallidas" class="btn btn-outline-warning">
                                 <span class="btn-icon">📊</span>
-                                <span>Historial de Licitaciones Fallidas</span>
+                                <span id="licitacion-fallida-seleccionada">Historial de Licitaciones Fallidas</span>
                                 <span class="btn-arrow">▶</span>
                             </button>
                         </div>
@@ -878,6 +918,21 @@
             window.etapasLicitacion = JSON.parse(document.getElementById('etapas-licitacion-data').textContent);
             window.estadosLicitacion = JSON.parse(document.getElementById('estados-licitacion-data').textContent);
             window.tiposLicitacionEtapaRaw = buildTiposLicitacionEtapaRaw(JSON.parse(document.getElementById('tipos-licitacion-etapa-raw-data').textContent));
+        
+            // Datos de operadores para JavaScript
+            window.operadoresLicitacion = [
+                {% for op in operadores %}
+                {
+                    id: {{ op.id }},
+                    username: "{{ op.username|escapejs }}",
+                    full_name: "{{ op.get_full_name|default:op.username|escapejs }}"
+                }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ];
+
+            window.etapasLicitacion = JSON.parse(document.getElementById('etapas-licitacion-data').textContent);
+            window.tiposLicitacion = JSON.parse(document.getElementById('tipos-licitacion-data').textContent);
+
         </script>
 
         <!-- Archivo principal de JavaScript -->
@@ -1001,22 +1056,8 @@
 {{ etapas|json_script:"etapas-licitacion-data" }}
 {{ tipos_licitacion|json_script:"tipos-licitacion-data" }}
 {{ tipos_licitacion_etapa_raw|json_script:"tipos-licitacion-etapa-raw-data" }}
-<
-<!-- Incluir el JavaScript del operador para la funcionalidad de la tabla -->
-<script src="{% static 'licitaciones/js/gestion_licitaciones_operador.js' %}">
-    // Datos de operadores para JavaScript
-    window.operadoresLicitacion = [
-        {% for op in operadores %}
-        {
-            id: {{ op.id }},
-            username: "{{ op.username|escapejs }}",
-            full_name: "{{ op.get_full_name|default:op.username|escapejs }}"
-        }{% if not forloop.last %},{% endif %}
-        {% endfor %}
-    ];
 
-    window.etapasLicitacion = JSON.parse(document.getElementById('etapas-licitacion-data').textContent);
-    window.tiposLicitacion = JSON.parse(document.getElementById('tipos-licitacion-data').textContent);
-</script>
+<!-- Incluir el JavaScript del operador para la funcionalidad de la tabla -->
+<script src="{% static 'licitaciones/js/gestion_licitaciones_operador.js' %}"></script>
 </body>
 </html>

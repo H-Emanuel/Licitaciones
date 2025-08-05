@@ -1,3 +1,110 @@
+// TIPO POR PRESUPUESTO
+
+async function obtenerValor(moneda) {
+  try {
+    const response = await fetch(`https://mindicador.cl/api/${moneda.trim().toLowerCase()}`);
+    if (!response.ok) throw new Error('Error al obtener los datos');
+    const data = await response.json();
+    return data.serie[0].valor;
+  } catch (error) {
+    console.error('Hubo un problema:', error.message);
+    return null;
+  }
+}
+
+async function asignarTipoPresupuesto() {
+    const monedaSelect = document.getElementById('monedaSelect');
+    const monedaSelected = monedaSelect.options[monedaSelect.selectedIndex];
+    let monto = parseFloat(document.getElementById('montoPresupuestadoInput').value);
+    const tipoPresupuesto = document.getElementById('tipoPresupuesto');
+    if (monedaSelected.value && monto > 0) {
+        let montoConvertido = monto;
+        if (monedaSelected.text === 'CLP') {
+            const valorUTM = await obtenerValor('utm');
+            if (valorUTM) montoConvertido = valorUTM / monto;
+        } else if (monedaSelected.text === 'UTM') {
+            montoConvertido = monto;
+        } else if (monedaSelected.text === 'USD') {
+            // Otras monedas: convierte primero a CLP y luego a UF
+            const valorMoneda = await obtenerValor('dolar');
+            const valorUTM = await obtenerValor('utm');
+            if (valorMoneda && valorUTM) montoConvertido = (monto * valorMoneda) / valorUTM;
+        } else {
+            // Otras monedas: convierte primero a CLP y luego a UF
+            const valorMoneda = await obtenerValor(monedaSelected.text);
+            const valorUTM = await obtenerValor('utm');
+            if (valorMoneda && valorUTM) montoConvertido = (monto * valorMoneda) / valorUTM;
+        }
+        console.log(`Valor convertido en ${montoConvertido} utm`);
+        // Asignar tipo según monto en UF
+        if (montoConvertido < 100) {
+            tipoPresupuesto.value = 'L1';
+        } else if (montoConvertido < 1000) {
+            tipoPresupuesto.value = 'LE';
+        } else if (montoConvertido < 5000) {
+            tipoPresupuesto.value = 'LP';
+        } else {
+            tipoPresupuesto.value = 'LR';
+        }
+    }
+}
+
+const ids = ['monedaSelect', 'montoPresupuestadoInput'];
+ids.forEach(id => {
+    document.getElementById(id).addEventListener('change', function() {
+        asignarTipoPresupuesto();
+    });
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Variable global para controlar el modo de operación del formulario
 let modoAgregar = false;
 
@@ -712,7 +819,6 @@ function handleSingleSelection(e) {
 
 checkboxes.forEach(cb => {
     cb.addEventListener('change', handleSingleSelection);
-    
 });
 
 
@@ -850,6 +956,7 @@ document.querySelectorAll('.editar-fila-select').forEach(btn => {
             const foundEstado = (window.estadosLicitacion || []).find(e => e.nombre === nombreEstado);
             if (foundEstado) estadoValue = foundEstado.id;
         }
+        
         abrirModal('Editar Licitación', {
             id: id,
             operador: operadorId || '',
@@ -872,6 +979,7 @@ document.querySelectorAll('.editar-fila-select').forEach(btn => {
             institucion: institucionCell ? (institucionCell.innerText.trim() === '-' ? '' : institucionCell.innerText.trim()) : '',
             tipo_licitacion: getIdFromCell(fila.querySelector('[data-campo="tipo_licitacion"]'), 'tiposLicitacion')
         });
+        asignarTipoPresupuesto();
     });
 });
 
@@ -939,7 +1047,7 @@ document.querySelectorAll('.editar-fila').forEach(btn => {
                     if (operador1) operadorId = operador1.id;
                 }
             }
-            
+            console.log(document.getElementById('operadores-licitacion-data'));
             if (operador2Badge && !operador2Badge.classList.contains('no-asignado')) {
                 const texto2 = operador2Badge.textContent.replace('OP2: ', '').trim();
                 if (texto2 !== 'No asignado') {
@@ -1176,113 +1284,113 @@ window.addEventListener('click', function(event) {
         gestionarOverflowBody();
     }
 });
-      // Controlador principal de envío del formulario
-    formProyecto.onsubmit = async function(e) {
-        e.preventDefault();
-        console.log("Formulario enviado, modoAgregar:", modoAgregar);
-        
-        // Primero validamos el número de pedido
-        const esValido = await validarNumeroPedido();
-        if (!esValido) {
-            return false;
-        }
-        
-        const datos = new FormData(formProyecto);
-        const idProyecto = datos.get('id');
-        let url, method;
-        let datosJson = {};
-        datos.forEach((v, k) => {
-            if (k === 'financiamiento') {
-                // Recoger todos los seleccionados como array de strings
-                const values = datos.getAll('financiamiento');
-                datosJson[k] = values;
-            } else if (k === 'en_plan_anual') {
-                datosJson[k] = v === 'True' || v === true || v === 1 || v === '1';
-            } else if (k === 'pedido_devuelto') {
-                datosJson[k] = v === 'True' || v === true || v === 1 || v === '1';
-            } else if (k === 'tipo_licitacion' || k === 'etapa') {
-                // Forzar a enviar solo un valor (el primero si por error viniera como array)
-                if (Array.isArray(v)) {
-                    datosJson[k] = v[0];
-                } else {
-                    datosJson[k] = v;
-                }
+    // Controlador principal de envío del formulario
+formProyecto.onsubmit = async function(e) {
+    e.preventDefault();
+    console.log("Formulario enviado, modoAgregar:", modoAgregar);
+    
+    // Primero validamos el número de pedido
+    const esValido = await validarNumeroPedido();
+    if (!esValido) {
+        return false;
+    }
+    
+    const datos = new FormData(formProyecto);
+    const idProyecto = datos.get('id');
+    let url, method;
+    let datosJson = {};
+    datos.forEach((v, k) => {
+        if (k === 'financiamiento') {
+            // Recoger todos los seleccionados como array de strings
+            const values = datos.getAll('financiamiento');
+            datosJson[k] = values;
+        } else if (k === 'en_plan_anual') {
+            datosJson[k] = v === 'True' || v === true || v === 1 || v === '1';
+        } else if (k === 'pedido_devuelto') {
+            datosJson[k] = v === 'True' || v === true || v === 1 || v === '1';
+        } else if (k === 'tipo_licitacion' || k === 'etapa') {
+            // Forzar a enviar solo un valor (el primero si por error viniera como array)
+            if (Array.isArray(v)) {
+                datosJson[k] = v[0];
             } else {
                 datosJson[k] = v;
             }
+        } else {
+            datosJson[k] = v;
+        }
+    });
+    
+    // Agregar tipo de monto basado en los checkboxes
+    const montoMaximo = document.getElementById('montoMaximoCheck');
+    const montoReferencial = document.getElementById('montoReferencialCheck');
+    if (montoMaximo && montoMaximo.checked) {
+        datosJson['tipo_monto'] = 'maximo';
+    } else if (montoReferencial && montoReferencial.checked) {
+        datosJson['tipo_monto'] = 'referencial';
+    }
+    
+    // Manejar checkbox pedido_devuelto explícitamente
+    const pedidoDevueltoCheck = document.getElementById('pedidoDevueltoCheckbox');
+    if (pedidoDevueltoCheck) {
+        datosJson['pedido_devuelto'] = pedidoDevueltoCheck.checked;
+    }
+    
+    // Incluir el ID de la licitación fallida seleccionada si existe
+    if (licitacionFallidaSeleccionada) {
+        datosJson.licitacion_fallida_id = licitacionFallidaSeleccionada.id;
+    }
+    
+    if (idProyecto && idProyecto.trim() !== '') {
+        url = `/gestion/modificar_licitacion/${idProyecto}/`;
+        method = 'POST';
+    } else {
+        url = '/gestion/agregar_proyecto/';
+        method = 'POST';
+    }
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+    let res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+        body: JSON.stringify(datosJson)
+    });
+    const resData = await res.json();
+    if (!res.ok && resData && resData.error) {
+        alert(resData.error);
+        return;
+    }
+    if (res.ok && formProyecto.documentos && formProyecto.documentos.files.length > 0) {
+        // Subir archivos si hay
+        const formDataArchivos = new FormData();
+        for (let i = 0; i < formProyecto.documentos.files.length; i++) {
+            formDataArchivos.append('documentos', formProyecto.documentos.files[i]);
+        }
+        const idFinal = idProyecto && idProyecto.trim() !== '' ? idProyecto : resData.id;
+        await fetch(`/api/licitacion/${idFinal}/documentos/subir/`, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': csrftoken },
+            body: formDataArchivos
         });
-        
-        // Agregar tipo de monto basado en los checkboxes
-        const montoMaximo = document.getElementById('montoMaximoCheck');
-        const montoReferencial = document.getElementById('montoReferencialCheck');
-        if (montoMaximo && montoMaximo.checked) {
-            datosJson['tipo_monto'] = 'maximo';
-        } else if (montoReferencial && montoReferencial.checked) {
-            datosJson['tipo_monto'] = 'referencial';
+    }
+    // Antes de enviar, si el campo de etapa está oculto y es alta, poner el valor como hidden
+    if (modoAgregar && labelEtapa && labelEtapa.style.display === 'none') {
+        let hiddenEtapa = formProyecto.querySelector('input[name="etapa"]');
+        if (!hiddenEtapa) {
+            hiddenEtapa = document.createElement('input');
+            hiddenEtapa.type = 'hidden';
+            hiddenEtapa.name = 'etapa';
+            formProyecto.appendChild(hiddenEtapa);
         }
-        
-        // Manejar checkbox pedido_devuelto explícitamente
-        const pedidoDevueltoCheck = document.getElementById('pedidoDevueltoCheckbox');
-        if (pedidoDevueltoCheck) {
-            datosJson['pedido_devuelto'] = pedidoDevueltoCheck.checked;
-        }
-        
-        // Incluir el ID de la licitación fallida seleccionada si existe
-        if (licitacionFallidaSeleccionada) {
-            datosJson.licitacion_fallida_id = licitacionFallidaSeleccionada.id;
-        }
-        
-        if (idProyecto && idProyecto.trim() !== '') {
-            url = `/gestion/modificar_licitacion/${idProyecto}/`;
-            method = 'POST';
-        } else {
-            url = '/gestion/agregar_proyecto/';
-            method = 'POST';
-        }
-        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
-        let res = await fetch(url, {
-            method,
-            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
-            body: JSON.stringify(datosJson)
-        });
-        const resData = await res.json();
-        if (!res.ok && resData && resData.error) {
-            alert(resData.error);
-            return;
-        }
-        if (res.ok && formProyecto.documentos && formProyecto.documentos.files.length > 0) {
-            // Subir archivos si hay
-            const formDataArchivos = new FormData();
-            for (let i = 0; i < formProyecto.documentos.files.length; i++) {
-                formDataArchivos.append('documentos', formProyecto.documentos.files[i]);
-            }
-            const idFinal = idProyecto && idProyecto.trim() !== '' ? idProyecto : resData.id;
-            await fetch(`/api/licitacion/${idFinal}/documentos/subir/`, {
-                method: 'POST',
-                headers: { 'X-CSRFToken': csrftoken },
-                body: formDataArchivos
-            });
-        }
-        // Antes de enviar, si el campo de etapa está oculto y es alta, poner el valor como hidden
-        if (modoAgregar && labelEtapa && labelEtapa.style.display === 'none') {
-            let hiddenEtapa = formProyecto.querySelector('input[name="etapa"]');
-            if (!hiddenEtapa) {
-                hiddenEtapa = document.createElement('input');
-                hiddenEtapa.type = 'hidden';
-                hiddenEtapa.name = 'etapa';
-                formProyecto.appendChild(hiddenEtapa);
-            }
-            hiddenEtapa.value = etapaSelect.value;
-            etapaSelect.disabled = true;
-        } else {
-            etapaSelect.disabled = false;
-        }
-        if (res.ok) {
-            location.reload();
-        } else {
-            alert('Error al guardar la licitación');
-        }
-    };
+        hiddenEtapa.value = etapaSelect.value;
+        etapaSelect.disabled = true;
+    } else {
+        etapaSelect.disabled = false;
+    }
+    if (res.ok) {
+        location.reload();
+    } else {
+        alert('Error al guardar la licitación');
+    }
+};
 
     // Cambio de operador desde el select en la tabla
     document.querySelectorAll('.operador-select').forEach(function(select) {
@@ -1639,6 +1747,83 @@ window.addEventListener('click', function(event) {
                 
                 // Llamar a la función para seleccionar la licitación
                 seleccionarLicitacionFallida(licitacionId, iniciativa, numPedido);
+
+                
+
+
+
+                
+
+
+                
+                const modalLicitacionesFallidas = document.getElementById('modalLicitacionesFallidas');
+                const btnVerLicitacionesFallidas = document.getElementById('btnVerLicitacionesFallidas');
+
+                // Ocultar el modal de licitaciones fallidas con animación
+                modalLicitacionesFallidas.classList.remove('active');
+                
+                // Actualizar el icono de la flecha del botón
+                if (btnVerLicitacionesFallidas) {
+                    btnVerLicitacionesFallidas.classList.remove('active');
+                    const toggleIcon = btnVerLicitacionesFallidas.querySelector('.toggle-icon');
+                    if(toggleIcon) toggleIcon.style.transform = 'translateY(-50%)';
+                }
+                
+                // Restaurar el modal principal a su estado normal con transición
+                setTimeout(() => {
+                    const modalPrincipal = document.getElementById('modalProyecto');
+                    modalPrincipal.classList.remove('expanded');
+                    
+                    const modalContent = modalPrincipal.querySelector('.modal-content');
+                    if (modalContent) {
+                        modalContent.style.minHeight = '580px';
+                        modalContent.style.maxHeight = '85vh';
+                        modalContent.style.overflowY = 'visible';
+                        modalContent.style.marginBottom = '0';
+                    }
+                }, 200);
+                
+                // Restaurar el modal principal después de un breve retardo
+                setTimeout(() => {
+                    // Devolver el modal principal al centro
+                    const modalPrincipal = document.getElementById('modalProyecto');
+                    modalPrincipal.classList.remove('expanded');
+                    
+                    // Resetear el scroll y tamaño del contenido
+                    const modalContent = modalPrincipal.querySelector('.modal-content');
+                    if (modalContent) {
+                        modalContent.style.minHeight = '580px';
+                        modalContent.style.maxHeight = '85vh';
+                        modalContent.style.overflowY = 'visible';
+                        modalContent.style.marginBottom = '0';
+                    }
+                }, 200);
+                
+                // Resetear estado del botón de toggle
+                if (btnVerLicitacionesFallidas) {
+                    btnVerLicitacionesFallidas.classList.remove('active');
+                    // Resetear también el icono de la flecha
+                    const toggleIcon = btnVerLicitacionesFallidas.querySelector('.toggle-icon');
+                    if(toggleIcon) toggleIcon.style.transform = 'translateY(-50%)';
+                }
+                
+                // Restaurar el overflow del body después de un breve retraso
+                setTimeout(() => {
+                    gestionarOverflowBody();
+                }, 250);
+
+
+
+
+
+
+
+
+
+
+
+
+
             });
         });
     }    // Función para filtrar licitaciones fallidas por iniciativa o número de pedido
@@ -1882,6 +2067,7 @@ function seleccionarLicitacionFallida(licitacionId, iniciativa, numPedido) {
         
         // Mostramos mensaje de confirmación
         mostrarNotificacion(`Licitación fallida "${iniciativa}" (N° ${numPedido}) seleccionada para linkear`, 'success');
+        document.getElementById('licitacion-fallida-seleccionada').textContent=`Licitación fallida "${iniciativa}" (N° ${numPedido}) seleccionada`;
         
         // NO actualizar el campo iniciativa - permitir que el usuario ingrese su propia iniciativa
         // const iniciativaInput = document.querySelector('#iniciativaInput');
@@ -1980,53 +2166,66 @@ function initModernModalEnhancements() {
 function initFileUploadEnhancements() {
     const fileInput = document.getElementById('inputDocumentos');
     const uploadArea = fileInput?.closest('.file-upload-area');
-    
+    let uploadedFiles = [];
+
     if (!fileInput || !uploadArea) return;
-    
-    // Prevenir comportamiento por defecto del drag and drop
+
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
         uploadArea.addEventListener(eventName, preventDefaults, false);
         document.body.addEventListener(eventName, preventDefaults, false);
     });
-    
-    // Resaltar área cuando se arrastra un archivo
+
     ['dragenter', 'dragover'].forEach(eventName => {
         uploadArea.addEventListener(eventName, () => {
             uploadArea.classList.add('dragover');
         }, false);
     });
-    
+
     ['dragleave', 'drop'].forEach(eventName => {
         uploadArea.addEventListener(eventName, () => {
             uploadArea.classList.remove('dragover');
         }, false);
     });
-    
-    // Manejar el drop
+
     uploadArea.addEventListener('drop', handleDrop, false);
-    
-    // Mostrar vista previa de archivos seleccionados
-    fileInput.addEventListener('change', updateFilePreview);
-    
+    fileInput.addEventListener('change', handleFileSelect);
+
     function preventDefaults(e) {
         e.preventDefault();
         e.stopPropagation();
     }
-    
+
     function handleDrop(e) {
         const dt = e.dataTransfer;
-        const files = dt.files;
-        fileInput.files = files;
+        addFiles(Array.from(dt.files));
+    }
+
+    function handleFileSelect() {
+        addFiles(Array.from(fileInput.files));
+    }
+
+    function addFiles(newFiles) {
+        const existingFileNames = uploadedFiles.map(file => file.name);
+        newFiles.forEach(file => {
+            if (!existingFileNames.includes(file.name)) {
+                uploadedFiles.push(file);
+            }
+        });
+        syncInputFiles();
         updateFilePreview();
     }
-    
+
+    function syncInputFiles() {
+        const dt = new DataTransfer();
+        uploadedFiles.forEach(file => dt.items.add(file));
+        fileInput.files = dt.files;
+    }
+
     function updateFilePreview() {
-        const files = Array.from(fileInput.files);
         const previewContainer = uploadArea.nextElementSibling || createPreviewContainer();
-        
         previewContainer.innerHTML = '';
-        
-        files.forEach((file, index) => {
+
+        uploadedFiles.forEach((file, index) => {
             const fileItem = document.createElement('div');
             fileItem.className = 'file-preview-item';
             fileItem.innerHTML = `
@@ -2035,35 +2234,28 @@ function initFileUploadEnhancements() {
                 <span class="file-size">(${formatFileSize(file.size)})</span>
                 <span class="remove-file" data-index="${index}">×</span>
             `;
-            
-            // Agregar funcionalidad para eliminar archivo
+
             fileItem.querySelector('.remove-file').addEventListener('click', () => {
                 removeFile(index);
             });
-            
+
             previewContainer.appendChild(fileItem);
         });
     }
-    
+
     function createPreviewContainer() {
         const container = document.createElement('div');
         container.className = 'file-preview';
         uploadArea.parentNode.insertBefore(container, uploadArea.nextSibling);
         return container;
     }
-    
+
     function removeFile(index) {
-        const dt = new DataTransfer();
-        const files = Array.from(fileInput.files);
-        
-        files.forEach((file, i) => {
-            if (i !== index) dt.items.add(file);
-        });
-        
-        fileInput.files = dt.files;
+        uploadedFiles.splice(index, 1);
+        syncInputFiles();
         updateFilePreview();
     }
-    
+
     function formatFileSize(bytes) {
         if (bytes === 0) return '0 Bytes';
         const k = 1024;
