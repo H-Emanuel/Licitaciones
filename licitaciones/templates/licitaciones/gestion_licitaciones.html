@@ -164,7 +164,7 @@
                     <tbody>
                     {% for licitacion in proyectos %}
                     <tr data-id="{{ licitacion.id }}" onclick="document.getElementById('check-{{ licitacion.id }}').click();">
-                        <td data-campo="seleccionar" data-col="seleccionar" data-label="Seleccionar"><input type="checkbox" class="licitacion" value="{{ licitacion.id }}" id="check-{{ licitacion.id }}"/></td>
+                        <td data-campo="seleccionar" data-col="seleccionar" data-label="Seleccionar"><input type="checkbox" class="licitacion-check" value="{{ licitacion.id }}" id="check-{{ licitacion.id }}"/></td>
                         <td data-campo="numero_pedido" data-col="numero_pedido" data-label="N° de pedido">{{ licitacion.numero_pedido }}</td>
                         <td data-campo="id_mercado_publico" data-col="id_mercado_publico" data-label="ID Mercado Público">{{ licitacion.id_mercado_publico|default:"-" }}</td>
                         <td data-campo="fecha_tentativa_termino" data-col="fecha_tentativa_termino" data-label="Fecha tentativa de término"></td>
@@ -264,10 +264,41 @@
             
             <!-- Botón sticky para mostrar/ocultar acciones (solo admin) -->
             {% if es_admin %}
-            <button class="btn-toggle-acciones editar-fila-select" id="editar-fila-select" title="Editar" style="right: 110px; display: none;" {% if not es_admin %}style="visibility: hidden;"{% endif %}>
+            <button class="btn-toggle-acciones editar-fila" data-id="" title="Editar" style="right: 430px; display: none;" {% if not es_admin %}style="visibility: hidden;"{% endif %}>
                 <span class="icono-accion">✏️</span>
             </button>
-            <button id="btnToggleAcciones" class="btn-toggle-acciones" title="Mostrar/Ocultar Acciones">
+
+            <!-- Botón Eliminar (solo admin) -->
+            <button class="btn-toggle-acciones eliminar-fila" data-id="" title="Eliminar" style="right: 360px; display: none;" {% if not es_admin %}style="visibility: hidden;"{% endif %}>
+                <span class="icono-accion">🗑️</span>
+            </button>
+            
+            <!-- Botón Ver última observación (siempre visible) -->
+            <button class="btn-toggle-acciones ultima-obs-fila" data-id="" title="Ver última observación" style="right: 290px; display: none;">
+                <span class="icono-accion">📝</span>
+            </button>
+            
+            <!-- Botón Cerrar licitación (siempre visible) -->
+            <button class="btn-toggle-acciones cerrar-licitacion-fila" data-id="" title="Licitación ya cerrada" style="right: 220px; display: none;" disabled>
+                <span class="icono-accion">🔒</span>
+            </button>
+            
+            <!-- Botón Bitácora (siempre visible) -->
+            <a class="btn-toggle-acciones" title="Ver bitácora" style="right: 150px; display: none;">
+                <span class="icono-accion">X</span>
+            </a>
+
+            <!-- Botón Cronología (solo admin) -->
+            <button class="btn-toggle-acciones cronologia-fila" data-id="" title="Ver cronología" style="right: 80px; display: none;" {% if not es_admin %}style="visibility: hidden;"{% endif %}>
+                <span class="icono-accion">📅</span>
+            </button>
+            
+            <!-- Botón Documentos (solo admin) -->
+            <button class="btn-toggle-acciones documentos-fila" data-id="" title="Ver documentos" style="right: 10px; display: none;" {% if not es_admin %}style="visibility: hidden;"{% endif %}>
+                <span class="icono-accion">📎</span>
+            </button>
+            
+            <button id="btnToggleAcciones" class="btn-toggle-acciones" title="Mostrar/Ocultar Acciones" style="display: none;">
                 <span class="toggle-icon">⚙️</span>
             </button>
             {% endif %}
@@ -307,10 +338,13 @@
                         {% endif %}
                         
                         <!-- Botón Bitácora (siempre visible) -->
+                         {% if licitacion.id %}
                         <a href="{% url 'bitacora_licitacion' licitacion.id %}" class="btn icon-btn" title="Ver bitácora">
                             <span class="icono-accion">📒</span>
                         </a>
-                        
+                        {% else %}
+                        <span class="icono-accion" style="color:#bbb;" title="Sin bitácora">📒</span>
+                        {% endif %}
                         <!-- Botón Cronología (solo admin) -->
                         <button class="btn btn-accion cronologia-fila icon-btn" data-id="{{ licitacion.id }}" title="Ver cronología" {% if not es_admin %}style="visibility: hidden;"{% endif %}>
                             <span class="icono-accion">📅</span>

@@ -97,7 +97,6 @@ class Licitacion(models.Model):
     )
     fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")
     fecha_vencimiento = models.DateField(blank=True, null=True, verbose_name="Fecha de vencimiento")
-    fecha_tentativa_termino = models.DateField(blank=True, null=True, verbose_name="Fecha tentativa de término")
     licitacion_fallida_linkeada = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='nuevas_licitaciones', verbose_name="Licitación fallida linkeada")
     direccion = models.CharField(max_length=255, blank=True, null=True, verbose_name="Dirección")
     institucion = models.CharField(max_length=255, blank=True, null=True, verbose_name="Institución")
