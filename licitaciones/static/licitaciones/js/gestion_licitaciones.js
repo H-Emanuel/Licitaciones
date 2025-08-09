@@ -17,29 +17,25 @@ async function asignarTipoPresupuesto() {
     const monedaSelected = monedaSelect.options[monedaSelect.selectedIndex];
     let monto = parseFloat(document.getElementById('montoPresupuestadoInput').value);
     const tipoPresupuesto = document.getElementById('tipoPresupuesto');
+    const valorUTM = await obtenerValor('utm');
     if (monedaSelected.value && monto > 0) {
         let montoConvertido = monto;
         if (monedaSelected.text === 'CLP') {
-            const valorUTM = await obtenerValor('utm');
-            if (valorUTM) montoConvertido = valorUTM / monto;
+            if (valorUTM) montoConvertido = monto / valorUTM;
         } else if (monedaSelected.text === 'UTM') {
             montoConvertido = monto;
         } else if (monedaSelected.text === 'USD') {
             // Otras monedas: convierte primero a CLP y luego a UF
             const valorMoneda = await obtenerValor('dolar');
-            const valorUTM = await obtenerValor('utm');
             if (valorMoneda && valorUTM) montoConvertido = (monto * valorMoneda) / valorUTM;
         } else {
             // Otras monedas: convierte primero a CLP y luego a UF
             const valorMoneda = await obtenerValor(monedaSelected.text);
-            const valorUTM = await obtenerValor('utm');
             if (valorMoneda && valorUTM) montoConvertido = (monto * valorMoneda) / valorUTM;
         }
         console.log(`Valor convertido en ${montoConvertido} utm`);
         // Asignar tipo según monto en UF
-        if (montoConvertido < 100) {
-            tipoPresupuesto.value = 'L1';
-        } else if (montoConvertido < 1000) {
+        if (montoConvertido < 1000) {
             tipoPresupuesto.value = 'LE';
         } else if (montoConvertido < 5000) {
             tipoPresupuesto.value = 'LP';
@@ -371,7 +367,20 @@ document.addEventListener("DOMContentLoaded", function () {
     const formProyecto = document.getElementById('formProyecto');
     const btnAgregar = document.getElementById('btnAgregarLicitacion');
     const modalTitulo = document.getElementById('modalTitulo');
-    function abrirModal(titulo, datos = null) {
+    const licitacionFallida = document.getElementById('licitacion-fallida');
+    
+    async function abrirModal(titulo, datos = null) {
+        if (datos.id){
+            const res = await fetch(`/api/licitacion/${datos.id}/documentos/`);
+            const data = await res.json();
+            if (data.licitacion_fallida){
+                licitacionFallida.textContent = `Licitación fallida "${data.licitacion_fallida.iniciativa}" (N° ${data.licitacion_fallida.numero_pedido}) seleccionada`;
+            } else {
+                licitacionFallida.textContent = 'Historial de Licitaciones Fallidas';
+            }
+        } else {
+            licitacionFallida.textContent = 'Historial de Licitaciones Fallidas';
+        }
         modalTitulo.textContent = titulo;
         formProyecto.reset();
         limpiarSeleccionLicitacionFallida(); // Limpiar selección de licitación fallida
@@ -545,6 +554,7 @@ document.addEventListener("DOMContentLoaded", function () {
         let etapaSeleccionada = '';
         if (datos && datos.etapa) etapaSeleccionada = datos.etapa;        renderEtapasSelect(etapaSelect, etapasFiltradas, etapaSeleccionada);        modal.classList.add('active');
         gestionarOverflowBody();
+        asignarTipoPresupuesto();
         // Asegurar que el select de etapas quede con el valor correcto
         if (etapaSeleccionada) etapaSelect.value = etapaSeleccionada;
     }
@@ -915,6 +925,7 @@ document.querySelectorAll('.editar-fila').forEach(btn => {
         const idMercadoPublicoCell = fila.querySelector('[data-campo="id_mercado_publico"]');
         const direccionCell = fila.querySelector('[data-campo="direccion"]');
         const institucionCell = fila.querySelector('[data-campo="institucion"]');
+        const tipoPresupuestoCell = fila.querySelector('[data-campo="tipo_presupuesto"]');
 
         // Utilidad para obtener el id real por nombre
         function getIdFromCell(cell, list, key='nombre') {
@@ -993,7 +1004,8 @@ document.querySelectorAll('.editar-fila').forEach(btn => {
             id_mercado_publico: idMercadoPublicoCell ? (idMercadoPublicoCell.innerText.trim() === '-' ? '' : idMercadoPublicoCell.innerText.trim()) : '',
             direccion: direccionCell ? (direccionCell.innerText.trim() === '-' ? '' : direccionCell.innerText.trim()) : '',
             institucion: institucionCell ? (institucionCell.innerText.trim() === '-' ? '' : institucionCell.innerText.trim()) : '',
-            tipo_licitacion: getIdFromCell(fila.querySelector('[data-campo="tipo_licitacion"]'), 'tiposLicitacion')
+            tipo_licitacion: getIdFromCell(fila.querySelector('[data-campo="tipo_licitacion"]'), 'tiposLicitacion'),
+            tipo_presupuesto: tipoPresupuestoCell ? tipoPresupuestoCell.innerText : ''
         });
     });
 });
@@ -1322,7 +1334,9 @@ formProyecto.onsubmit = async function(e) {
         
         // Mostrar notificación al usuario
         let mensaje = 'Descargando ';
-        if (currentUrl.searchParams.get('solo_anuales') === '1' && currentUrl.searchParams.get('solo_fallidas') === '1') {
+        if (currentUrl.searchParams.get('solo_anuales') === '1' && currentUrl.searchParams.get('solo_fallidas') === '1' && currentUrl.searchParams.get('q')) {
+            mensaje += 'licitaciones anuales fallidas que coinciden con la búsqueda "' + currentUrl.searchParams.get('q') + '"';
+        } else if (currentUrl.searchParams.get('solo_anuales') === '1' && currentUrl.searchParams.get('solo_fallidas') === '1') {
             mensaje += 'licitaciones anuales fallidas';
         } else if (currentUrl.searchParams.get('solo_anuales') === '1') {
             mensaje += 'licitaciones anuales';
@@ -1908,7 +1922,7 @@ function seleccionarLicitacionFallida(licitacionId, iniciativa, numPedido) {
         
         // Mostramos mensaje de confirmación
         mostrarNotificacion(`Licitación fallida "${iniciativa}" (N° ${numPedido}) seleccionada para linkear`, 'success');
-        document.getElementById('licitacion-fallida-seleccionada').textContent=`Licitación fallida "${iniciativa}" (N° ${numPedido}) seleccionada`;
+        document.getElementById('licitacion-fallida').textContent=`Licitación fallida "${iniciativa}" (N° ${numPedido}) seleccionada`;
         
         // NO actualizar el campo iniciativa - permitir que el usuario ingrese su propia iniciativa
         // const iniciativaInput = document.querySelector('#iniciativaInput');

@@ -314,7 +314,7 @@ function initToggleSidebar() {
         console.log('Inicializando toggle de sidebar...');
         console.log('btnToggle:', btnToggle);
         console.log('sidebar:', sidebar);
-        let isVisible = false;
+        let isVisible = true;
         let isAnimating = false; // Prevenir clics durante animación
         
         function toggleSidebar(e) {

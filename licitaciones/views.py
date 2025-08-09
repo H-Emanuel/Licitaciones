@@ -38,11 +38,13 @@ from django.contrib import messages
 import json
 import io
 import pandas as pd
+from .utils import *
 from datetime import datetime
 from .models import Licitacion, Etapa, BitacoraLicitacion, Estado, DocumentoLicitacion, TipoLicitacion, Moneda, Categoria, Financiamiento, ObservacionBitacora, Departamento, DocumentoBitacora, Notificacion
 from .models import TipoLicitacionEtapa
 from django.db import models
 from django.http import JsonResponse
+
 
 @login_required
 def gestion_licitaciones(request):
@@ -307,6 +309,7 @@ def modificar_licitacion(request, licitacion_id):
                 valores_despues['Institución'] = str(institucion)
                 licitacion.institucion = institucion
             # Tipo por presupuesto
+            #tipo_presupuesto = get_tipo_presupuesto(moneda_obj.nombre, monto_presupuestado)
             tipo_presupuesto = data.get('tipo_presupuesto', '')
             if licitacion.tipo_presupuesto != tipo_presupuesto:
                 cambios.append(f"Tipo por presupuesto: '{licitacion.tipo_presupuesto}' → '{tipo_presupuesto}'")
@@ -357,7 +360,6 @@ def fecha_creacion_api(request, licitacion_id):
 
 @login_required
 def vista_admin(request):
-    from .utils import get_filtered_projects_list, get_paginated_projects, get_catalog_data
     # Verificar que el usuario es un administrador
     perfil = getattr(request.user, 'perfil', None)
     if not perfil or (perfil.rol or '').strip().lower() != 'admin':
@@ -1164,6 +1166,8 @@ def agregar_proyecto(request):
             monto_presupuestado = float(data.get('monto_presupuestado') or 0)
         except (ValueError, TypeError):
             monto_presupuestado = 0
+        #tipo_presupuesto = get_tipo_presupuesto(Moneda.objects.get(id=data.get('moneda')) if data.get('moneda') else None, monto_presupuestado)
+        tipo_presupuesto = data.get('tipo_presupuesto')
         
         # Crear la licitación
         licitacion = Licitacion(
@@ -1183,6 +1187,7 @@ def agregar_proyecto(request):
             departamento=Departamento.objects.get(id=data.get('departamento')) if data.get('departamento') else None,
             monto_presupuestado=monto_presupuestado,
             llamado_cotizacion=data.get('llamado_cotizacion', ''),
+            tipo_presupuesto=tipo_presupuesto,
             estado_fk=estado_en_curso,
             pedido_devuelto=data.get('pedido_devuelto', False),            # Agregar la licitación fallida si se proporcionó un ID
             licitacion_fallida_linkeada=Licitacion.objects.get(id=data.get('licitacion_fallida_linkeada')) if data.get('licitacion_fallida_linkeada') else None

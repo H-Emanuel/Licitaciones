@@ -1,6 +1,47 @@
 from django.core.paginator import Paginator
 from django.db.models import Q
 from .models import Etapa, Estado, TipoLicitacion, Moneda, Categoria, Financiamiento, Departamento, TipoLicitacionEtapa, Licitacion
+import requests
+
+def obtener_valor_moneda(moneda):
+        """Obtiene valor desde mindicador.cl."""
+        try:
+            resp = requests.get(f'https://mindicador.cl/api/{moneda}', timeout=5)
+            if resp.status_code == 200:
+                data = resp.json()
+                return data['serie'][0]['valor']
+        except requests.RequestException:
+            return None
+        return None
+
+def get_tipo_presupuesto(moneda, monto):
+    moneda = moneda.strip().lower()
+    # Obtener siempre el valor UTM una sola vez
+    valor_utm = obtener_valor_moneda('utm')
+    monto_convertido = 0
+
+    if moneda == 'clp':
+        if valor_utm:
+            monto_convertido = monto / valor_utm
+
+    elif moneda == 'utm':
+        monto_convertido = monto
+
+    elif moneda == 'usd':
+        valor_moneda = obtener_valor_moneda('dolar')
+        if valor_moneda and valor_utm:
+            monto_convertido = (monto * valor_moneda) / valor_utm
+
+    else:
+        valor_moneda = obtener_valor_moneda(moneda)
+        if valor_moneda and valor_utm:
+            monto_convertido = (monto * valor_moneda) / valor_utm
+
+    if monto_convertido < 1000:
+        return 'LE'
+    elif monto_convertido < 5000:
+        return 'LP'
+    return 'LR'
 
 def get_filtered_projects_list(base_queryset, request):
     """

@@ -49,7 +49,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'licitaciones.middleware.GlobalExceptionMiddleware',
+    #'licitaciones.middleware.GlobalExceptionMiddleware',
 ]
 
 ROOT_URLCONF = 'gestion_licitaciones.urls'

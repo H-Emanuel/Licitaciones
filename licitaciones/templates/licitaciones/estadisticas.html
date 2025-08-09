@@ -9,7 +9,7 @@
 </head>
 <body>
     {% include 'licitaciones/sidebar.html' %}
-    <div class="main-content">
+    <div class="main-content m-sidebar">
         <h1 class="titulo">Estadísticas Generales</h1>
         <div class="estadisticas-container">
             <div class="estadisticas-cards">
@@ -103,7 +103,6 @@
         window.estadisticasLabels = [{% for op in licitaciones_por_operador %}'{{ op.nombre|escapejs }}'{% if not forloop.last %}, {% endif %}{% endfor %}];
         window.estadisticasData = [{% for op in licitaciones_por_operador %}{{ op.num_licitaciones }}{% if not forloop.last %}, {% endif %}{% endfor %}];
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="{% static 'licitaciones/js/sidebar.js' %}"></script>
     <script src="{% static 'licitaciones/js/estadisticas.js' %}"></script>
 </body>
