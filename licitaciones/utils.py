@@ -1,6 +1,7 @@
 from django.core.paginator import Paginator
 from django.db.models import Q
 from .models import Etapa, Estado, TipoLicitacion, Moneda, Categoria, Financiamiento, Departamento, TipoLicitacionEtapa, Licitacion
+'''
 import requests
 
 def obtener_valor_moneda(moneda):
@@ -42,7 +43,7 @@ def get_tipo_presupuesto(moneda, monto):
     elif monto_convertido < 5000:
         return 'LP'
     return 'LR'
-
+'''
 def get_filtered_projects_list(base_queryset, request):
     """
     Filtra una queryset de licitaciones según los parámetros de la solicitud.
