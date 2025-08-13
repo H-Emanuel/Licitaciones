@@ -916,14 +916,14 @@ body {
     .tabla-proyectos {
         font-size: 0.93em;
     }
-    .tabla-proyectos th:nth-child(4),
-    .tabla-proyectos td:nth-child(4),
-    .tabla-proyectos th:nth-child(7),
-    .tabla-proyectos td:nth-child(7),
-    .tabla-proyectos th:nth-child(10),
-    .tabla-proyectos td:nth-child(10),
-    .tabla-proyectos th:nth-child(11),
-    .tabla-proyectos td:nth-child(11) {
+    .tabla-proyectos th:nth-child(6),
+    .tabla-proyectos td:nth-child(6),
+    .tabla-proyectos th:nth-child(9),
+    .tabla-proyectos td:nth-child(9),
+    .tabla-proyectos th:nth-child(12),
+    .tabla-proyectos td:nth-child(12),
+    .tabla-proyectos th:nth-child(13),
+    .tabla-proyectos td:nth-child(13) {
         display: none;
     }
 }
@@ -955,12 +955,12 @@ body {
     .tabla-proyectos th, .tabla-proyectos td {
         padding: 4px 1px;
     }
-    .tabla-proyectos th:nth-child(2),
-    .tabla-proyectos td:nth-child(2),
-    .tabla-proyectos th:nth-child(5),
-    .tabla-proyectos td:nth-child(5),
-    .tabla-proyectos th:nth-child(8),
-    .tabla-proyectos td:nth-child(8) {
+    .tabla-proyectos th:nth-child(3),
+    .tabla-proyectos td:nth-child(3),
+    .tabla-proyectos th:nth-child(7),
+    .tabla-proyectos td:nth-child(7),
+    .tabla-proyectos th:nth-child(10),
+    .tabla-proyectos td:nth-child(10) {
         display: none;
     }
     .max-width-700 {
@@ -1005,11 +1005,7 @@ body {
     white-space: normal;
 }
 .tabla-proyectos th:first-child,
-.tabla-proyectos td:first-child, 
-.tabla-proyectos th:nth-child(4),
-.tabla-proyectos td:nth-child(4), 
-.tabla-proyectos th:last-child,
-.tabla-proyectos td:last-child 
+.tabla-proyectos td:first-child
 {
     white-space: nowrap;
 }

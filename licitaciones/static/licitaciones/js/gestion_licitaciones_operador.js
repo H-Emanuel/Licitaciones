@@ -1,3 +1,50 @@
+// FUNCIONALIDAD DE PRUEBA: ACCIONES DINAMICAS
+
+const checkboxes = document.querySelectorAll('tbody input[type="checkbox"][class="licitacion-check"]');
+const btnsAction = document.querySelectorAll('.btn-toggle-acciones');
+const toggleAcciones = document.querySelector('.toggle-acciones');
+function handleSingleSelection(e) {
+    
+    if (e.target.checked) {
+        checkboxes.forEach(cb => {
+            if (cb !== e.target) {
+                cb.checked = false;
+            }
+        });
+        toggleAcciones.style.display="flex";
+        setTimeout(() => {
+            toggleAcciones.style.transform = "translateX(0)";
+        }, 1);
+        btnsAction.forEach(btnAction => {btnAction.dataset.id=e.target.value;});
+    } else {
+        toggleAcciones.style.transform = "translateX(115%)";
+    }
+}
+
+checkboxes.forEach(cb => {
+    cb.addEventListener('change', handleSingleSelection);
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 document.addEventListener('DOMContentLoaded', function() {
     // Buscador - solo si existe (en operador no hay buscador)
     const buscador = document.querySelector('.buscador');

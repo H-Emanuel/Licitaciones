@@ -13,7 +13,7 @@
 </head>
 <body>
     {% include 'licitaciones/sidebar.html' %}
-    <div class="main-content">
+    <div class="main-content m-sidebar">
         <h1 class="titulo">SEGUIMIENTO DE LICITACIONES (Operador)</h1>
         <!-- Botones de filtro superiores -->
         <div class="botones-superiores">
@@ -43,6 +43,7 @@
                 <table class="tabla-proyectos">
                     <thead>
                         <tr>
+                            <th data-col="seleccionar" class="seleccionar-header"></th>
                             <th data-col="numero_pedido">N° de pedido</th>
                             <th data-col="id_mercado_publico">ID Mercado Público</th>
                             <th data-col="fecha_tentativa_termino">Fecha tentativa de término</th>
@@ -60,6 +61,7 @@
                             <th data-col="institucion">Institución</th>
                             <th data-col="departamento">Depto.</th>
                             <th data-col="monto_presupuestado">Monto Presupuestado general</th>
+                            <th data-col="tipo_presupuesto">Tipo por presupuesto</th>
                             <th data-col="llamado_cotizacion">Llamado Cotización</th>
                             <th data-col="fecha_creacion">Fecha de Asignación</th>
                             <th data-col="licitacion_fallida_linkeada">Licitación Fallida Linkeada</th>
@@ -67,9 +69,11 @@
                     </thead>
                     <tbody>
                 {% for licitacion in proyectos %}
-                <tr>
+                <tr data-id="{{ licitacion.id }}" onclick="document.getElementById('check-{{ licitacion.id }}').click();">
+                    <td data-campo="seleccionar" data-col="seleccionar" data-label="Seleccionar"><input type="checkbox" class="licitacion-check" value="{{ licitacion.id }}" id="check-{{ licitacion.id }}" onclick="event.stopPropagation();"/></td>
                     <td data-campo="numero_pedido" data-col="numero_pedido" data-label="N° de pedido">{{ licitacion.numero_pedido }}</td>
                     <td data-campo="id_mercado_publico" data-col="id_mercado_publico" data-label="ID Mercado Público">{{ licitacion.id_mercado_publico|default:"-" }}</td>
+                    <td data-campo="fecha_tentativa_termino" data-col="fecha_tentativa_termino" data-label="Fecha tentativa de término">f</td>
                     <td data-campo="operadores" data-col="operadores" data-label="Profesionales a Cargo">
                         <div class="operadores-container">
                             <span class="operador-badge operador-1 {% if licitacion.get_numero_operador_activo == 1 %}activo{% endif %}" title="Operador 1: Gestiona hasta Evaluación de Ofertas">
@@ -121,6 +125,7 @@
                     <td data-campo="institucion" data-col="institucion" data-label="Institución">{{ licitacion.institucion|default:"-" }}</td>
                     <td data-campo="departamento" data-col="departamento" data-label="Departamento">{{ licitacion.departamento.nombre|default:licitacion.departamento }}</td>
                     <td data-campo="monto_presupuestado" data-col="monto_presupuestado" data-label="Monto Presupuestado">${{ licitacion.monto_presupuestado|floatformat:"0"|chilean_thousands }}</td>
+                    <td data-campo="tipo_presupuesto" data-col="tipo_presupuesto" data-label="Tipo de presupuesto">{{ licitacion.get_tipo_presupuesto_display }}</td>
                     <td data-campo="llamado_cotizacion" data-col="llamado_cotizacion" data-label="Llamado Cotización">{{ licitacion.get_llamado_cotizacion_display|default:"-" }}</td>
                     <td data-campo="fecha_creacion" data-col="fecha_creacion" data-label="Fecha de creación">{{ licitacion.fecha_creacion|date:"d/m/Y H:i" }}</td>
                     <td data-campo="licitacion_fallida_linkeada" data-col="licitacion_fallida_linkeada" data-label="Licitación Fallida Linkeada">
@@ -131,16 +136,57 @@
                         {% endif %}
                     </td>
                 </tr>
+                <script>
+                    (function() {
+                        const fila = document.querySelector(`tr[data-id='{{ licitacion.id }}']`);
+                        const fechaCreacionStr = "{{ licitacion.fecha_creacion|date:'Y-m-d' }}";
+                        const fechaCreacion = new Date(fechaCreacionStr);
+                        switch (fila.querySelector("td[data-campo='tipo_presupuesto']").innerHTML){
+                            case 'LP':
+                                fechaCreacion.setDate(fechaCreacion.getDate() + 130);
+                                break;
+                            case 'LR':
+                                fechaCreacion.setDate(fechaCreacion.getDate() + 150);
+                                break;
+                            default:
+                                fechaCreacion.setDate(fechaCreacion.getDate() + 80);
+                        }
+                        const dia = String(fechaCreacion.getDate()).padStart(2, '0');
+                        const mes = String(fechaCreacion.getMonth() + 1).padStart(2, '0'); // Mes empieza en 0
+                        const anio = fechaCreacion.getFullYear();
+                        const fechaFormateada = `${dia}/${mes}/${anio}`;
+                        if (fila) {
+                            const celda = fila.querySelector("td[data-campo='fecha_tentativa_termino']");
+                            if (celda) {
+                                celda.textContent = fechaFormateada;
+                            }
+                        }
+                    })();
+                 </script>
                 {% endfor %}
             </tbody>
         </table>
         </div>
-        
-        <!-- Botón sticky para mostrar/ocultar acciones -->
-        <button id="btnToggleAcciones" class="btn-toggle-acciones" title="Mostrar/Ocultar Acciones">
-            <span class="toggle-icon">⚙️</span>
-        </button>
-        
+        <div class="toggle-acciones">
+            <!-- Botón Ver última observación (siempre visible) -->
+            <button class="btn-toggle-acciones ultima-obs-fila" data-id="" title="Ver última observación" style="right: 290px;">
+                <span class="icono-accion">📝</span>
+            </button>
+            <!-- Botón Bitácora (siempre visible) -->
+            <a class="btn-toggle-acciones" title="Ver bitácora" href="" data-id="" style="right: 150px; text-decoration-line: none;" onclick="(this.getAttribute('data-id') !== '') ? this.href='/bitacora/'+this.getAttribute('data-id') : this.querySelector('icono-accion').style='color:#bbb;'; this.querySelector('icono-accion').title='Sin bitácora'; this.querySelector('icono-accion').textContent='X';">
+                <span class="icono-accion">📒</span>
+            </a>
+            <!-- Botón Cerrar licitación (siempre visible) -->
+            <button class="btn-toggle-acciones cerrar-licitacion-fila" data-id="" title="Licitación ya cerrada" style="right: 220px;" disabled>
+                <span class="icono-accion">X🔒</span>
+            </button>
+
+            
+            <!-- Botón sticky para mostrar/ocultar acciones -->
+            <button id="btnToggleAcciones" class="btn-toggle-acciones" title="Mostrar/Ocultar Acciones" style="display: none;">
+                <span class="toggle-icon">⚙️</span>
+            </button>
+        </div>
         <!-- Columna sticky separada para acciones -->
         <div class="acciones-sticky hide" id="accionesSticky">
             <div class="acciones-header">

@@ -1,3 +1,4 @@
+let uploadedFiles = [];
 // TIPO POR PRESUPUESTO
 
 async function obtenerValor(moneda) {
@@ -5,10 +6,10 @@ async function obtenerValor(moneda) {
     const response = await fetch(`https://mindicador.cl/api/${moneda.trim().toLowerCase()}`);
     if (!response.ok) throw new Error('Error al obtener los datos');
     const data = await response.json();
-    return data.serie[0].valor;
+    return parseFloat(data.serie[0].valor);
   } catch (error) {
-    console.error('Hubo un problema:', error.message);
-    return null;
+    console.error('Problema al cargar api mindicador:', error.message);
+    return {'uf': 39156.08, 'dolar': 965.64, 'euro': 1125.59, 'utm': 68647}[moneda.trim().toLowerCase()] ?? null;
   }
 }
 
@@ -18,7 +19,10 @@ async function asignarTipoPresupuesto() {
     let monto = parseFloat(document.getElementById('montoPresupuestadoInput').value);
     const tipoPresupuesto = document.getElementById('tipoPresupuesto');
     const valorUTM = await obtenerValor('utm');
-    if (monedaSelected.value && monto > 0) {
+    if (!valorUTM) {
+        console.log('Error en función obtenerValor');
+    }
+    if (valorUTM && monedaSelected.value && monto > 0) {
         let montoConvertido = monto;
         if (monedaSelected.text === 'CLP') {
             if (valorUTM) montoConvertido = monto / valorUTM;
@@ -370,6 +374,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const licitacionFallida = document.getElementById('licitacion-fallida');
     
     async function abrirModal(titulo, datos = null) {
+        const docsText = document.querySelector('.docs-text');
+        const fileInput = document.getElementById('inputDocumentos');
+        docsText.innerHTML = "📋 Formatos soportados: PDF, imágenes, Excel, Word, etc.";
+        uploadedFiles = [];
         if (datos.id){
             const res = await fetch(`/api/licitacion/${datos.id}/documentos/`);
             const data = await res.json();
@@ -384,7 +392,7 @@ document.addEventListener("DOMContentLoaded", function () {
         modalTitulo.textContent = titulo;
         formProyecto.reset();
         limpiarSeleccionLicitacionFallida(); // Limpiar selección de licitación fallida
-        
+        // document.querySelector('field-help').innerHTML='📋 Formatos soportados: PDF, imágenes, Excel, Word, etc.';
         // Limpiar checkboxes de tipo de monto
         const montoMaximo = document.getElementById('montoMaximoCheck');
         const montoReferencial = document.getElementById('montoReferencialCheck');
@@ -808,21 +816,32 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 // FUNCIONALIDAD DE PRUEBA: ACCIONES DINAMICAS
-
-
 const checkboxes = document.querySelectorAll('tbody input[type="checkbox"][class="licitacion-check"]');
 const btnsAction = document.querySelectorAll('.btn-toggle-acciones');
+const toggleAcciones = document.querySelector('.toggle-acciones');
+const cerrarLicitacion = document.querySelector('.cerrar-licitacion-fila');
 function handleSingleSelection(e) {
+    
     if (e.target.checked) {
         checkboxes.forEach(cb => {
             if (cb !== e.target) {
                 cb.checked = false;
             }
-            
         });
-        btnsAction.forEach(btnAction => {btnAction.style.display='flex'; btnAction.dataset.id=e.target.value;});
+        toggleAcciones.style.display="flex";
+        setTimeout(() => {
+            toggleAcciones.style.transform = "translateX(0)";
+        }, 1);
+        btnsAction.forEach(btnAction => {btnAction.dataset.id=e.target.value;});
+        if (e.target.parentNode.parentNode !== null && e.target.parentNode.parentNode.classList.contains("lic-cerrada")){
+            cerrarLicitacion.title="Licitación ya cerrada";
+            cerrarLicitacion.disabled=true;
+        } else {
+            cerrarLicitacion.title="Cerrar licitación";
+            cerrarLicitacion.disabled=false;
+        }
     } else {
-        btnsAction.forEach(btnAction => {btnAction.style.display='none'});
+        toggleAcciones.style.transform = "translateX(115%)";
     }
 }
 
@@ -2021,7 +2040,6 @@ function initModernModalEnhancements() {
 function initFileUploadEnhancements() {
     const fileInput = document.getElementById('inputDocumentos');
     const uploadArea = fileInput?.closest('.file-upload-area');
-    let uploadedFiles = [];
 
     if (!fileInput || !uploadArea) return;
 

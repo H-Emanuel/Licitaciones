@@ -89,14 +89,16 @@ window.addEventListener('DOMContentLoaded', function() {
 
     // --- Observaciones Bitácora ---
     function showModalObservacion(bitacoraId, texto) {
-        const modal = document.getElementById('modalObservacion');
-        modal.style.display = 'flex';
+        const modalContainer = document.querySelector('.modal-container');
+        modalContainer.classList.add('active');
         document.getElementById('observacionBitacoraId').value = bitacoraId;
         document.getElementById('modalObservacionTexto').value = texto || '';
     }
     function closeModalObservacion() {
-        const modal = document.getElementById('modalObservacion');
-        modal.style.display = 'none';
+        const modalContainer = document.querySelector('.modal-container');
+        modalContainer.style.display = 'none';
+       
+        modalContainer.classList.remove('active');
         
         // Limpiar archivos del modal
         modalSelectedFiles = [];
@@ -386,8 +388,11 @@ window.addEventListener('DOMContentLoaded', function() {
             }
             
             if (currentIndex >= etapas.length - 1) {
-                alert('Ya se encuentra en la última etapa.');
+                btnAvanzarEtapa.style="display: none !important;";
                 return;
+            }
+            else {
+                btnRetrocederEtapa.style="";
             }
             
             // Avanzar a la siguiente etapa
@@ -467,8 +472,11 @@ window.addEventListener('DOMContentLoaded', function() {
             }
             
             if (currentIndex <= 0) {
-                alert('Ya se encuentra en la primera etapa.');
+                btnRetrocederEtapa.style="display: none !important;";
                 return;
+            }
+            else {
+                btnAvanzarEtapa.style="";
             }
             
             // Retroceder a la etapa anterior

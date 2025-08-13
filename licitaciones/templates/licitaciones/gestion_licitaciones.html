@@ -138,7 +138,7 @@
                     <thead>
                         <tr>
                             <th data-col="seleccionar" class="seleccionar-header"></th>
-                            <th data-col="numero_pedido">N° de pedido
+                            <th data-col="numero_pedido">N° de pedido</th>
                             <th data-col="id_mercado_publico">ID Mercado Público</th>
                             <th data-col="fecha_tentativa_termino">Fecha tentativa de término</th>
                             <th data-col="operadores">Profesionales a Cargo</th>
@@ -163,7 +163,7 @@
                     </thead>
                     <tbody>
                     {% for licitacion in proyectos %}
-                    <tr data-id="{{ licitacion.id }}" onclick="document.getElementById('check-{{ licitacion.id }}').click();">
+                    <tr data-id="{{ licitacion.id }}" class="{% if not licitacion.estado_fk or licitacion.estado_fk.id != 3 %} lic-abierta {% else %} lic-cerrada {% endif %}" onclick="document.getElementById('check-{{ licitacion.id }}').click();">
                         <td data-campo="seleccionar" data-col="seleccionar" data-label="Seleccionar"><input type="checkbox" class="licitacion-check" value="{{ licitacion.id }}" id="check-{{ licitacion.id }}" onclick="event.stopPropagation();"/></td>
                         <td data-campo="numero_pedido" data-col="numero_pedido" data-label="N° de pedido">{{ licitacion.numero_pedido }}</td>
                         <td data-campo="id_mercado_publico" data-col="id_mercado_publico" data-label="ID Mercado Público">{{ licitacion.id_mercado_publico|default:"-" }}</td>
@@ -264,42 +264,44 @@
             
             <!-- Botón sticky para mostrar/ocultar acciones (solo admin) -->
             {% if es_admin %}
-            <button class="btn-toggle-acciones editar-fila" data-id="" title="Editar" style="right: 430px; display: none;" {% if not es_admin %}style="visibility: hidden;"{% endif %}>
+            <div class="toggle-acciones">
+            <button class="btn-toggle-acciones editar-fila" data-id="" title="Editar" {% if not es_admin %}style="visibility: hidden;"{% endif %}>
                 <span class="icono-accion">✏️</span>
             </button>
 
             <!-- Botón Eliminar (solo admin) -->
-            <button class="btn-toggle-acciones eliminar-fila" data-id="" title="Eliminar" style="right: 360px; display: none;" {% if not es_admin %}style="visibility: hidden;"{% endif %}>
+            <button class="btn-toggle-acciones eliminar-fila" data-id="" title="Eliminar" {% if not es_admin %}style="visibility: hidden;"{% endif %}>
                 <span class="icono-accion">🗑️</span>
             </button>
             
             <!-- Botón Ver última observación (siempre visible) -->
-            <button class="btn-toggle-acciones ultima-obs-fila" data-id="" title="Ver última observación" style="right: 290px; display: none;">
+            <button class="btn-toggle-acciones ultima-obs-fila" data-id="" title="Ver última observación">
                 <span class="icono-accion">📝</span>
             </button>
             
             <!-- Botón Cerrar licitación (siempre visible) -->
-            <button class="btn-toggle-acciones cerrar-licitacion-fila" data-id="" title="Licitación ya cerrada" style="right: 220px; display: none;" disabled>
-                <span class="icono-accion">X🔒</span>
+            <button class="btn-toggle-acciones cerrar-licitacion-fila" data-id="" title="Cerrar licitación">
+                <span class="icono-accion">🔒</span>
             </button>
 
             <!-- Botón Bitácora (siempre visible) -->
-            <a class="btn-toggle-acciones" title="Ver bitácora" href="" data-id="" style="right: 150px; display: none; text-decoration-line: none;" onclick="(this.getAttribute('data-id') !== '') ? this.href='/bitacora/'+this.getAttribute('data-id') : this.querySelector('icono-accion').style='color:#bbb;'; this.querySelector('icono-accion').title='Sin bitácora'; this.querySelector('icono-accion').textContent='X';">
+            <a class="btn-toggle-acciones" title="Ver bitácora" href="" data-id="" style="text-decoration-line: none;" onclick="(this.getAttribute('data-id') !== '') ? this.href='/bitacora/'+this.getAttribute('data-id') : this.querySelector('icono-accion').style='color:#bbb;'; this.querySelector('icono-accion').title='Sin bitácora'; this.querySelector('icono-accion').textContent='X';">
                 <span class="icono-accion">📒</span>
             </a>
             <!-- Botón Cronología (solo admin) -->
-            <button class="btn-toggle-acciones cronologia-fila" data-id="" title="Ver cronología" style="right: 80px; display: none;" {% if not es_admin %}style="visibility: hidden;"{% endif %}>
+            <button class="btn-toggle-acciones cronologia-fila" data-id="" title="Ver cronología" {% if not es_admin %}style="visibility: hidden;"{% endif %}>
                 <span class="icono-accion">📅</span>
             </button>
             
             <!-- Botón Documentos (solo admin) -->
-            <button class="btn-toggle-acciones documentos-fila" data-id="" title="Ver documentos" style="right: 10px; display: none;" {% if not es_admin %}style="visibility: hidden;"{% endif %}>
+            <button class="btn-toggle-acciones documentos-fila" data-id="" title="Ver documentos" {% if not es_admin %}style="visibility: hidden;"{% endif %}>
                 <span class="icono-accion">📎</span>
             </button>
             
             <button id="btnToggleAcciones" class="btn-toggle-acciones" title="Mostrar/Ocultar Acciones" style="display: none;">
                 <span class="toggle-icon">⚙️</span>
             </button>
+            </div>
             {% endif %}
             
             <!-- Columna sticky separada para acciones -->
@@ -627,7 +629,7 @@
                                         <span>Arrastra archivos aquí o haz clic para seleccionar</span>
                                     </div>
                                 </div>
-                                <small class="field-help">📋 Formatos soportados: PDF, imágenes, Excel, Word, etc.</small>
+                                <small class="field-help docs-text">📋 Formatos soportados: PDF, imágenes, Excel, Word, etc.</small>
                             </div>
                         </div>
 

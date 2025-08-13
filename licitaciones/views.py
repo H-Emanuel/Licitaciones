@@ -317,6 +317,15 @@ def modificar_licitacion(request, licitacion_id):
                 valores_antes['N° de cuenta'] = str(licitacion.tipo_presupuesto)
                 valores_despues['N° de cuenta'] = str(tipo_presupuesto)
                 licitacion.tipo_presupuesto = tipo_presupuesto
+            # Licitacion fallida linkeada
+            licitacion_fallida_linkeada_id = data.get('licitacion_fallida_linkeada')
+            licitacion_fallida_linkeada_obj = Licitacion.objects.get(id=licitacion_fallida_linkeada_id) if licitacion_fallida_linkeada_id else None
+            if licitacion.licitacion_fallida_linkeada != licitacion_fallida_linkeada_obj and licitacion_fallida_linkeada_obj:
+                cambios.append(f"Licitación fallida linkeada: '{licitacion.licitacion_fallida_linkeada.numero_pedido}' → '{licitacion_fallida_linkeada_obj.numero_pedido}'")
+                campos_modificados.append('Licitación fallida linkeada')
+                valores_antes['Licitación fallida linkeada'] = str(licitacion.licitacion_fallida_linkeada.numero_pedido)
+                valores_despues['Licitación fallida linkeada'] = str(licitacion_fallida_linkeada_obj.numero_pedido)
+            licitacion.licitacion_fallida_linkeada = licitacion_fallida_linkeada_obj
             # GUARDAR CAMBIOS EN LA BASE DE DATOS
             licitacion.save()
         # Registrar en bitácora si hubo cambios

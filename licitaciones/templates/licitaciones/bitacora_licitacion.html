@@ -9,7 +9,7 @@
 </head>
 <body>
     {% include 'licitaciones/sidebar.html' %}
-    <div class="main-content">
+    <div class="main-content m-sidebar">
         <div class="bitacora-container">
             <div class="bitacora-header">
                 <h1 class="bitacora-titulo">📋 BITÁCORA DE LICITACIÓN</h1>                <div class="bitacora-info">
@@ -35,7 +35,7 @@
             </div>
 
             <!-- Panel integrado para agregar observación (solo operadores) -->
-            {% if es_operador or es_operador_manual %}
+            {% if es_operador or es_operador_manual and licitacion.estado_fk.nombre == 'En Curso' %}
             <div class="bitacora-panel-operador" id="panelObservacionOperador">
                 <div class="panel-header">
                     <h3 class="panel-titulo">
@@ -367,8 +367,8 @@
         </script>
         <script src="{% static 'licitaciones/js/bitacora_licitacion.js' %}"></script>
     </div>    <!-- Modal para agregar/editar observación -->
-    <div id="modalObservacion">
-        <div class="modal-container">
+    <div class="modal-container">
+        <div class="modal-content" style="padding: 20px 20px;">
             <span id="cerrarModalObservacion" class="btn-close">&times;</span>
             <h2 id="tituloModalObservacion">💭 Observación</h2>
             <form id="formModalObservacion" method="post" enctype="multipart/form-data">

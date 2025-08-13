@@ -391,20 +391,17 @@ td[data-campo="financiamiento"] .badge-info:hover {
 
 /* Botón sticky para toggle de acciones */
 .btn-toggle-acciones {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
     background: linear-gradient(135deg, #0275d8 0%, #025aa5 100%);
     color: white;
     border: none;
     border-radius: 50%;
-    width: 56px;
+    width: 62px;
     height: 56px;
     font-size: 18px;
     cursor: pointer !important;
     z-index: 1000;
+    transition-duration: 400ms;
     box-shadow: 0 4px 12px rgba(2, 117, 216, 0.3);
-    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -438,6 +435,16 @@ td[data-campo="financiamiento"] .badge-info:hover {
     line-height: 1;
 }
 
+.toggle-acciones {
+    position: fixed;
+    display: none;
+    column-gap: 2%;
+    bottom: 20px;
+    right: 20px;
+    transition: transform 0.4s ease;
+    transform: translateX(120%);
+}
+
 .btn-toggle-acciones.active .toggle-icon {
     transform: rotate(180deg);
 }
@@ -460,10 +467,10 @@ td[data-campo="financiamiento"] .badge-info:hover {
     max-width: 250px;
 }
 
-.acciones-sticky.show {
+.toggle-acciones.show {
     transform: translateX(0);
 }
 
-.acciones-sticky.hide {
+.toggle-acciones.hide {
     transform: translateX(100%);
 }
