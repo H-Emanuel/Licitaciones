@@ -69,7 +69,7 @@
                     </thead>
                     <tbody>
                 {% for licitacion in proyectos %}
-                <tr data-id="{{ licitacion.id }}" onclick="document.getElementById('check-{{ licitacion.id }}').click();">
+                <tr data-id="{{ licitacion.id }}" class="{% if not licitacion.estado_fk or licitacion.estado_fk.id == 1 %} lic-abierta {% else %} lic-cerrada {% endif %}" onclick="document.getElementById('check-{{ licitacion.id }}').click();">
                     <td data-campo="seleccionar" data-col="seleccionar" data-label="Seleccionar"><input type="checkbox" class="licitacion-check" value="{{ licitacion.id }}" id="check-{{ licitacion.id }}" onclick="event.stopPropagation();"/></td>
                     <td data-campo="numero_pedido" data-col="numero_pedido" data-label="N° de pedido">{{ licitacion.numero_pedido }}</td>
                     <td data-campo="id_mercado_publico" data-col="id_mercado_publico" data-label="ID Mercado Público">{{ licitacion.id_mercado_publico|default:"-" }}</td>
@@ -167,18 +167,18 @@
             </tbody>
         </table>
         </div>
-        <div class="toggle-acciones">
+        <div class="toggle-acciones" style="gap: 10px;">
             <!-- Botón Ver última observación (siempre visible) -->
-            <button class="btn-toggle-acciones ultima-obs-fila" data-id="" title="Ver última observación" style="right: 290px;">
+            <button class="btn-toggle-acciones ultima-obs-fila" data-id="" title="Ver última observación">
                 <span class="icono-accion">📝</span>
             </button>
             <!-- Botón Bitácora (siempre visible) -->
-            <a class="btn-toggle-acciones" title="Ver bitácora" href="" data-id="" style="right: 150px; text-decoration-line: none;" onclick="(this.getAttribute('data-id') !== '') ? this.href='/bitacora/'+this.getAttribute('data-id') : this.querySelector('icono-accion').style='color:#bbb;'; this.querySelector('icono-accion').title='Sin bitácora'; this.querySelector('icono-accion').textContent='X';">
+            <a class="btn-toggle-acciones" title="Ver bitácora" href="" data-id="" style="text-decoration-line: none;" onclick="(this.getAttribute('data-id') !== '') ? this.href='/bitacora/'+this.getAttribute('data-id') : this.querySelector('icono-accion').style='color:#bbb;'; this.querySelector('icono-accion').title='Sin bitácora'; this.querySelector('icono-accion').textContent='X';">
                 <span class="icono-accion">📒</span>
             </a>
             <!-- Botón Cerrar licitación (siempre visible) -->
-            <button class="btn-toggle-acciones cerrar-licitacion-fila" data-id="" title="Licitación ya cerrada" style="right: 220px;" disabled>
-                <span class="icono-accion">X🔒</span>
+            <button class="btn-toggle-acciones cerrar-licitacion-fila" data-id="" title="Cerrar licitación">
+                <span class="icono-accion">🔒</span>
             </button>
 
             

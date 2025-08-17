@@ -821,7 +821,6 @@ const btnsAction = document.querySelectorAll('.btn-toggle-acciones');
 const toggleAcciones = document.querySelector('.toggle-acciones');
 const cerrarLicitacion = document.querySelector('.cerrar-licitacion-fila');
 function handleSingleSelection(e) {
-    
     if (e.target.checked) {
         checkboxes.forEach(cb => {
             if (cb !== e.target) {
@@ -834,10 +833,12 @@ function handleSingleSelection(e) {
         }, 1);
         btnsAction.forEach(btnAction => {btnAction.dataset.id=e.target.value;});
         if (e.target.parentNode.parentNode !== null && e.target.parentNode.parentNode.classList.contains("lic-cerrada")){
-            cerrarLicitacion.title="Licitación ya cerrada";
-            cerrarLicitacion.disabled=true;
+            cerrarLicitacion.title="Reabrir licitacion";
+            cerrarLicitacion.querySelector('.icono-accion').innerHTML="🔓";
+            cerrarLicitacion.querySelector('.icono-accion').classList.add('reabrir-lic');
         } else {
             cerrarLicitacion.title="Cerrar licitación";
+            cerrarLicitacion.querySelector('.icono-accion').innerHTML="🔒";
             cerrarLicitacion.disabled=false;
         }
     } else {
@@ -2299,27 +2300,6 @@ function showNotification(message, type = 'info') {
             document.body.removeChild(notification);
         }, 300);
     }, 5000);
-}
-
-// Animaciones para las notificaciones
-const notificationStyles = `
-    @keyframes slideInRight {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-    }
-    
-    @keyframes slideOutRight {
-        from { transform: translateX(0); opacity: 1; }
-        to { transform: translateX(100%); opacity: 0; }
-    }
-`;
-
-// Agregar estilos de animación al head
-if (!document.getElementById('notification-styles')) {
-    const styleElement = document.createElement('style');
-    styleElement.id = 'notification-styles';
-    styleElement.textContent = notificationStyles;
-    document.head.appendChild(styleElement);
 }
 
 // Inicializar todas las mejoras cuando el DOM esté listo

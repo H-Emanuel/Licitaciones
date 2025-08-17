@@ -151,21 +151,24 @@ window.addEventListener('DOMContentLoaded', function() {
     });
     document.getElementById('cerrarModalObservacion').onclick = closeModalObservacion;
     document.getElementById('btnCancelarObservacion').onclick = closeModalObservacion;
-    document.getElementById('formObservacionBitacora').onsubmit = function(e) {
-        e.preventDefault();
-        const bitacoraId = document.getElementById('observacionBitacoraId').value;
-        const texto = document.getElementById('observacionTexto').value;
-        fetch(`/api/bitacora/${bitacoraId}/observacion/`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value },
-            body: JSON.stringify({ texto })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.ok) { closeModalObservacion(); location.reload(); }
-            else alert('Error al guardar observación');
-        });
-    };
+    const formObservacionBitacora = document.getElementById('formObservacionBitacora');
+    if (formObservacionBitacora){
+        formObservacionBitacora.onsubmit = function(e) {
+            e.preventDefault();
+            const bitacoraId = document.getElementById('observacionBitacoraId').value;
+            const texto = document.getElementById('observacionTexto').value;
+            fetch(`/api/bitacora/${bitacoraId}/observacion/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value },
+                body: JSON.stringify({ texto })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.ok) { closeModalObservacion(); location.reload(); }
+                else alert('Error al guardar observación');
+            });
+        };
+    }
 
     // Manejo del formulario del modal (separado)
     const formModalObservacion = document.getElementById('formModalObservacion');
@@ -263,7 +266,6 @@ window.addEventListener('DOMContentLoaded', function() {
     const panelObservacion = document.getElementById('panelObservacionOperador');
     const togglePanelBtn = document.getElementById('togglePanelObservacion');
     const contenidoPanel = document.getElementById('contenidoPanelObservacion');
-    const formObservacionBitacora = document.getElementById('formObservacionBitacora');
     
     // Toggle del panel - Inicialmente cerrado
     if (togglePanelBtn && contenidoPanel) {

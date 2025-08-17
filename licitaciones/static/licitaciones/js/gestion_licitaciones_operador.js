@@ -1,10 +1,9 @@
 // FUNCIONALIDAD DE PRUEBA: ACCIONES DINAMICAS
-
 const checkboxes = document.querySelectorAll('tbody input[type="checkbox"][class="licitacion-check"]');
 const btnsAction = document.querySelectorAll('.btn-toggle-acciones');
 const toggleAcciones = document.querySelector('.toggle-acciones');
+const cerrarLicitacion = document.querySelector('.cerrar-licitacion-fila');
 function handleSingleSelection(e) {
-    
     if (e.target.checked) {
         checkboxes.forEach(cb => {
             if (cb !== e.target) {
@@ -16,6 +15,15 @@ function handleSingleSelection(e) {
             toggleAcciones.style.transform = "translateX(0)";
         }, 1);
         btnsAction.forEach(btnAction => {btnAction.dataset.id=e.target.value;});
+        if (e.target.parentNode.parentNode !== null && e.target.parentNode.parentNode.classList.contains("lic-cerrada")){
+            cerrarLicitacion.title="Licitación ya cerrada";
+            cerrarLicitacion.display="none";
+            cerrarLicitacion.disabled=true;
+        } else {
+            cerrarLicitacion.title="Cerrar licitación";
+            cerrarLicitacion.querySelector('.icono-accion').innerHTML="🔒";
+            cerrarLicitacion.disabled=false;
+        }
     } else {
         toggleAcciones.style.transform = "translateX(115%)";
     }

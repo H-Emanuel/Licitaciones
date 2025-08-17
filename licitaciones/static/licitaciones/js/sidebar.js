@@ -386,3 +386,24 @@ window.addEventListener('load', function() {
         initToggleSidebar();
     }, 200);
 });
+
+// Animaciones para las notificaciones
+const notificationStyles = `
+    @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes slideOutRight {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+`;
+
+// Agregar estilos de animación al head
+if (!document.getElementById('notification-styles')) {
+    const styleElement = document.createElement('style');
+    styleElement.id = 'notification-styles';
+    styleElement.textContent = notificationStyles;
+    document.head.appendChild(styleElement);
+}

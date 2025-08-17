@@ -163,7 +163,7 @@
                     </thead>
                     <tbody>
                     {% for licitacion in proyectos %}
-                    <tr data-id="{{ licitacion.id }}" class="{% if not licitacion.estado_fk or licitacion.estado_fk.id != 3 %} lic-abierta {% else %} lic-cerrada {% endif %}" onclick="document.getElementById('check-{{ licitacion.id }}').click();">
+                    <tr data-id="{{ licitacion.id }}" class="{% if not licitacion.estado_fk or licitacion.estado_fk.id == 1 %} lic-abierta {% else %} lic-cerrada {% endif %}" onclick="document.getElementById('check-{{ licitacion.id }}').click();">
                         <td data-campo="seleccionar" data-col="seleccionar" data-label="Seleccionar"><input type="checkbox" class="licitacion-check" value="{{ licitacion.id }}" id="check-{{ licitacion.id }}" onclick="event.stopPropagation();"/></td>
                         <td data-campo="numero_pedido" data-col="numero_pedido" data-label="N° de pedido">{{ licitacion.numero_pedido }}</td>
                         <td data-campo="id_mercado_publico" data-col="id_mercado_publico" data-label="ID Mercado Público">{{ licitacion.id_mercado_publico|default:"-" }}</td>
@@ -264,7 +264,7 @@
             
             <!-- Botón sticky para mostrar/ocultar acciones (solo admin) -->
             {% if es_admin %}
-            <div class="toggle-acciones">
+            <div class="toggle-acciones" style="gap: 10px;">
             <button class="btn-toggle-acciones editar-fila" data-id="" title="Editar" {% if not es_admin %}style="visibility: hidden;"{% endif %}>
                 <span class="icono-accion">✏️</span>
             </button>
@@ -1015,33 +1015,6 @@
             </div>
         </div>
     </div>
-    </div>
-
-    <!-- Modal flotante de notificaciones -->
-    <div id="modalNotificaciones" class="modal-notificaciones">
-        <div class="modal-notificaciones-content">
-            <div class="modal-notificaciones-header">
-                <h3 class="modal-notificaciones-title">
-                    <span class="modal-notificaciones-icon">🔔</span>
-                    Notificaciones
-                </h3>
-                <button id="cerrarModalNotificaciones" class="btn-close">&times;</button>
-            </div>
-            <div class="modal-notificaciones-body">
-                <div class="notificaciones-vacia" id="notificacionesVacia">
-                    <div class="notificaciones-vacia-icono">🔕</div>
-                    <div class="notificaciones-vacia-texto">No hay notificaciones</div>
-                </div>
-                <div id="notificacionesLista" class="notificaciones-lista">
-                </div>
-            </div>
-            <div class="modal-notificaciones-footer" id="notificacionesAcciones" style="display: none;">
-                <button class="notificaciones-btn-accion" id="btnMarcarTodasLeidas">
-                    <span class="btn-icono">✅</span>
-                    Marcar todas como leídas
-                </button>
-            </div>
-        </div>
     </div>
 
     <!-- Modal de Cronología -->
