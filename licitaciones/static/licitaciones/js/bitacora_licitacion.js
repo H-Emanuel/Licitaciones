@@ -389,9 +389,8 @@ window.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            if (currentIndex >= etapas.length - 1) {
+            if (currentIndex == etapas.length - 2) {
                 btnAvanzarEtapa.style="display: none !important;";
-                return;
             }
             else {
                 btnRetrocederEtapa.style="";
@@ -473,9 +472,8 @@ window.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            if (currentIndex <= 0) {
+            if (currentIndex == 1) {
                 btnRetrocederEtapa.style="display: none !important;";
-                return;
             }
             else {
                 btnAvanzarEtapa.style="";

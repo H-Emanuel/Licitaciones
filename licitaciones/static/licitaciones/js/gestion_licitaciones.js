@@ -860,7 +860,10 @@ function handleSingleSelection(e) {
             cerrarLicitacion.title="Cerrar licitación";
             cerrarLicitacion.querySelector('.icono-accion').innerHTML="🔒";
             cerrarLicitacion.disabled=false;
-            cerrarLicitacion.addEventListener('click', () => {modalCerrarLicitacion.style.display = 'flex'});
+            // Mostrar modal
+            if (modalCerrarLicitacion) {
+                cerrarLicitacion.addEventListener('click', () => {modalCerrarLicitacion.style.display = 'flex'});
+            }
         }
     } else {
         toggleAcciones.style.transform = "translateX(115%)";
