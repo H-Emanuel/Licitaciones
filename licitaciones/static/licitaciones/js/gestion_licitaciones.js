@@ -820,6 +820,24 @@ const checkboxes = document.querySelectorAll('tbody input[type="checkbox"][class
 const btnsAction = document.querySelectorAll('.btn-toggle-acciones');
 const toggleAcciones = document.querySelector('.toggle-acciones');
 const cerrarLicitacion = document.querySelector('.cerrar-licitacion-fila');
+const modalCerrarLicitacion = document.getElementById('modalCerrarLicitacion');
+
+async function reabrirLicitacion(idProyecto) {
+    url = `/gestion/modificar_licitacion/${idProyecto}/`;
+    method = 'POST';
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+    let res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+        body: JSON.stringify({estado: 1})
+    });
+    if (res.ok) {
+        location.reload();
+    } else {
+        alert('Error al reabrir la licitación');
+    }
+}
+
 function handleSingleSelection(e) {
     if (e.target.checked) {
         checkboxes.forEach(cb => {
@@ -836,10 +854,13 @@ function handleSingleSelection(e) {
             cerrarLicitacion.title="Reabrir licitacion";
             cerrarLicitacion.querySelector('.icono-accion').innerHTML="🔓";
             cerrarLicitacion.querySelector('.icono-accion').classList.add('reabrir-lic');
+            cerrarLicitacion.disabled=false;
+            cerrarLicitacion.addEventListener('click', reabrirLicitacion.bind(null, e.target.value));
         } else {
             cerrarLicitacion.title="Cerrar licitación";
             cerrarLicitacion.querySelector('.icono-accion').innerHTML="🔒";
             cerrarLicitacion.disabled=false;
+            cerrarLicitacion.addEventListener('click', () => {modalCerrarLicitacion.style.display = 'flex'});
         }
     } else {
         toggleAcciones.style.transform = "translateX(115%)";
@@ -2766,8 +2787,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (tipoFallidaSelect) {
                 tipoFallidaSelect.value = '';
             }
-            
-            modalCerrarLicitacion.style.display = 'flex';
             gestionarOverflowBody();
         });
     });

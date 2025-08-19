@@ -3,6 +3,7 @@ const checkboxes = document.querySelectorAll('tbody input[type="checkbox"][class
 const btnsAction = document.querySelectorAll('.btn-toggle-acciones');
 const toggleAcciones = document.querySelector('.toggle-acciones');
 const cerrarLicitacion = document.querySelector('.cerrar-licitacion-fila');
+const modalCerrarLicitacion = document.getElementById('modalCerrarLicitacion');
 function handleSingleSelection(e) {
     if (e.target.checked) {
         checkboxes.forEach(cb => {
@@ -23,6 +24,10 @@ function handleSingleSelection(e) {
             cerrarLicitacion.title="Cerrar licitación";
             cerrarLicitacion.querySelector('.icono-accion').innerHTML="🔒";
             cerrarLicitacion.disabled=false;
+            // Mostrar modal
+            if (modalCerrarLicitacion) {
+                cerrarLicitacion.addEventListener('click', () => {modalCerrarLicitacion.style.display = 'flex'});
+            }
         }
     } else {
         toggleAcciones.style.transform = "translateX(115%)";
@@ -210,11 +215,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             if (tipoFallidaContainer) {
                 tipoFallidaContainer.style.display = 'none';
-            }
-            
-            // Mostrar modal
-            if (modalCerrarLicitacion) {
-                modalCerrarLicitacion.style.display = 'flex';
             }
         });
     });
