@@ -97,6 +97,24 @@ def modificar_licitacion(request, licitacion_id):
                 valores_despues['Estado'] = str(estado_obj)
             licitacion.estado_fk = estado_obj
             licitacion.save()
+        elif 'estado' in data and 'etapa' in data and len(data) == 2:
+            etapa_id = data.get('etapa')
+            etapa_obj = Etapa.objects.get(id=etapa_id) if etapa_id else None
+            if licitacion.etapa_fk != etapa_obj:
+                cambios.append(f"Etapa: '{licitacion.etapa_fk}' → '{etapa_obj}'")
+                campos_modificados.append('Etapa')
+                valores_antes['Etapa'] = str(licitacion.etapa_fk)
+                valores_despues['Etapa'] = str(etapa_obj)
+            licitacion.etapa_fk = etapa_obj
+            estado_id = data.get('estado')
+            estado_obj = Estado.objects.get(id=estado_id) if estado_id else None
+            if licitacion.estado_fk != estado_obj:
+                cambios.append(f"Estado: '{licitacion.estado_fk}' → '{estado_obj}'")
+                campos_modificados.append('Estado')
+                valores_antes['Estado'] = str(licitacion.estado_fk)
+                valores_despues['Estado'] = str(estado_obj)
+            licitacion.estado_fk = estado_obj
+            licitacion.save()
         else:
             operador_id = data.get('operador') or data.get('operador_id')
             operador_user = User.objects.get(id=operador_id) if operador_id else None

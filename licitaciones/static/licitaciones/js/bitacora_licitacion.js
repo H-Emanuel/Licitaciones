@@ -383,17 +383,9 @@ window.addEventListener('DOMContentLoaded', function() {
         btnAvanzarEtapa.addEventListener('click', function() {
             const etapaActualId = parseInt(nombreEtapaActual.dataset.etapaId);
             const currentIndex = etapas.findIndex(e => parseInt(e.id) === etapaActualId);
-            
             if (currentIndex < 0) {
                 alert('No se encontró la etapa actual en el catálogo.');
                 return;
-            }
-            
-            if (currentIndex == etapas.length - 2) {
-                btnAvanzarEtapa.style="display: none !important;";
-            }
-            else {
-                btnRetrocederEtapa.style="";
             }
             
             // Avanzar a la siguiente etapa
@@ -423,6 +415,7 @@ window.addEventListener('DOMContentLoaded', function() {
             // Llamar a las funciones para mostrar/ocultar campos específicos por etapa
             toggleIdMercadoPublico();
             toggleRecepcionOfertas();
+            toggleEtapaButton();
         });
     }
     
@@ -450,14 +443,30 @@ window.addEventListener('DOMContentLoaded', function() {
         
         const licitacionId = window.location.pathname.match(/\/bitacora\/(\d+)\//)?.[1];
         if (!licitacionId) return;
-        
-        const puedeRetroceder = await verificarPuedeRetroceder(licitacionId);
-        
+        // IMPLEMENTACION DESCONTINUADA
+        //const puedeRetroceder = await verificarPuedeRetroceder(licitacionId);
+        const puedeRetroceder = false;
         if (puedeRetroceder) {
             btnRetrocederEtapa.classList.remove('hidden');
             btnRetrocederEtapa.style.display = 'inline-flex';
         } else {
             btnRetrocederEtapa.classList.add('hidden');
+        }
+    }
+
+    function toggleEtapaButton() {
+        const etapaActualId = parseInt(nombreEtapaActual.dataset.etapaId);
+        const currentIndex = etapas.findIndex(e => parseInt(e.id) === etapaActualId);
+        console.log(etapaActualId, etapaOriginal.id);
+        if (currentIndex == etapas.length - 1) {
+            btnAvanzarEtapa.classList.add('hidden');
+        }
+        else if (etapaActualId == parseInt(etapaOriginal.id)) {
+            btnRetrocederEtapa.classList.add('hidden');
+        }
+        else {
+            btnRetrocederEtapa.classList.remove('hidden');
+            btnAvanzarEtapa.classList.remove('hidden');
         }
     }
     
@@ -466,17 +475,9 @@ window.addEventListener('DOMContentLoaded', function() {
         btnRetrocederEtapa.addEventListener('click', function() {
             const etapaActualId = parseInt(nombreEtapaActual.dataset.etapaId);
             const currentIndex = etapas.findIndex(e => parseInt(e.id) === etapaActualId);
-            
             if (currentIndex < 0) {
                 alert('No se encontró la etapa actual en el catálogo.');
                 return;
-            }
-            
-            if (currentIndex == 1) {
-                btnRetrocederEtapa.style="display: none !important;";
-            }
-            else {
-                btnAvanzarEtapa.style="";
             }
             
             // Retroceder a la etapa anterior
@@ -506,6 +507,7 @@ window.addEventListener('DOMContentLoaded', function() {
             // Llamar a las funciones para mostrar/ocultar campos específicos por etapa
             toggleIdMercadoPublico();
             toggleRecepcionOfertas();
+            toggleEtapaButton();
         });
     }
     

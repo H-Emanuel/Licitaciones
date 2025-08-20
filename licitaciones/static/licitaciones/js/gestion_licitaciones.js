@@ -1,40 +1,40 @@
 let uploadedFiles = [];
 // TIPO POR PRESUPUESTO
-
 async function obtenerValor(moneda) {
-  try {
-    const response = await fetch(`https://mindicador.cl/api/${moneda.trim().toLowerCase()}`);
-    if (!response.ok) throw new Error('Error al obtener los datos');
-    const data = await response.json();
-    return parseFloat(data.serie[0].valor);
-  } catch (error) {
-    console.error('Problema al cargar api mindicador:', error.message);
-    return {'uf': 39156.08, 'dolar': 965.64, 'euro': 1125.59, 'utm': 68647}[moneda.trim().toLowerCase()] ?? null;
-  }
+    // Por defecto consultar api mindicador para obtener valores
+    try {
+        const response = await fetch(`https://mindicador.cl/api/${moneda.trim().toLowerCase()}`);
+        if (!response.ok) throw new Error('Error al obtener los datos');
+        const data = await response.json();
+        return parseFloat(data.serie[0].valor);
+    } catch (error) {
+        // En su defecto usar tabla
+        console.error('Problema al cargar api mindicador:', error.message);
+        return {'uf': 39156.08, 'dolar': 965.64, 'euro': 1125.59, 'utm': 68647}[moneda.trim().toLowerCase()] ?? null;
+    }
 }
 
 async function asignarTipoPresupuesto() {
     const monedaSelect = document.getElementById('monedaSelect');
     const monedaSelected = monedaSelect.options[monedaSelect.selectedIndex];
-    let monto = parseFloat(document.getElementById('montoPresupuestadoInput').value);
+    const monto = parseFloat(document.getElementById('montoPresupuestadoInput').value);
     const tipoPresupuesto = document.getElementById('tipoPresupuesto');
-    const valorUTM = await obtenerValor('utm');
-    if (!valorUTM) {
-        console.log('Error en función obtenerValor');
-    }
-    if (valorUTM && monedaSelected.value && monto > 0) {
+    
+    if (monedaSelected.value && monto > 0) {
+        const valorUTM = await obtenerValor('utm');
+        if (!valorUTM) {
+            console.log('Error en función obtenerValor');
+            return;
+        }
+
         let montoConvertido = monto;
         if (monedaSelected.text === 'CLP') {
             if (valorUTM) montoConvertido = monto / valorUTM;
         } else if (monedaSelected.text === 'UTM') {
             montoConvertido = monto;
-        } else if (monedaSelected.text === 'USD') {
-            // Otras monedas: convierte primero a CLP y luego a UF
-            const valorMoneda = await obtenerValor('dolar');
-            if (valorMoneda && valorUTM) montoConvertido = (monto * valorMoneda) / valorUTM;
         } else {
-            // Otras monedas: convierte primero a CLP y luego a UF
-            const valorMoneda = await obtenerValor(monedaSelected.text);
+            // Otras monedas: convierte primero moneda a CLP y luego a UF
+            const valorMoneda = await obtenerValor(monedaSelected.text==='USD' ? 'dolar' : monedaSelected.text);
             if (valorMoneda && valorUTM) montoConvertido = (monto * valorMoneda) / valorUTM;
         }
         console.log(`Valor convertido en ${montoConvertido} utm`);
@@ -61,6 +61,100 @@ ids.forEach(id => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+function getIdFromCell(cell, list, key='nombre') {
+    if (!cell) return '';
+    const nombre = cell.innerText.trim();
+    if (!nombre || nombre === '-') return '';
+    const found = (window[list] || []).find(e => e.nombre === nombre);
+    return found ? found.id : '';
+}
+
+async function reabrirLicitacion(idProyecto, fallida = false) {
+    if (confirm(`¿Está seguro que desea reabrir esta licitación?\n\nEsta acción cambiará el estado a "En Curso" y se registrará en la bitácora.`)) {
+        
+        url = `/gestion/modificar_licitacion/${idProyecto}/`;
+        method = 'POST';
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+        let res = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+            body: JSON.stringify({estado: 1})
+        });
+
+        if (fallida) {
+            url = `/api/licitacion/${idProyecto}/actualizar_etapa/`;
+            method = 'POST';
+            let res2 = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+                body: JSON.stringify({accion: 'retroceder'})
+            });
+        }
+
+        if (res.ok && (!fallida || res2.ok)) {
+            alert(`La licitación se ha reabierto`);
+            location.reload();
+        } else {
+            alert('Error al reabrir la licitación');
+        }
+    }
+}
+
+// FUNCIONALIDAD DE PRUEBA: ACCIONES DINAMICAS
+function initToggleAccionesDinamicas() {
+    const checkboxes = document.querySelectorAll('tbody input[type="checkbox"][class="licitacion-check"]');
+    const btnsAction = document.querySelectorAll('.btn-toggle-acciones');
+    const toggleAcciones = document.querySelector('.toggle-acciones');
+    const cerrarLicitacion = document.querySelector('.cerrar-licitacion-fila');
+    const modalCerrarLicitacion = document.getElementById('modalCerrarLicitacion');
+
+    function handleSingleSelection(e) {
+        if (e.target.checked) {
+            checkboxes.forEach(cb => {
+                if (cb !== e.target) {
+                    cb.checked = false;
+                }
+            });
+            toggleAcciones.style.display="flex";
+            setTimeout(() => {
+                toggleAcciones.style.transform = "translateX(0)";
+            }, 1);
+            btnsAction.forEach(btnAction => {btnAction.dataset.id=e.target.value;});
+            cerrarLicitacion.disabled=false;
+            if (e.target.parentNode.parentNode !== null && e.target.parentNode.parentNode.classList.contains("lic-cerrada")){
+                cerrarLicitacion.title="Reabrir licitacion";
+                cerrarLicitacion.querySelector('.icono-accion').innerHTML="🔓";
+                cerrarLicitacion.addEventListener('click', () => {reabrirLicitacion(e.target.value, e.target.parentNode.parentNode.querySelector('[data-campo="estado"] .estado-badge').classList.contains("estado-fallida"))})
+            } else {
+                cerrarLicitacion.title="Cerrar licitación";
+                cerrarLicitacion.querySelector('.icono-accion').innerHTML="🔒";
+                // Mostrar modal
+                if (modalCerrarLicitacion) {
+                    cerrarLicitacion.addEventListener('click', () => {modalCerrarLicitacion.style.display = 'flex'})
+                }
+            }
+        } else {
+            toggleAcciones.style.transform = "translateX(115%)";
+        }
+    }
+
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', handleSingleSelection);
+    });
+}
 
 
 
@@ -144,103 +238,6 @@ function buildTiposLicitacionEtapaRaw(raw) {
     return out;
 }
 window.tiposLicitacionEtapaRaw = buildTiposLicitacionEtapaRaw(JSON.parse(document.getElementById('tipos-licitacion-etapa-raw-data').textContent));
-
-// Función para toggle de acciones - definida globalmente
-function initToggleAcciones() {
-    console.log('Inicializando toggle de acciones...');
-    
-    const btnToggle = document.getElementById('btnToggleAcciones');
-    const accionesSticky = document.getElementById('accionesSticky');
-    
-    console.log('btnToggle:', btnToggle);
-    console.log('accionesSticky:', accionesSticky);
-    
-    if (btnToggle && accionesSticky) {
-        let isVisible = false;
-        let isAnimating = false; // Prevenir clics durante animación
-        console.log('Elementos encontrados, configurando event listener...');
-        
-        function toggleAcciones(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            // Prevenir clics múltiples durante animación
-            if (isAnimating) {
-                console.log('Animación en progreso, ignorando clic');
-                return;
-            }
-            
-            console.log('Toggle clicked! Estado actual:', isVisible);
-            
-            isVisible = !isVisible;
-            
-            // Obtener la referencia actual del botón después del replaceWith
-            const currentBtnToggle = document.getElementById('btnToggleAcciones');
-            
-            if (isVisible) {
-                isAnimating = true;
-                console.log('Mostrando columna de acciones...');
-                // Mostrar columna de acciones
-                accionesSticky.style.display = 'block';
-                setTimeout(() => {
-                    accionesSticky.classList.add('show');
-                    accionesSticky.classList.remove('hide');
-                }, 10);
-                
-                currentBtnToggle.classList.add('active');
-                currentBtnToggle.title = 'Ocultar Acciones';
-                currentBtnToggle.querySelector('.toggle-icon').textContent = '✕';
-                
-                // Permitir nuevos clics después de la animación
-                setTimeout(() => {
-                    isAnimating = false;
-                }, 450);
-            } else {
-                isAnimating = true;
-                console.log('Ocultando columna de acciones...');
-                // Ocultar columna de acciones
-                accionesSticky.classList.add('hide');
-                accionesSticky.classList.remove('show');
-                
-                setTimeout(() => {
-                    accionesSticky.style.display = 'none';
-                    isAnimating = false; // Permitir nuevos clics
-                }, 400);
-                
-                currentBtnToggle.classList.remove('active');
-                currentBtnToggle.title = 'Mostrar Acciones';
-                currentBtnToggle.querySelector('.toggle-icon').textContent = '⚙️';
-            }
-        }
-        
-        // Limpiar eventos anteriores
-        btnToggle.replaceWith(btnToggle.cloneNode(true));
-        const newBtnToggle = document.getElementById('btnToggleAcciones');
-        newBtnToggle.addEventListener('click', toggleAcciones);
-        
-        console.log('Event listener configurado correctamente');
-    } else {
-        console.error('No se encontraron los elementos necesarios');
-        if (!btnToggle) console.error('btnToggleAcciones no encontrado');
-        if (!accionesSticky) console.error('accionesSticky no encontrado');
-    }
-};
-
-// Inicializar cuando el DOM esté listo
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM loaded, inicializando toggle...');
-    setTimeout(() => {
-        initToggleAcciones();
-    }, 100);
-});
-
-// También inicializar cuando la página esté completamente cargada
-window.addEventListener('load', function() {
-    console.log('Window loaded, re-inicializando toggle...');
-    setTimeout(() => {
-        initToggleAcciones();
-    }, 200);
-});
 
 document.addEventListener("DOMContentLoaded", function () {
     console.log('DOM cargado - Inicializando gestión de licitaciones');
@@ -780,125 +777,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
     };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// FUNCIONALIDAD DE PRUEBA: ACCIONES DINAMICAS
-const checkboxes = document.querySelectorAll('tbody input[type="checkbox"][class="licitacion-check"]');
-const btnsAction = document.querySelectorAll('.btn-toggle-acciones');
-const toggleAcciones = document.querySelector('.toggle-acciones');
-const cerrarLicitacion = document.querySelector('.cerrar-licitacion-fila');
-const modalCerrarLicitacion = document.getElementById('modalCerrarLicitacion');
-
-async function reabrirLicitacion(idProyecto) {
-    url = `/gestion/modificar_licitacion/${idProyecto}/`;
-    method = 'POST';
-    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
-    let res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
-        body: JSON.stringify({estado: 1})
-    });
-    if (res.ok) {
-        location.reload();
-    } else {
-        alert('Error al reabrir la licitación');
-    }
-}
-
-function handleSingleSelection(e) {
-    if (e.target.checked) {
-        checkboxes.forEach(cb => {
-            if (cb !== e.target) {
-                cb.checked = false;
-            }
-        });
-        toggleAcciones.style.display="flex";
-        setTimeout(() => {
-            toggleAcciones.style.transform = "translateX(0)";
-        }, 1);
-        btnsAction.forEach(btnAction => {btnAction.dataset.id=e.target.value;});
-        if (e.target.parentNode.parentNode !== null && e.target.parentNode.parentNode.classList.contains("lic-cerrada")){
-            cerrarLicitacion.title="Reabrir licitacion";
-            cerrarLicitacion.querySelector('.icono-accion').innerHTML="🔓";
-            cerrarLicitacion.querySelector('.icono-accion').classList.add('reabrir-lic');
-            cerrarLicitacion.disabled=false;
-            cerrarLicitacion.addEventListener('click', reabrirLicitacion.bind(null, e.target.value));
-        } else {
-            cerrarLicitacion.title="Cerrar licitación";
-            cerrarLicitacion.querySelector('.icono-accion').innerHTML="🔒";
-            cerrarLicitacion.disabled=false;
-            // Mostrar modal
-            if (modalCerrarLicitacion) {
-                cerrarLicitacion.addEventListener('click', () => {modalCerrarLicitacion.style.display = 'flex'});
-            }
-        }
-    } else {
-        toggleAcciones.style.transform = "translateX(115%)";
-    }
-}
-
-checkboxes.forEach(cb => {
-    cb.addEventListener('change', handleSingleSelection);
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     // ---  BOTONES POR FILA ---
 document.querySelectorAll('.editar-fila').forEach(btn => {
@@ -2816,89 +2694,6 @@ document.addEventListener('DOMContentLoaded', function() {
             gestionarOverflowBody();
         }
     });
-
-    // Enviar cierre de licitación vía AJAX
-    if (formCerrarLicitacion) {
-        formCerrarLicitacion.onsubmit = async function(e) {
-            e.preventDefault();
-            
-            const licitacionId = document.getElementById('cerrarLicitacionId').value;
-            const texto = document.getElementById('cerrarLicitacionTexto').value;
-            const licitacionFallida = document.getElementById('licitacionFallidaCheckbox')?.checked;
-            const tipoFallida = tipoFallidaSelect ? tipoFallidaSelect.value : '';
-            
-            if (!texto.trim()) {
-                alert('Debe especificar el motivo del cierre de la licitación.');
-                return;
-            }
-
-            // Validar que si está marcada como fallida, se haya seleccionado un tipo
-            if (licitacionFallida && !tipoFallida) {
-                alert('Debe seleccionar el tipo de falla para una licitación fallida.');
-                return;
-            }
-            
-            // Confirmación antes de cerrar
-            const confirmMessage = `¿Está seguro que desea cerrar esta licitación?\n\nEsta acción cambiará el estado a "CERRADA" y se registrará en la bitácora.`;
-            if (!confirm(confirmMessage)) {
-                return;
-            }
-            
-            const formData = new FormData();
-            formData.append('texto', texto);
-            
-            if (licitacionFallida) {
-                formData.append('licitacion_fallida', 'on');
-                if (tipoFallida) {
-                    formData.append('tipo_fallida', tipoFallida);
-                }
-            }
-            
-            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
-            
-            try {
-                const res = await fetch(`/api/licitacion/${licitacionId}/cerrar/`, {
-                    method: 'POST',
-                    headers: { 'X-CSRFToken': csrftoken },
-                    body: formData
-                });
-                  
-                if (res.ok) {
-                    alert('Licitación cerrada correctamente.');
-                    modalCerrarLicitacion.style.display = 'none';
-                    gestionarOverflowBody();
-                    
-                    // Actualizar el estado en la tabla
-                    const fila = document.querySelector(`button.cerrar-licitacion-fila[data-id='${licitacionId}']`)?.closest('tr');
-                    if (fila) {
-                        const estadoCell = fila.querySelector('td .estado-badge');
-                        if (estadoCell) {
-                            estadoCell.textContent = 'CERRADA';
-                            estadoCell.className = 'estado-badge estado-cerrada';
-                        }
-                        
-                        // Actualizar el botón de cerrar licitación para que esté deshabilitado
-                        const btnCerrarLicitacion = fila.querySelector('button.cerrar-licitacion-fila');
-                        if (btnCerrarLicitacion) {
-                            btnCerrarLicitacion.disabled = true;
-                            btnCerrarLicitacion.title = 'Licitación ya cerrada';
-                            btnCerrarLicitacion.style.background = '#6c757d';
-                            btnCerrarLicitacion.style.color = '#dee2e6';
-                            btnCerrarLicitacion.style.cursor = 'not-allowed';
-                            btnCerrarLicitacion.style.opacity = '0.6';
-                        }
-                    }
-                } else {
-                    const errorData = await res.json().catch(() => ({}));
-                    const errorMessage = errorData.error || 'Error al cerrar la licitación.';
-                    alert(errorMessage);
-                }
-            } catch (err) {
-                console.error('Error al cerrar la licitación:', err);
-                alert('Error de red al cerrar la licitación.');
-            }
-        };
-    }
 
     // Funcionalidad para los checkboxes de tipo de monto (solo uno puede estar seleccionado)
     const montoMaximoCheck = document.getElementById('montoMaximoCheck');

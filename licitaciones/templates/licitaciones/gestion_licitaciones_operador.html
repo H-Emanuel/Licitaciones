@@ -180,42 +180,6 @@
             <button class="btn-toggle-acciones cerrar-licitacion-fila" data-id="" title="Cerrar licitación">
                 <span class="icono-accion">🔒</span>
             </button>
-
-            
-            <!-- Botón sticky para mostrar/ocultar acciones -->
-            <button id="btnToggleAcciones" class="btn-toggle-acciones" title="Mostrar/Ocultar Acciones" style="display: none;">
-                <span class="toggle-icon">⚙️</span>
-            </button>
-        </div>
-        <!-- Columna sticky separada para acciones -->
-        <div class="acciones-sticky hide" id="accionesSticky">
-            <div class="acciones-header">
-                <div class="acciones-header-cell">Acciones</div>
-            </div>
-            <div class="acciones-body">
-                {% for licitacion in proyectos %}
-                <div class="acciones-row">
-                    <button class="btn btn-accion ultima-obs-fila icon-btn" data-id="{{ licitacion.id }}" title="Ver última observación">
-                        <span class="icono-accion">📝</span>
-                    </button>
-                    
-                    {% if not licitacion.estado_fk or licitacion.estado_fk.id != 3 %}
-                        <button class="btn btn-accion cerrar-licitacion-fila icon-btn" data-id="{{ licitacion.id }}" title="Cerrar licitación">
-                            <span class="icono-accion">🔒</span>
-                        </button>
-                    {% else %}
-                        <button class="btn btn-accion cerrar-licitacion-fila icon-btn" data-id="{{ licitacion.id }}" title="Licitación ya cerrada" disabled>
-                            <span class="icono-accion">🔒</span>
-                        </button>
-                    {% endif %}
-                    
-                    <a href="{% url 'bitacora_licitacion' licitacion.id %}?from=operador" class="btn icon-btn" title="Ver bitácora">
-                        <span class="icono-accion">📒</span>
-                    </a>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
         </div>
         <div class="paginator">
             {% if proyectos.has_previous %}

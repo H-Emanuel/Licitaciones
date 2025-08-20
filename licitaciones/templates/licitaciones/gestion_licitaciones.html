@@ -297,10 +297,6 @@
             <button class="btn-toggle-acciones documentos-fila" data-id="" title="Ver documentos" {% if not es_admin %}style="visibility: hidden;"{% endif %}>
                 <span class="icono-accion">📎</span>
             </button>
-            
-            <button id="btnToggleAcciones" class="btn-toggle-acciones" title="Mostrar/Ocultar Acciones" style="display: none;">
-                <span class="toggle-icon">⚙️</span>
-            </button>
             </div>
             {% endif %}
             
@@ -958,9 +954,6 @@
             window.tiposLicitacion = JSON.parse(document.getElementById('tipos-licitacion-data').textContent);
 
         </script>
-
-        <!-- Archivo principal de JavaScript -->
-        <script src="{% static 'licitaciones/js/gestion_licitaciones.js' %}?v=2.4"></script>
     </div>
         
     <!-- Modal Historial de Licitaciones Fallidas -->
@@ -1054,7 +1047,10 @@
 {{ tipos_licitacion|json_script:"tipos-licitacion-data" }}
 {{ tipos_licitacion_etapa_raw|json_script:"tipos-licitacion-etapa-raw-data" }}
 
+
 <!-- Incluir el JavaScript del operador para la funcionalidad de la tabla -->
 <script src="{% static 'licitaciones/js/gestion_licitaciones_operador.js' %}"></script>
+<!-- Archivo principal de JavaScript -->
+<script src="{% static 'licitaciones/js/gestion_licitaciones.js' %}?v=2.4"></script>
 </body>
 </html>
