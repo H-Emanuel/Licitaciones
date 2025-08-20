@@ -253,7 +253,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const licitacionId = document.getElementById('cerrarLicitacionId').value;
             const texto = document.getElementById('cerrarLicitacionTexto').value;
             const licitacionFallida = document.getElementById('licitacionFallidaCheckbox')?.checked;
-            const tipoFallida = tipoFallidaSelect ? tipoFallidaSelect.value : '';
+            const tipoFallida = tipoFallidaSelect ? tipoFallidaSelect.value : false;
             
             if (!texto.trim()) {
                 alert('Debe especificar el motivo del cierre de la licitación.');
@@ -267,7 +267,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // Confirmación antes de cerrar
-            const confirmMessage = `¿Está seguro que desea cerrar esta licitación?\n\nEsta acción cambiará el estado a "CERRADA" y se registrará en la bitácora.`;
+            const confirmMessage = `¿Está seguro que desea cerrar esta licitación?\n\nEsta acción cambiará el estado a "${licitacionFallida ? tipoFallida ? tipoFallida.toUpperCase() : 'FALLIDA' : 'CERRADA'}" y se registrará en la bitácora.`;
             if (!confirm(confirmMessage)) {
                 return;
             }

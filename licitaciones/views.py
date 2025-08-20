@@ -1125,6 +1125,7 @@ def cerrar_licitacion_operador(request, licitacion_id):
         
         if licitacion_fallida:
             texto_bitacora += f"\n\nEstado adicional:\n- Licitación fue FALLIDA ({tipo_fallida.upper()})"
+            estado_cerrada = Estado.objects.filter(nombre__icontains='fallid').first()
         
         # Actualizar el campo tipo_fallida si es necesario
         if licitacion_fallida and tipo_fallida:

@@ -84,32 +84,62 @@ function getIdFromCell(cell, list, key='nombre') {
 
 async function reabrirLicitacion(idProyecto, fallida = false) {
     if (confirm(`¿Está seguro que desea reabrir esta licitación?\n\nEsta acción cambiará el estado a "En Curso" y se registrará en la bitácora.`)) {
-        
         url = `/gestion/modificar_licitacion/${idProyecto}/`;
         method = 'POST';
         const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
-        let res = await fetch(url, {
+        await fetch(url, {
             method,
             headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
             body: JSON.stringify({estado: 1})
+        })
+        .then(async res => {
+            if (res.ok) {
+                if (fallida) {
+                    // Obtener etapa actual
+                    let etapaActualId;
+                    let etapasLicitacion;
+                    const resEtapa = await fetch(`/api/licitacion/${idProyecto}/etapa/`);
+                    if (resEtapa.ok) {
+                        const dataEtapa = await resEtapa.json();
+                        etapaActualId = dataEtapa.etapa_id;
+                    }
+                    
+                    // Obtener etapas con información de inhabilitación
+                    const resEtapas = await fetch(`/api/licitacion/${idProyecto}/etapas/`);
+                    if (resEtapas.ok) {
+                        const dataEtapas = await resEtapas.json();
+                        etapasLicitacion = dataEtapas.etapas || [];
+                        
+                        // Mostrar información adicional si se detecta que debe saltar etapa
+                        if (dataEtapas.debe_saltar_consejo) {
+                            console.log(`Licitación ${licitacionId}: Saltando etapa de Aprobación del Consejo Municipal (${dataEtapas.moneda}: ${dataEtapas.monto})`);
+                        }
+                    }
+                    const etapasHabilitadas = etapasLicitacion.filter(e => !e.inhabilitada);
+                    const etapaActualIndex = etapasHabilitadas.findIndex(e => String(e.id) === String(etapaActualId));
+                    const nuevaEtapaId = etapasHabilitadas[etapaActualIndex > 0 ? etapaActualIndex - 1 : etapaActualIndex].id;
+                    url = `/api/licitacion/${idProyecto}/actualizar_etapa/`;
+                    method = 'POST';
+                    await fetch(url, {
+                        method,
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+                        body: JSON.stringify({etapa_id: nuevaEtapaId, accion: 'retroceder'})
+                    })
+                    .then(res => {
+                        if (res.ok){
+                            // pass
+                        } else {throw new Error('Error al actualizar la etapa de la licitación fallida');}
+                    })
+                    .catch(e => {
+                        alert(e);
+                    });
+                }
+            } else {throw new Error('Error al reabrir la licitación');}
+        })
+        .catch(e => {
+            alert(e);
         });
-
-        if (fallida) {
-            url = `/api/licitacion/${idProyecto}/actualizar_etapa/`;
-            method = 'POST';
-            let res2 = await fetch(url, {
-                method,
-                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
-                body: JSON.stringify({accion: 'retroceder'})
-            });
-        }
-
-        if (res.ok && (!fallida || res2.ok)) {
-            alert(`La licitación se ha reabierto`);
-            location.reload();
-        } else {
-            alert('Error al reabrir la licitación');
-        }
+        location.reload();
     }
 }
 
@@ -120,6 +150,7 @@ function initToggleAccionesDinamicas() {
     const toggleAcciones = document.querySelector('.toggle-acciones');
     const cerrarLicitacion = document.querySelector('.cerrar-licitacion-fila');
     const modalCerrarLicitacion = document.getElementById('modalCerrarLicitacion');
+    let funCerrarLicitacionAnterior;
 
     function handleSingleSelection(e) {
         if (e.target.checked) {
@@ -134,18 +165,17 @@ function initToggleAccionesDinamicas() {
             }, 1);
             btnsAction.forEach(btnAction => {btnAction.dataset.id=e.target.value;});
             cerrarLicitacion.disabled=false;
+            cerrarLicitacion.removeEventListener('click', funCerrarLicitacionAnterior);
             if (e.target.parentNode.parentNode !== null && e.target.parentNode.parentNode.classList.contains("lic-cerrada")){
                 cerrarLicitacion.title="Reabrir licitacion";
                 cerrarLicitacion.querySelector('.icono-accion').innerHTML="🔓";
-                cerrarLicitacion.addEventListener('click', () => {reabrirLicitacion(e.target.value, e.target.parentNode.parentNode.querySelector('[data-campo="estado"] .estado-badge').classList.contains("estado-fallida"))})
+                funCerrarLicitacionAnterior = () => {reabrirLicitacion(e.target.value, e.target.parentNode.parentNode.querySelector('[data-campo="estado"] .estado-badge').classList.contains("estado-fallida"))};
             } else {
                 cerrarLicitacion.title="Cerrar licitación";
                 cerrarLicitacion.querySelector('.icono-accion').innerHTML="🔒";
-                // Mostrar modal
-                if (modalCerrarLicitacion) {
-                    cerrarLicitacion.addEventListener('click', () => {modalCerrarLicitacion.style.display = 'flex'})
-                }
+                funCerrarLicitacionAnterior = () => {modalCerrarLicitacion.style.display = 'flex';};
             }
+            cerrarLicitacion.addEventListener('click', funCerrarLicitacionAnterior);
         } else {
             toggleAcciones.style.transform = "translateX(115%)";
         }
@@ -155,9 +185,6 @@ function initToggleAccionesDinamicas() {
         cb.addEventListener('change', handleSingleSelection);
     });
 }
-
-
-
 
 
 
