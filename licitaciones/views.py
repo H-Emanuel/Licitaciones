@@ -97,6 +97,7 @@ def modificar_licitacion(request, licitacion_id):
                 valores_despues['Estado'] = str(estado_obj)
             licitacion.estado_fk = estado_obj
             licitacion.save()
+        # Reabrir licitacion
         elif 'estado' in data and 'etapa' in data and len(data) == 2:
             etapa_id = data.get('etapa')
             etapa_obj = Etapa.objects.get(id=etapa_id) if etapa_id else None
@@ -114,6 +115,7 @@ def modificar_licitacion(request, licitacion_id):
                 valores_antes['Estado'] = str(licitacion.estado_fk)
                 valores_despues['Estado'] = str(estado_obj)
             licitacion.estado_fk = estado_obj
+            licitacion.tipo_fallida = None
             licitacion.save()
         else:
             operador_id = data.get('operador') or data.get('operador_id')
