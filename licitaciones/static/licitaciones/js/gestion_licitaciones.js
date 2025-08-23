@@ -98,16 +98,11 @@ async function reabrirLicitacion(idProyecto, fallida = false) {
                     // Obtener etapa actual
                     let etapaActualId;
                     let etapasLicitacion;
-                    const resEtapa = await fetch(`/api/licitacion/${idProyecto}/etapa/`);
-                    if (resEtapa.ok) {
-                        const dataEtapa = await resEtapa.json();
-                        etapaActualId = dataEtapa.etapa_id;
-                    }
-                    
                     // Obtener etapas con información de inhabilitación
                     const resEtapas = await fetch(`/api/licitacion/${idProyecto}/etapas/`);
                     if (resEtapas.ok) {
                         const dataEtapas = await resEtapas.json();
+                        etapaActualId = dataEtapa.etapa_id;
                         etapasLicitacion = dataEtapas.etapas || [];
                         
                         // Mostrar información adicional si se detecta que debe saltar etapa
@@ -353,7 +348,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const opt = document.createElement('option');
             opt.value = etapa.id;
             opt.textContent = etapa.nombre;
-            if (String(etapa.id) === String(selectedId)) opt.selected = true;
+            if (String(etapa.nombre) === String(selectedId.nombre)) opt.selected = true;
             select.appendChild(opt);
         });
     }
@@ -519,7 +514,8 @@ document.addEventListener("DOMContentLoaded", function () {
         // Llamado cotización
         if (datos && datos.llamado_cotizacion !== undefined) {
             const llamadoCotizacionSelect = document.getElementById('llamadoCotizacionSelect');
-            if (llamadoCotizacionSelect) llamadoCotizacionSelect.value = datos.llamado_cotizacion;        }
+            if (llamadoCotizacionSelect) llamadoCotizacionSelect.value = datos.llamado_cotizacion;
+        }
         // N° de pedido
         if (datos && datos.numero_pedido !== undefined) {
             const numeroPedidoInput = document.getElementById('numeroPedidoInput');
@@ -555,7 +551,11 @@ document.addEventListener("DOMContentLoaded", function () {
             const montoInput = formProyecto['monto_presupuestado'];
             if (montoInput) montoInput.value = datos.monto_presupuestado;
         }
-        
+        // Tipo por presupuesto
+        if (datos && datos.tipo_presupuesto !== undefined) {
+            const tipo_presupuesto = formProyecto['tipo_presupuesto'];
+            if (tipo_presupuesto) tipo_presupuesto.value = datos.tipo_presupuesto;
+        }
         // Tipo de monto (checkboxes)
         if (datos && datos.tipo_monto) {
             const montoMaximo = document.getElementById('montoMaximoCheck');
@@ -584,7 +584,9 @@ document.addEventListener("DOMContentLoaded", function () {
         const etapaSelect = document.getElementById('etapaSelect');
         let etapasFiltradas = getEtapasPorTipo(tipoLicitacionId);        // Etapa: preseleccionar la etapa de la licitación
         let etapaSeleccionada = '';
-        if (datos && datos.etapa) etapaSeleccionada = datos.etapa;        renderEtapasSelect(etapaSelect, etapasFiltradas, etapaSeleccionada);        modal.classList.add('active');
+        if (datos && datos.etapa) etapaSeleccionada = datos.etapa;
+        renderEtapasSelect(etapaSelect, etapasFiltradas, etapaSeleccionada);
+        modal.classList.add('active');
         gestionarOverflowBody();
         asignarTipoPresupuesto();
         // Asegurar que el select de etapas quede con el valor correcto
@@ -878,10 +880,17 @@ document.querySelectorAll('.editar-fila').forEach(btn => {
 
         // Utilidad para obtener el id real por nombre
         function getIdFromCell(cell, list, key='nombre') {
+            let found = '';
             if (!cell) return '';
-            const nombre = cell.innerText.trim();
+            const nombre = cell.innerText;
             if (!nombre || nombre === '-') return '';
-            const found = (window[list] || []).find(e => e.nombre === nombre);
+                found = (window[list] || []).find(e => e.nombre === nombre);
+            if (key === 'etapasLicitacion') {
+                found = (list || []).find(e => e.nombre === nombre);
+            }
+            if (!found) {
+                found = (window[list] || []).find(e => e.nombre.includes(nombre));
+            }
             return found ? found.id : '';
         }
         
@@ -933,11 +942,12 @@ document.querySelectorAll('.editar-fila').forEach(btn => {
             const foundEstado = (window.estadosLicitacion || []).find(e => e.nombre === nombreEstado);
             if (foundEstado) estadoValue = foundEstado.id;
         }
+        console.log(window.departamentosLicitacion);
         abrirModal('Editar Licitación', {
             id: id,
             operador: operadorId || '',
             operador_2: operador2Id || '',
-            etapa: getIdFromCell(etapaCell, 'etapasLicitacion'),
+            etapa: getIdFromCell(etapaCell, getEtapasPorTipo(getIdFromCell(fila.querySelector('[data-campo="tipo_licitacion"]'), 'tiposLicitacion')), 'etapasLicitacion'),
             estado: estadoValue,
             moneda: getIdFromCell(monedaCell, 'monedasLicitacion'),
             categoria: getIdFromCell(categoriaCell, 'categoriasLicitacion'),
@@ -948,13 +958,13 @@ document.querySelectorAll('.editar-fila').forEach(btn => {
             iniciativa: iniciativaCell ? iniciativaCell.innerText.trim() : '',
             departamento: getIdFromCell(departamentoCell, 'departamentosLicitacion'),
             monto_presupuestado: montoCell ? parseChileanNumber(montoCell.innerText.replace(/[^0-9.,-]/g, '')) : '',
+            tipo_presupuesto: tipoPresupuestoCell ? tipoPresupuestoCell.innerText : '',
             llamado_cotizacion: getKeyFromChoiceDisplay(llamadoCotizacionCell, llamadoCotizacionChoices),
             numero_pedido: numeroPedidoCell ? numeroPedidoCell.innerText.trim() : '',
             id_mercado_publico: idMercadoPublicoCell ? (idMercadoPublicoCell.innerText.trim() === '-' ? '' : idMercadoPublicoCell.innerText.trim()) : '',
             direccion: direccionCell ? (direccionCell.innerText.trim() === '-' ? '' : direccionCell.innerText.trim()) : '',
             institucion: institucionCell ? (institucionCell.innerText.trim() === '-' ? '' : institucionCell.innerText.trim()) : '',
             tipo_licitacion: getIdFromCell(fila.querySelector('[data-campo="tipo_licitacion"]'), 'tiposLicitacion'),
-            tipo_presupuesto: tipoPresupuestoCell ? tipoPresupuestoCell.innerText : ''
         });
     });
 });

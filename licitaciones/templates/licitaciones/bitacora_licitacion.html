@@ -167,7 +167,7 @@
                         </div>
                         
                         <!-- Campo de archivos -->
-                        <div class="archivos-campo">
+                        <div class="archivos-campo hidden">
                             <label class="campo-label">
                                 <span class="label-icono">📎</span>
                                 Archivos adjuntos:
@@ -384,7 +384,7 @@
                 
                 <!-- Sección de archivos adjuntos en el modal -->
                 {% if es_admin %}
-                <div class="modal-field-container">
+                <div class="modal-field-container hidden">
                     <label class="modal-field-label">
                         <span class="modal-label-icon">📎</span>
                         Archivos adjuntos:
@@ -398,10 +398,10 @@
                                 <div class="modal-dropzone-main">Arrastra archivos aquí</div>
                                 <div class="modal-dropzone-sub">o haz clic para seleccionar</div>
                             </div>
-                            <div class="modal-dropzone-button">
+                            <label class="modal-dropzone-button" for="modalArchivos">
                                 <span class="modal-btn-icon">📎</span>
                                 Seleccionar archivos
-                            </div>
+                            </label>
                         </div>
                         <input type="file" id="modalArchivos" name="archivos" multiple class="file-input-hidden" accept="*/*">
                     </div>

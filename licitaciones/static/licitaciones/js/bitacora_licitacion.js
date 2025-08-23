@@ -320,6 +320,7 @@ window.addEventListener('DOMContentLoaded', function() {
     const btnAvanzarEtapa = document.getElementById('btnAvanzarEtapa');
     const nombreEtapaActual = document.getElementById('nombreEtapaActual');
     const accionEtapa = document.getElementById('accionEtapa');
+    const btnRetrocederEtapa = document.getElementById('btnRetrocederEtapa');
     
     // Variable para guardar la etapa original (antes de hacer cambios)
     let etapaOriginal = null;
@@ -374,17 +375,39 @@ window.addEventListener('DOMContentLoaded', function() {
             recepcionOfertasContainer.classList.add('hidden');
         }
     }
+
+    function toggleEtapaButton() {
+        const etapaActualId = parseInt(nombreEtapaActual.dataset.etapaId);
+        const currentIndex = etapas.findIndex(e => parseInt(e.id) === etapaActualId);
+        console.log(etapaActualId, etapaOriginal.id);
+        if (currentIndex == etapas.length - 1) {
+            btnAvanzarEtapa.classList.add('hidden');
+        }
+        else if (etapaActualId == parseInt(etapaOriginal.id)) {
+            btnRetrocederEtapa.classList.add('hidden');
+        }
+        else {
+            btnRetrocederEtapa.classList.remove('hidden');
+            btnAvanzarEtapa.classList.remove('hidden');
+        }
+    }
     
     // Verificar al cargar la página
     toggleIdMercadoPublico();
     toggleRecepcionOfertas();
-    
+    toggleEtapaButton();
+
     if (btnAvanzarEtapa && nombreEtapaActual && etapas.length) {
         btnAvanzarEtapa.addEventListener('click', function() {
             const etapaActualId = parseInt(nombreEtapaActual.dataset.etapaId);
             const currentIndex = etapas.findIndex(e => parseInt(e.id) === etapaActualId);
             if (currentIndex < 0) {
                 alert('No se encontró la etapa actual en el catálogo.');
+                return;
+            }
+
+            if (currentIndex >= etapas.length - 1) {
+                alert('Ya se encuentra en la última etapa.');
                 return;
             }
             
@@ -419,9 +442,6 @@ window.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Funcionalidad de retroceder etapa
-    const btnRetrocederEtapa = document.getElementById('btnRetrocederEtapa');
-    
     // Función para verificar si puede retroceder
     async function verificarPuedeRetroceder(licitacionId) {
         try {
@@ -451,22 +471,6 @@ window.addEventListener('DOMContentLoaded', function() {
             btnRetrocederEtapa.style.display = 'inline-flex';
         } else {
             btnRetrocederEtapa.classList.add('hidden');
-        }
-    }
-
-    function toggleEtapaButton() {
-        const etapaActualId = parseInt(nombreEtapaActual.dataset.etapaId);
-        const currentIndex = etapas.findIndex(e => parseInt(e.id) === etapaActualId);
-        console.log(etapaActualId, etapaOriginal.id);
-        if (currentIndex == etapas.length - 1) {
-            btnAvanzarEtapa.classList.add('hidden');
-        }
-        else if (etapaActualId == parseInt(etapaOriginal.id)) {
-            btnRetrocederEtapa.classList.add('hidden');
-        }
-        else {
-            btnRetrocederEtapa.classList.remove('hidden');
-            btnAvanzarEtapa.classList.remove('hidden');
         }
     }
     

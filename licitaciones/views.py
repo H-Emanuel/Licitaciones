@@ -1406,6 +1406,7 @@ def exportar_todas_licitaciones_excel(request):
                 'Estado': str(licitacion.estado_fk) if licitacion.estado_fk else '',
                 'Departamento': str(licitacion.departamento) if licitacion.departamento else '',
                 'Monto Presupuestado': licitacion.monto_presupuestado,
+                'Tipo por presupuesto': str(licitacion.tipo_presupuesto) if licitacion.tipo_presupuesto else '',
                 'Llamado Cotización': licitacion.get_llamado_cotizacion_display() or '',
                 'Fecha de creación': licitacion.fecha_creacion.strftime('%d/%m/%Y %H:%M') if licitacion.fecha_creacion else '',
             })

@@ -91,7 +91,7 @@ class Licitacion(models.Model):
     tipo_presupuesto = models.CharField(
         max_length=2,
         choices=TIPO_PRESUPUESTO_CHOICES,
-        default='le',
+        default='LE',
         verbose_name="Tipo de presupuesto",
         null=False
     )
