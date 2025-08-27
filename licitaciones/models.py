@@ -91,17 +91,17 @@ class Licitacion(models.Model):
     tipo_presupuesto = models.CharField(
         max_length=2,
         choices=TIPO_PRESUPUESTO_CHOICES,
-        default='LE',
-        verbose_name="Tipo de presupuesto",
-        null=False
+        default='le',
+        verbose_name="Tipo por presupuesto",
+        null=True,
     )
     fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")
-    fecha_vencimiento = models.DateField(blank=True, null=True, verbose_name="Fecha de vencimiento")
+    fecha_tentativa_cierre = models.DateField(blank=True, null=True, verbose_name="Fecha tentativa de cierre")
     licitacion_fallida_linkeada = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='nuevas_licitaciones', verbose_name="Licitación fallida linkeada")
     direccion = models.CharField(max_length=255, blank=True, null=True, verbose_name="Dirección")
     institucion = models.CharField(max_length=255, blank=True, null=True, verbose_name="Institución")
     pedido_devuelto = models.BooleanField(default=False, verbose_name="Pedido devuelto")
-    
+    #informacion_adicional = models.OneToOneField('InformacionAdicional', on_delete=models.SET_NULL, null=True, blank=True, related_name='licitacion', verbose_name="Información adicional")
     # Tipos de licitación fallida (cuando fallida es True)
     TIPO_FALLIDA_CHOICES = [
         ('revocada', 'Revocada'),
@@ -246,6 +246,79 @@ class Licitacion(models.Model):
         
         return etapas_con_info
 
+
+
+
+
+
+
+
+
+
+
+
+
+"""
+
+class Adjudicacion(models.Model):
+    empresa = models.CharField(max_length=100, unique=True)
+    rut = models.CharField(max_length=20, unique=True)
+    monto_adjudicado = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    fecha_decreto = models.DateField(blank=True, null=True)
+    fecha_subida_mercado_publico = models.DateField(blank=True, null=True)
+    orden_compra = models.IntegerField(default=0)
+
+    def __str__(self):
+        return self.nombre
+    
+class Evaluacion(models.Model):
+    fecha_evaluacion_tecnica = models.DateField(blank=True, null=True, verbose_name="Fecha de evaluación técnica")
+    nombre_integrante_uno = models.CharField(max_length=100, blank=True, null=True)
+    nombre_integrante_dos = models.CharField(max_length=100, blank=True, null=True)
+    nombre_integrante_tres = models.CharField(max_length=100, blank=True, null=True)
+    fecha_comision = models.DateField(blank=True, null=True)
+
+    def __str__(self):
+        return self.fecha_evaluacion.strftime('%d/%m/%Y') if self.fecha_evaluacion else "Sin fecha"
+    
+
+class PublicacionPortal(models.Model):
+    fecha_cierre_preguntas = models.DateField(blank=True, null=True, verbose_name="Fecha de cierre de preguntas")
+    fecha_respuesta = models.DateField(blank=True, null=True, verbose_name="Fecha de respuesta")
+    fecha_visita_terreno = models.DateField(blank=True, null=True, verbose_name="Fecha de visita a terreno")
+    fecha_cierre_oferta = models.DateField(blank=True, null=True, verbose_name="Fecha de cierre de oferta")
+    fecha_apertura_tecnica = models.DateField(blank=True, null=True, verbose_name="Fecha de apertura técnica")
+    fecha_apertura_economica = models.DateField(blank=True, null=True, verbose_name="Fecha de apertura económica")
+    fecha_estimada_adjudicacion = models.DateField(blank=True, null=True, verbose_name="Fecha estimada de adjudicación")
+
+class InformacionAdicional(models.Model):
+    adjudicacion = models.OneToOneField(Adjudicacion, on_delete=models.SET_NULL, null=True, blank=True)
+    evaluacion = models.OneToOneField(Evaluacion, on_delete=models.SET_NULL, null=True, blank=True)
+    publicacion_portal = models.OneToOneField(PublicacionPortal, on_delete=models.SET_NULL, null=True, blank=True)
+    fecha_disponibilidad_presupuestaria = models.DateField(blank=True, null=True, verbose_name="Fecha que se pide disponibilidad presupuestaria")
+    fecha_comision = models.DateField(blank=True, null=True, verbose_name="Fecha de comisión")
+    fecha_solicitud_regimen_interno = models.DateField(blank=True, null=True, verbose_name="Fecha de solicitud de régimen interno")
+    fecha_llegada_documento_regimen_interno = models.DateField(blank=True, null=True, verbose_name="Fecha de llegada de documento")
+    fecha_tope_firma_contrato = models.DateField(blank=True, null=True, verbose_name="Fecha tope de firma de contrato")
+
+"""
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class Perfil(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     ROL_CHOICES = (
@@ -301,6 +374,15 @@ class ObservacionBitacora(models.Model):
 
     def __str__(self):
         return f"Obs. {self.bitacora_id}: {self.texto[:40]}..."
+    
+class DocumentoObservacion(models.Model):
+    bitacora = models.ForeignKey(ObservacionBitacora, on_delete=models.CASCADE, related_name='archivos')
+    archivo = models.FileField(upload_to='documentos_licitacion/')
+    nombre = models.CharField(max_length=255, blank=True, null=True)
+    fecha_subida = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.nombre or self.archivo.name
 
 class DocumentoBitacora(models.Model):
     bitacora = models.ForeignKey(BitacoraLicitacion, on_delete=models.CASCADE, related_name='archivos')

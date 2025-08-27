@@ -40,7 +40,7 @@ import io
 import pandas as pd
 from .utils import *
 from datetime import datetime
-from .models import Licitacion, Etapa, BitacoraLicitacion, Estado, DocumentoLicitacion, TipoLicitacion, Moneda, Categoria, Financiamiento, ObservacionBitacora, Departamento, DocumentoBitacora, Notificacion
+from .models import Licitacion, Etapa, BitacoraLicitacion, Estado, DocumentoLicitacion, TipoLicitacion, Moneda, Categoria, Financiamiento, ObservacionBitacora, Departamento, DocumentoObservacion, Notificacion
 from .models import TipoLicitacionEtapa
 from django.db import models
 from django.http import JsonResponse
@@ -92,30 +92,14 @@ def modificar_licitacion(request, licitacion_id):
             estado_obj = Estado.objects.get(id=estado_id) if estado_id else None
             if licitacion.estado_fk != estado_obj:
                 cambios.append(f"Estado: '{licitacion.estado_fk}' → '{estado_obj}'")
+                # Si el nuevo estado es "En curso" y la licitación estaba cerrada, reabrirla
+                if estado_obj.nombre.strip().lower() == 'en curso':
+                    texto_bitacora = "🔓 LICITACIÓN REABIERTA\n\n"
+                    licitacion.tipo_fallida = None
                 campos_modificados.append('Estado')
                 valores_antes['Estado'] = str(licitacion.estado_fk)
                 valores_despues['Estado'] = str(estado_obj)
             licitacion.estado_fk = estado_obj
-            licitacion.save()
-        # Reabrir licitacion
-        elif 'estado' in data and 'etapa' in data and len(data) == 2:
-            etapa_id = data.get('etapa')
-            etapa_obj = Etapa.objects.get(id=etapa_id) if etapa_id else None
-            if licitacion.etapa_fk != etapa_obj:
-                cambios.append(f"Etapa: '{licitacion.etapa_fk}' → '{etapa_obj}'")
-                campos_modificados.append('Etapa')
-                valores_antes['Etapa'] = str(licitacion.etapa_fk)
-                valores_despues['Etapa'] = str(etapa_obj)
-            licitacion.etapa_fk = etapa_obj
-            estado_id = data.get('estado')
-            estado_obj = Estado.objects.get(id=estado_id) if estado_id else None
-            if licitacion.estado_fk != estado_obj:
-                cambios.append(f"Estado: '{licitacion.estado_fk}' → '{estado_obj}'")
-                campos_modificados.append('Estado')
-                valores_antes['Estado'] = str(licitacion.estado_fk)
-                valores_despues['Estado'] = str(estado_obj)
-            licitacion.estado_fk = estado_obj
-            licitacion.tipo_fallida = None
             licitacion.save()
         else:
             operador_id = data.get('operador') or data.get('operador_id')
@@ -337,6 +321,13 @@ def modificar_licitacion(request, licitacion_id):
                 valores_antes['N° de cuenta'] = str(licitacion.tipo_presupuesto)
                 valores_despues['N° de cuenta'] = str(tipo_presupuesto)
                 licitacion.tipo_presupuesto = tipo_presupuesto
+            fecha_tentativa_cierre = data.get('fecha_tentativa_cierre', '')
+            if licitacion.fecha_tentativa_cierre != fecha_tentativa_cierre:
+                cambios.append(f"Fecha tentativa de cierre: '{licitacion.fecha_tentativa_cierre}' → '{fecha_tentativa_cierre}'")
+                campos_modificados.append('Fecha tentativa de cierre')
+                valores_antes['Fecha tentativa de cierre'] = str(licitacion.fecha_tentativa_cierre)
+                valores_despues['Fecha tentativa de cierre'] = str(fecha_tentativa_cierre)
+                licitacion.fecha_tentativa_cierre = fecha_tentativa_cierre
             # Licitacion fallida linkeada
             licitacion_fallida_linkeada_id = data.get('licitacion_fallida_linkeada')
             licitacion_fallida_linkeada_obj = Licitacion.objects.get(id=licitacion_fallida_linkeada_id) if licitacion_fallida_linkeada_id else None
@@ -350,7 +341,9 @@ def modificar_licitacion(request, licitacion_id):
             licitacion.save()
         # Registrar en bitácora si hubo cambios
         if cambios:
-            texto_bitacora = "Campos modificados:" + ''.join([
+            if (not texto_bitacora):
+                texto_bitacora = ""
+            texto_bitacora += "Campos modificados:" + ''.join([
                 f"\n- {campo}: '{valores_antes[campo]}' → '{valores_despues[campo]}'"
                 for campo in campos_modificados
             ])
@@ -1171,6 +1164,13 @@ def observacion_bitacora_api(request, bitacora_id):
         if not texto:
             return JsonResponse({'ok': False, 'error': 'Texto vacío'})
         obs, created = ObservacionBitacora.objects.get_or_create(bitacora=bitacora)
+        archivos = request.FILES.getlist('archivos')
+        for archivo in archivos:
+            DocumentoObservacion.objects.create(
+                observacion=obs,
+                archivo=archivo,
+                nombre=archivo.name
+            )
         obs.texto = texto
         obs.save()
         return JsonResponse({'ok': True})
@@ -1198,6 +1198,7 @@ def agregar_proyecto(request):
             monto_presupuestado = 0
         #tipo_presupuesto = get_tipo_presupuesto(Moneda.objects.get(id=data.get('moneda')) if data.get('moneda') else None, monto_presupuestado)
         tipo_presupuesto = data.get('tipo_presupuesto')
+        fecha_tentativa_cierre = data.get('fecha_tentativa_cierre')
         
         # Crear la licitación
         licitacion = Licitacion(
@@ -1220,7 +1221,7 @@ def agregar_proyecto(request):
             tipo_presupuesto=tipo_presupuesto,
             estado_fk=estado_en_curso,
             pedido_devuelto=data.get('pedido_devuelto', False),            # Agregar la licitación fallida si se proporcionó un ID
-            licitacion_fallida_linkeada=Licitacion.objects.get(id=data.get('licitacion_fallida_linkeada')) if data.get('licitacion_fallida_linkeada') else None
+            licitacion_fallida_linkeada=Licitacion.objects.get(id=data.get('licitacion_fallida_linkeada')) if data.get('licitacion_fallida_linkeada') else None,
         )
         licitacion.save()
           # Asignar financiamiento (ManyToMany)

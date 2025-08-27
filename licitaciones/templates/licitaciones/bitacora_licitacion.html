@@ -36,7 +36,7 @@
 
             <!-- Panel integrado para agregar observación (solo operadores) -->
             {% if es_operador or es_operador_manual %}
-            {% if licitacion.estado_fk.nombre == 'En Curso' %}
+            {% if licitacion.estado_fk.nombre|lower == 'en curso' %}
             <div class="bitacora-panel-operador" id="panelObservacionOperador">
                 <div class="panel-header">
                     <h3 class="panel-titulo">
@@ -73,49 +73,153 @@
                         
                         <input type="hidden" id="accionEtapa" name="accion_etapa" value="none">
                         
-                        <!-- Campo ID Mercado Público - se muestra solo en etapa "Publicacion en portal" -->
-                        <div id="idMercadoPublicoContainer" class="id-mercado-publico-container hidden">
-                            <label for="idMercadoPublicoInput" class="campo-label">
-                                <span class="label-icono">🏛️</span>
-                                ID Mercado Público:
-                            </label>
-                            <input 
-                                type="text" 
-                                id="idMercadoPublicoInput" 
-                                name="id_mercado_publico" 
-                                class="id-mercado-publico-input"
-                                placeholder="Ingresa el ID del mercado público (ej: 1234-56-LQ21)"
-                                maxlength="50"
-                                value="{{ licitacion.id_mercado_publico|default:'' }}"
-                            >
-                            <div class="campo-ayuda">
-                                <span class="ayuda-icono">💡</span>
-                                <span class="ayuda-texto">ID único asignado por el portal de mercado público</span>
-                            </div>
-                        </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                         
-                        <!-- Campos específicos para "Recepción de Ofertas" -->
-                        <div id="recepcionOfertasContainer" class="recepcion-ofertas-container hidden">
-                            <div class="campo-grupo">
-                                <label for="numeroOfertasInput" class="campo-label">
-                                    <span class="label-icono">📊</span>
-                                    N° de Ofertas Recibidas:
-                                </label>
-                                <input 
-                                    type="number" 
-                                    id="numeroOfertasInput" 
-                                    name="numero_ofertas" 
-                                    class="numero-ofertas-input"
-                                    placeholder="Ej: 5"
-                                    min="0"
-                                    max="999"
-                                >
-                                <div class="campo-ayuda">
-                                    <span class="ayuda-icono">💡</span>
-                                    <span class="ayuda-texto">Cantidad total de ofertas recibidas para esta licitación</span>
+
+                        <div id="fechasImportantesContainer" class="fechas-importantes-container hidden" style="margin-bottom: 50px;">
+                            <h3 class="section-title" style="cursor: pointer;">
+                                <span class="section-icon">📅</span>
+                                Fechas importantes
+                            </h3>
+                            <label for="cierrePreguntas" class="campo-label">
+                                <span class="field-icon"></span>
+                                Cierre de preguntas
+                            </label>
+                            <input type="date" name="fecha_cierre_preguntas" id="cierrePreguntas" class="empresa-rut-input" required>
+                            </input>
+                            <label for="respuesta" class="campo-label">
+                                <span class="field-icon"></span>
+                                Respuesta
+                            </label>
+                            <input type="date" name="fecha_respuesta" id="respuesta" class="empresa-rut-input" required>
+                            </input>
+                            <label for="visitaTerreno" class="campo-label">
+                                <span class="field-icon"></span>
+                                Visita a terreno
+                            </label>
+                            <input type="date" name="fecha_visita_terreno" id="visitaTerreno" class="empresa-rut-input" required>
+                            </input>
+                            <label for="cierreOferta" class="campo-label">
+                                <span class="field-icon"></span>
+                                Cierre de oferta
+                            </label>
+                            <input type="date" name="fecha_cierre_oferta" id="cierreOferta" class="empresa-rut-input" required>
+                            </input>
+                            <label for="aperturaTecnica" class="campo-label">
+                                <span class="field-icon"></span>
+                                Apertura técnica
+                            </label>
+                            <input type="date" name="fecha_apertura_tecnica" id="aperturaTecnica" class="empresa-rut-input" required>
+                            </input>
+                            <label for="aperturaEconomica" class="campo-label">
+                                <span class="field-icon"></span>
+                                Apertura económica
+                            </label>
+                            <input type="date" name="fecha_apertura_economica" id="aperturaEconomica" class="empresa-rut-input" required>
+                            </input>
+                        </div>
+
+
+
+                        <div id="EvaluacionOfertaContainer" class="evaluacion-oferta-container hidden" style="margin-bottom: 50px;">
+                            <label for="tipoSolicitudSelect" class="campo-label">
+                                <span class="label-icono"></span>
+                                Tipo de solicitud:
+                            </label>
+                            <select id="tipoSolicitudSelect" name="tipo_solicitud" class="tipo-solicitud-select">
+                                <option value="">Observación corriente</option>
+                                <option value="fecha_evaluacion_tecnica">Fecha que se envía evaluación técnica</option>
+                                <option value="comision_evaluadora">Comisión evaluadora</option>
+                            </select>
+                            <div class="campo-group">
+                                <div class="evaluacion-tecnica campo-group">
+                                    <label for="fechaEvaluacionTecnica" class="campo-label">
+                                        <span class="field-icono"></span>
+                                        Fecha que se envía evaluación técnica
+                                    </label>
+                                    <input type="date" name="fecha_evaluacion_tecnica" id="fechaEvaluacionTecnica" required>
+                                    </input>
+                                </div>
+                                <div class="comision-evaluadora campo-group">
+                                    <label class="campo-label">
+                                        <span class="field-icono"></span>
+                                        Comisión evaluadora
+                                    </label>
+                                    <label for="comisionEvaluadora1" class="campo-label">
+                                        <span class="field-icono"></span>
+                                        Integrante N° 1
+                                    </label>
+                                    <input type="text" name="comision_evaluadora_n1" id="comisionEvaluadora1" placeholder="Integrante N° 1" required>
+                                    </input>
+                                    <label for="comisionEvaluadora2" class="campo-label">
+                                        <span class="field-icono"></span>
+                                        Integrante N° 2
+                                    </label>
+                                    <input type="text" name="comision_evaluadora_n2" id="comisionEvaluadora2" placeholder="Integrante N° 2" required>
+                                    </input>
+                                    <label for="comisionEvaluadora3" class="campo-label">
+                                        <span class="field-icono"></span>
+                                        Integrante N° 3
+                                    </label>
+                                    <input type="text" name="comision_evaluadora_n3" id="comisionEvaluadora3" placeholder="Integrante N° 3" required>
+                                    </input>
                                 </div>
                             </div>
-                            
+                        </div>
+
+                        <div id="fechasSolicitudRegimenInternoContainer" class="fechas-solicitud-regimen-interno-container" style="margin-bottom: 50px;">
+                            <h3 class="section-title" style="cursor: pointer;">
+                                <span class="section-icon">📅</span>
+                                Fecha de solicitud de comisión de régimen interno
+                            </h3>
+                            <label for="cierrePreguntas" class="campo-label">
+                                <span class="field-icon"></span>
+                                Fecha de solicitud
+                            </label>
+                            <input type="date" name="fecha_solicitud_regimen_interno" id="fechaSolicitudRegimenInterno" class="empresa-rut-input" required>
+                            </input>
+                        </div>
+
+
+
+
+                        <div id="fechasRecepcionDocumentosRegimenInternoContainer" class="fechas-recepcion-documentos-regimen-interno-container" style="margin-bottom: 50px;">
+                            <h3 class="section-title" style="cursor: pointer;">
+                                <span class="section-icon">📅</span>
+                                Fecha de recepción de documento de régimen interno
+                            </h3>
+                            <input type="date" name="fecha_solicitud_regimen_interno" id="fechaSolicitudRegimenInterno" class="empresa-rut-input" required>
+                            </input>
+                        </div>
+
+
+
+
+
+
+
+
+                        <div id="adjudicacionContainer" class="adjudicacion-container" style="margin-bottom: 50px;">
                             <div class="campo-grupo">
                                 <label for="empresaNombreInput" class="campo-label">
                                     <span class="label-icono">🏢</span>
@@ -149,6 +253,92 @@
                                     <span class="ayuda-texto">RUT de la empresa adjudicataria o principal participante</span>
                                 </div>
                             </div>
+                            <div class="campo-grupo">
+                                <label for="montoAdjudicadoInput" class="campo-label">
+                                    <span class="label-icono">💰</span>
+                                    Monto adjudicado:
+                                </label>
+                                <input 
+                                    type="number" 
+                                    step="0.01"
+                                    id="montoAdjudicadoInput" 
+                                    name="monto_adjudicado" 
+                                    class="empresa-rut-input"
+                                    placeholder="Ej: 1500000.00"
+                                    min="0">
+                            </div>
+                            <div class="campo-grupo">
+                                <label for="fechaDecretoInput" class="campo-label">
+                                    <span class="label-icono">📅</span>
+                                    Fecha de decreto:
+                                </label>
+                                <input 
+                                    type="date" 
+                                    id="fechaDecretoInput" 
+                                    name="fecha_decreto" 
+                                    class="empresa-rut-input">
+                            </div>
+                            <div class="campo-group">
+                                <label for="fechaSubidaMercadoPublicoInput" class="campo-label">
+                                    <span class="label-icono">📅</span>
+                                    Fecha de subida a Mercado Público:
+                                </label>
+                                <input 
+                                    type="date" 
+                                    id="fechaSubidaMercadoPublicoInput" 
+                                    name="fecha_subida_mercado_publico" 
+                                    class="empresa-rut-input">
+                            </div>
+                            <div class="campo-group">
+                                <label for="numeroOrdenCompraInput" class="campo-label">
+                                    <span class="label-icono">🛒</span>
+                                    Número de orden de compra:
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="numeroOrdenCompraInput" 
+                                    name="numero_orden_compra" 
+                                    class="empresa-rut-input"
+                                    placeholder="Ej: OC-2023-001"
+                                    maxlength="50">
+                            </div>
+                        </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        <!-- Campo ID Mercado Público - se muestra solo en etapa "Publicacion en portal" -->
+                        <div id="idMercadoPublicoContainer" class="id-mercado-publico-container hidden">
+                            <label for="idMercadoPublicoInput" class="campo-label">
+                                <span class="label-icono">🏛️</span>
+                                ID Mercado Público:
+                            </label>
+                            <input 
+                                type="text" 
+                                id="idMercadoPublicoInput" 
+                                name="id_mercado_publico" 
+                                class="id-mercado-publico-input"
+                                placeholder="Ingresa el ID del mercado público (ej: 1234-56-LQ21)"
+                                maxlength="50"
+                                value="{{ licitacion.id_mercado_publico|default:'' }}"
+                            >
+                            <div class="campo-ayuda">
+                                <span class="ayuda-icono">💡</span>
+                                <span class="ayuda-texto">ID único asignado por el portal de mercado público</span>
+                            </div>
                         </div>
                         
                         <!-- Campo de observación -->
@@ -167,7 +357,7 @@
                         </div>
                         
                         <!-- Campo de archivos -->
-                        <div class="archivos-campo hidden">
+                        <div class="archivos-campo">
                             <label class="campo-label">
                                 <span class="label-icono">📎</span>
                                 Archivos adjuntos:
@@ -384,7 +574,7 @@
                 
                 <!-- Sección de archivos adjuntos en el modal -->
                 {% if es_admin %}
-                <div class="modal-field-container hidden">
+                <div class="modal-field-container">
                     <label class="modal-field-label">
                         <span class="modal-label-icon">📎</span>
                         Archivos adjuntos:

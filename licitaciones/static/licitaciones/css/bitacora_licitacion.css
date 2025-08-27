@@ -604,7 +604,7 @@
 
 .panel-contenido.expanded {
     padding: 24px;
-    max-height: 1000px;
+    max-height: 200vh;
     opacity: 1;
 }
 

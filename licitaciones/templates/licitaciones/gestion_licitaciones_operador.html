@@ -73,7 +73,7 @@
                     <td data-campo="seleccionar" data-col="seleccionar" data-label="Seleccionar"><input type="checkbox" class="licitacion-check" value="{{ licitacion.id }}" id="check-{{ licitacion.id }}" onclick="event.stopPropagation();"/></td>
                     <td data-campo="numero_pedido" data-col="numero_pedido" data-label="N° de pedido">{{ licitacion.numero_pedido }}</td>
                     <td data-campo="id_mercado_publico" data-col="id_mercado_publico" data-label="ID Mercado Público">{{ licitacion.id_mercado_publico|default:"-" }}</td>
-                    <td data-campo="fecha_tentativa_termino" data-col="fecha_tentativa_termino" data-label="Fecha tentativa de término">f</td>
+                    <td data-campo="fecha_tentativa_termino" data-col="fecha_tentativa_termino" data-label="Fecha tentativa de término"></td>
                     <td data-campo="operadores" data-col="operadores" data-label="Profesionales a Cargo">
                         <div class="operadores-container">
                             <span class="operador-badge operador-1 {% if licitacion.get_numero_operador_activo == 1 %}activo{% endif %}" title="Operador 1: Gestiona hasta Evaluación de Ofertas">
@@ -141,6 +141,11 @@
                         const fila = document.querySelector(`tr[data-id='{{ licitacion.id }}']`);
                         const fechaCreacionStr = "{{ licitacion.fecha_creacion|date:'Y-m-d' }}";
                         const fechaCreacion = new Date(fechaCreacionStr);
+                        const celda = fila.querySelector("td[data-campo='fecha_tentativa_termino']");
+                        if (celda.textContent.trim()!=="") {
+                            celda.textContent = "-";
+                            return;
+                        }
                         switch (fila.querySelector("td[data-campo='tipo_presupuesto']").innerHTML){
                             case 'LP':
                                 fechaCreacion.setDate(fechaCreacion.getDate() + 130);
@@ -156,13 +161,12 @@
                         const anio = fechaCreacion.getFullYear();
                         const fechaFormateada = `${dia}/${mes}/${anio}`;
                         if (fila) {
-                            const celda = fila.querySelector("td[data-campo='fecha_tentativa_termino']");
                             if (celda) {
                                 celda.textContent = fechaFormateada;
                             }
                         }
                     })();
-                 </script>
+                </script>
                 {% endfor %}
             </tbody>
         </table>

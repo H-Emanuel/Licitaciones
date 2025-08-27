@@ -75,15 +75,22 @@ ids.forEach(id => {
 
 
 function getIdFromCell(cell, list, key='nombre') {
+    let found = '';
     if (!cell) return '';
-    const nombre = cell.innerText.trim();
+    const nombre = cell.innerText;
     if (!nombre || nombre === '-') return '';
-    const found = (window[list] || []).find(e => e.nombre === nombre);
+        found = (window[list] || []).find(e => e.nombre === nombre);
+    if (key === 'etapasLicitacion') {
+        found = (list || []).find(e => e.nombre === nombre);
+    }
+    if (!found) {
+        found = (window[list] || []).find(e => e.nombre.includes(nombre));
+    }
     return found ? found.id : '';
 }
 
 async function reabrirLicitacion(idProyecto, fallida = false) {
-    if (confirm(`¿Está seguro que desea reabrir esta licitación?\n\nEsta acción cambiará el estado a "En Curso" y se registrará en la bitácora.`)) {
+    if (confirm(`¿Está seguro que desea reabrir esta licitación?\n\nEsta acción reabrirá la licitación y se registrará en la bitácora.`)) {
         url = `/gestion/modificar_licitacion/${idProyecto}/`;
         method = 'POST';
         const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
@@ -98,11 +105,18 @@ async function reabrirLicitacion(idProyecto, fallida = false) {
                     // Obtener etapa actual
                     let etapaActualId;
                     let etapasLicitacion;
+
+                     // Obtener etapa actual
+                    const resEtapa = await fetch(`/api/licitacion/${idProyecto}/etapa/`);
+                    if (resEtapa.ok) {
+                        const dataEtapa = await resEtapa.json();
+                        etapaActualId = dataEtapa.etapa_id;
+                    }
+                    
                     // Obtener etapas con información de inhabilitación
                     const resEtapas = await fetch(`/api/licitacion/${idProyecto}/etapas/`);
                     if (resEtapas.ok) {
                         const dataEtapas = await resEtapas.json();
-                        etapaActualId = dataEtapa.etapa_id;
                         etapasLicitacion = dataEtapas.etapas || [];
                         
                         // Mostrar información adicional si se detecta que debe saltar etapa
@@ -556,6 +570,44 @@ document.addEventListener("DOMContentLoaded", function () {
             const tipo_presupuesto = formProyecto['tipo_presupuesto'];
             if (tipo_presupuesto) tipo_presupuesto.value = datos.tipo_presupuesto;
         }
+
+
+        if (datos && datos.fecha_tentativa_cierre !== undefined) {
+            const fecha_tentativa_cierre = formProyecto['fecha_tentativa_cierre'];
+            if (fecha_tentativa_cierre) fecha_tentativa_cierre.value = datos.fecha_tentativa_cierre;
+        }
+
+        if (datos && datos.fecha_cierre_preguntas !== undefined) {
+            const fecha_cierre_preguntas = formProyecto['fecha_cierre_preguntas'];
+            if (fecha_cierre_preguntas) fecha_cierre_preguntas.value = datos.fecha_cierre_preguntas;
+        }
+
+        if (datos && datos.fecha_respuesta !== undefined) {
+            const fecha_respuesta = formProyecto['fecha_respuesta'];
+            if (fecha_respuesta) fecha_respuesta.value = datos.fecha_respuesta;
+        }
+
+        if (datos && datos.fecha_visita_terreno !== undefined) {
+            const fecha_visita_terreno = formProyecto['fecha_visita_terreno'];
+            if (fecha_visita_terreno) fecha_visita_terreno.value = datos.fecha_visita_terreno;
+        }
+
+        if (datos && datos.fecha_cierre_oferta !== undefined) {
+            const fecha_cierre_oferta = formProyecto['fecha_cierre_oferta'];
+            if (fecha_cierre_oferta) fecha_cierre_oferta.value = datos.fecha_cierre_oferta;
+        }
+
+        if (datos && datos.fecha_apertura_tecnica !== undefined) {
+            const fecha_apertura_tecnica = formProyecto['fecha_apertura_tecnica'];
+            if (fecha_apertura_tecnica) fecha_apertura_tecnica.value = datos.fecha_apertura_tecnica;
+        }
+
+        if (datos && datos.fecha_apertura_economica !== undefined) {
+            const fecha_apertura_economica = formProyecto['fecha_apertura_economica'];
+            if (fecha_apertura_economica) fecha_apertura_economica.value = datos.fecha_apertura_economica;
+        }
+
+
         // Tipo de monto (checkboxes)
         if (datos && datos.tipo_monto) {
             const montoMaximo = document.getElementById('montoMaximoCheck');
@@ -942,7 +994,6 @@ document.querySelectorAll('.editar-fila').forEach(btn => {
             const foundEstado = (window.estadosLicitacion || []).find(e => e.nombre === nombreEstado);
             if (foundEstado) estadoValue = foundEstado.id;
         }
-        console.log(window.departamentosLicitacion);
         abrirModal('Editar Licitación', {
             id: id,
             operador: operadorId || '',

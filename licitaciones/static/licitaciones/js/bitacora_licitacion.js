@@ -188,7 +188,6 @@ window.addEventListener('DOMContentLoaded', function() {
                     formData.append('archivos', file);
                 });
             }
-            
             fetch(`/api/bitacora/${bitacoraId}/observacion/`, {
                 method: 'POST',
                 headers: { 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value },
@@ -333,6 +332,22 @@ window.addEventListener('DOMContentLoaded', function() {
         };
     }
     
+    function toggleFechasImportantes() {
+        const fechasImportantes = document.getElementById('fechasImportantesContainer');
+        const idMercadoPublicoInput = document.getElementById('fechasImportantes');
+        
+        if (!fechasImportantes || !nombreEtapaActual) return;
+        
+        const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
+        
+        // Mostrar campo si la etapa es "Publicacion en portal"
+        if (etapaActualTexto === 'publicacion en portal' || etapaActualTexto === 'publicación en portal') {
+            fechasImportantes.classList.remove('hidden');
+        } else {
+            fechasImportantes.classList.add('hidden');
+        }
+    }
+
     // Función para mostrar/ocultar campo ID Mercado Público
     function toggleIdMercadoPublico() {
         const idMercadoPublicoContainer = document.getElementById('idMercadoPublicoContainer');
@@ -393,6 +408,7 @@ window.addEventListener('DOMContentLoaded', function() {
     }
     
     // Verificar al cargar la página
+    toggleFechasImportantes();
     toggleIdMercadoPublico();
     toggleRecepcionOfertas();
     toggleEtapaButton();
@@ -436,6 +452,7 @@ window.addEventListener('DOMContentLoaded', function() {
             }
             
             // Llamar a las funciones para mostrar/ocultar campos específicos por etapa
+            toggleFechasImportantes();
             toggleIdMercadoPublico();
             toggleRecepcionOfertas();
             toggleEtapaButton();
@@ -509,6 +526,7 @@ window.addEventListener('DOMContentLoaded', function() {
             }
             
             // Llamar a las funciones para mostrar/ocultar campos específicos por etapa
+            toggleFechasImportantes();
             toggleIdMercadoPublico();
             toggleRecepcionOfertas();
             toggleEtapaButton();
