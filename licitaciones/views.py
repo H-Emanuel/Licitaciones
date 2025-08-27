@@ -95,7 +95,9 @@ def modificar_licitacion(request, licitacion_id):
                 # Si el nuevo estado es "En curso" y la licitación estaba cerrada, reabrirla
                 if estado_obj.nombre.strip().lower() == 'en curso':
                     texto_bitacora = "🔓 LICITACIÓN REABIERTA\n\n"
-                    licitacion.tipo_fallida = None
+                    if licitacion.tipo_fallida is not None:
+                        texto_bitacora += f"Se elimina el estado de licitación fallida '{licitacion.tipo_fallida}'.\n\n"
+                        licitacion.tipo_fallida = None
                 campos_modificados.append('Estado')
                 valores_antes['Estado'] = str(licitacion.estado_fk)
                 valores_despues['Estado'] = str(estado_obj)

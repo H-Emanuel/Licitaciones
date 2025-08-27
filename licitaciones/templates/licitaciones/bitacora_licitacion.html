@@ -141,7 +141,7 @@
 
 
 
-                        <div id="EvaluacionOfertaContainer" class="evaluacion-oferta-container hidden" style="margin-bottom: 50px;">
+                        <div id="evaluacionOfertaContainer" class="evaluacion-oferta-container hidden" style="margin-bottom: 50px;">
                             <label for="tipoSolicitudSelect" class="campo-label">
                                 <span class="label-icono"></span>
                                 Tipo de solicitud:
@@ -187,7 +187,7 @@
                             </div>
                         </div>
 
-                        <div id="fechasSolicitudRegimenInternoContainer" class="fechas-solicitud-regimen-interno-container" style="margin-bottom: 50px;">
+                        <div id="fechasSolicitudRegimenInternoContainer" class="fechas-solicitud-regimen-interno-container hidden" style="margin-bottom: 50px;">
                             <h3 class="section-title" style="cursor: pointer;">
                                 <span class="section-icon">📅</span>
                                 Fecha de solicitud de comisión de régimen interno
@@ -203,7 +203,7 @@
 
 
 
-                        <div id="fechasRecepcionDocumentosRegimenInternoContainer" class="fechas-recepcion-documentos-regimen-interno-container" style="margin-bottom: 50px;">
+                        <div id="fechasRecepcionDocumentosRegimenInternoContainer" class="fechas-recepcion-documentos-regimen-interno-container hidden" style="margin-bottom: 50px;">
                             <h3 class="section-title" style="cursor: pointer;">
                                 <span class="section-icon">📅</span>
                                 Fecha de recepción de documento de régimen interno
@@ -219,7 +219,7 @@
 
 
 
-                        <div id="adjudicacionContainer" class="adjudicacion-container" style="margin-bottom: 50px;">
+                        <div id="adjudicacionContainer" class="adjudicacion-container hidden" style="margin-bottom: 50px;">
                             <div class="campo-grupo">
                                 <label for="empresaNombreInput" class="campo-label">
                                     <span class="label-icono">🏢</span>
@@ -295,15 +295,19 @@
                                     Número de orden de compra:
                                 </label>
                                 <input 
-                                    type="text" 
+                                    type="number" 
                                     id="numeroOrdenCompraInput" 
                                     name="numero_orden_compra" 
                                     class="empresa-rut-input"
-                                    placeholder="Ej: OC-2023-001"
-                                    maxlength="50">
+                                    placeholder="Ej: 12345"
+                                    max=999999999>
                             </div>
                         </div>
 
+                        <button type="button" id="btnRedestinar" class="btn-accion btn-primario hidden" onclick="document.getElementById('modalRedestinar').style.display=''; document.getElementById('modalRedestinar').classList.add('active');">
+                            <span class="btn-icono">🔄</span>
+                            Redestinar
+                        </button>
 
 
 
@@ -558,7 +562,55 @@
             window.etapasLicitacion = JSON.parse(document.getElementById('etapas-licitacion-data').textContent);
         </script>
         <script src="{% static 'licitaciones/js/bitacora_licitacion.js' %}"></script>
-    </div>    <!-- Modal para agregar/editar observación -->
+    </div>
+
+
+
+
+
+    <div class="modal-container" id="modalRedestinar">
+        <div class="modal-content" style="padding: 20px 20px;">
+            <span id="cerrarModalObservacion" class="btn-close">&times;</span>
+            <h2 id="tituloModalObservacion">Redestinación</h2>
+            <form id="formModalObservacion" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="bitacora_id" id="observacionBitacoraId">
+                
+                <div class="modal-field-container">
+                    <label for="modalObservacionTexto" class="modal-field-label">Razón de redestinamiento:</label>
+                    <textarea id="modalObservacionTexto" name="texto" rows="4" class="modal-textarea" required {% if es_admin %}readonly{% endif %} placeholder="Escribe la razón de redestinamiento..."></textarea>
+                </div>
+                <!-- Información de ayuda -->
+                <div class="modal-file-help">
+                    <span class="help-icon">💡</span>
+                    <span class="help-text">Se redireccionará la licitacion actual a etapa "Evaluación de ofertas" y se registrará en la bitácora</span>
+                </div>
+
+                <div class="modal-buttons">
+                    <button type="button" id="btnCancelarObservacion">Cancelar</button>
+                    {% if not es_admin %}
+                    <button type="submit" id="btnGuardarObservacion">🔄 Redestinar</button>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!-- Modal para agregar/editar observación -->
     <div class="modal-container">
         <div class="modal-content" style="padding: 20px 20px;">
             <span id="cerrarModalObservacion" class="btn-close">&times;</span>

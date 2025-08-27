@@ -331,10 +331,76 @@ window.addEventListener('DOMContentLoaded', function() {
             nombre: nombreEtapaActual.textContent.trim()
         };
     }
+
+
+
+
+
+
+
+
+    function toggleAdjudicacion() {
+        const adjudicacion = document.getElementById('adjudicacionContainer');
+        
+        if (!adjudicacion || !nombreEtapaActual) return;
+        
+        const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
+        
+        // Mostrar campo si la etapa es "solicitud de comision de regimen interno"
+        if (etapaActualTexto === 'adjudicacion y resolucion correspondiente' || etapaActualTexto === 'adjudicación y resolución correspondiente') {
+            adjudicacion.classList.remove('hidden');
+        } else {
+            adjudicacion.classList.add('hidden');
+        }
+    }
+
+    function toggleFechasSolicitudRegimenInterno() {
+        const fechasSolicitudRegimenInterno = document.getElementById('fechasSolicitudRegimenInternoContainer');
+        
+        if (!fechasSolicitudRegimenInterno || !nombreEtapaActual) return;
+        
+        const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
+        
+        // Mostrar campo si la etapa es "solicitud de comision de regimen interno"
+        if (etapaActualTexto === 'solicitud de comision de regimen interno' || etapaActualTexto === 'solicitud de comisión de régimen interno') {
+            fechasSolicitudRegimenInterno.classList.remove('hidden');
+        } else {
+            fechasSolicitudRegimenInterno.classList.add('hidden');
+        }
+    }
+
+    function toggleEvaluacionOferta() {
+        const evaluacionOferta = document.getElementById('evaluacionOfertaContainer');
+        
+        if (!evaluacionOferta || !nombreEtapaActual) return;
+        
+        const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
+        
+        // Mostrar campo si la etapa es "evaluacion oferta"
+        if (etapaActualTexto === 'evaluacion oferta' || etapaActualTexto === 'evaluación ofertas') {
+            evaluacionOferta.classList.remove('hidden');
+        } else {
+            evaluacionOferta.classList.add('hidden');
+        }
+    }
+
+    function toggleFechasRecepcionDocumentosRegimenInterno() {
+        const fechasRecepcionDocumentosRegimenInterno = document.getElementById('fechasRecepcionDocumentosRegimenInternoContainer');
+        
+        if (!fechasRecepcionDocumentosRegimenInterno || !nombreEtapaActual) return;
+        
+        const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
+        
+        // Mostrar campo si la etapa es "recepcion de documento regimen interno"
+        if (etapaActualTexto === 'recepcion de documento regimen interno' || etapaActualTexto === 'recepción de documento régimen interno') {
+            fechasRecepcionDocumentosRegimenInterno.classList.remove('hidden');
+        } else {
+            fechasRecepcionDocumentosRegimenInterno.classList.add('hidden');
+        }
+    }
     
     function toggleFechasImportantes() {
         const fechasImportantes = document.getElementById('fechasImportantesContainer');
-        const idMercadoPublicoInput = document.getElementById('fechasImportantes');
         
         if (!fechasImportantes || !nombreEtapaActual) return;
         
@@ -408,6 +474,10 @@ window.addEventListener('DOMContentLoaded', function() {
     }
     
     // Verificar al cargar la página
+    toggleAdjudicacion();
+    toggleFechasSolicitudRegimenInterno();
+    toggleEvaluacionOferta();
+    toggleFechasRecepcionDocumentosRegimenInterno();
     toggleFechasImportantes();
     toggleIdMercadoPublico();
     toggleRecepcionOfertas();
@@ -452,6 +522,10 @@ window.addEventListener('DOMContentLoaded', function() {
             }
             
             // Llamar a las funciones para mostrar/ocultar campos específicos por etapa
+            toggleAdjudicacion();
+            toggleFechasSolicitudRegimenInterno();
+            toggleEvaluacionOferta();
+            toggleFechasRecepcionDocumentosRegimenInterno();
             toggleFechasImportantes();
             toggleIdMercadoPublico();
             toggleRecepcionOfertas();
@@ -526,6 +600,10 @@ window.addEventListener('DOMContentLoaded', function() {
             }
             
             // Llamar a las funciones para mostrar/ocultar campos específicos por etapa
+            toggleAdjudicacion();
+            toggleFechasSolicitudRegimenInterno();
+            toggleEvaluacionOferta();
+            toggleFechasRecepcionDocumentosRegimenInterno();
             toggleFechasImportantes();
             toggleIdMercadoPublico();
             toggleRecepcionOfertas();
