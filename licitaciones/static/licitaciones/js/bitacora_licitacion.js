@@ -42,8 +42,6 @@ window.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    var textarea = document.querySelector('textarea[name="texto"]');
-    if (textarea) textarea.focus();
 
     // Botón para subir archivo
     const btnSubirArchivo = document.getElementById('btnSubirArchivo');
@@ -335,9 +333,29 @@ window.addEventListener('DOMContentLoaded', function() {
 
 
 
+    function toggleFechaDisponibilidadPresupuestaria() {
+        const fechaDisponibilidadPresupuestaria = document.getElementById('fechaDisponibilidadPresupuestariaContainer');
+        if (!fechaDisponibilidadPresupuestaria || !nombreEtapaActual) return;
+        const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
+        // Mostrar campo si la etapa es "firma de contrato"
+        if (etapaActualTexto === 'firma de contrato') {
+            fechaDisponibilidadPresupuestaria.classList.remove('hidden');
+        } else {
+            fechaDisponibilidadPresupuestaria.classList.add('hidden');
+        }
+    }
 
-
-
+    function toggleFechaTopeFirmaContrato() {
+        const fechaTopeFirmaContrato = document.getElementById('fechaTopeFirmaContratoContainer');
+        if (!fechaTopeFirmaContrato || !nombreEtapaActual) return;
+        const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
+        // Mostrar campo si la etapa es "firma de contrato"
+        if (etapaActualTexto === 'firma de contrato') {
+            fechaTopeFirmaContrato.classList.remove('hidden');
+        } else {
+            fechaTopeFirmaContrato.classList.add('hidden');
+        }
+    }
 
     function toggleAdjudicacion() {
         const adjudicacion = document.getElementById('adjudicacionContainer');
@@ -426,9 +444,9 @@ window.addEventListener('DOMContentLoaded', function() {
         // Mostrar campo si la etapa es "Publicacion en portal"
         if (etapaActualTexto === 'publicacion en portal' || etapaActualTexto === 'publicación en portal') {
             idMercadoPublicoContainer.classList.remove('hidden');
-            if (idMercadoPublicoInput) {
+            /*if (idMercadoPublicoInput) {
                 idMercadoPublicoInput.focus();
-            }
+            }*/
         } else {
             idMercadoPublicoContainer.classList.add('hidden');
         }
@@ -460,7 +478,6 @@ window.addEventListener('DOMContentLoaded', function() {
     function toggleEtapaButton() {
         const etapaActualId = parseInt(nombreEtapaActual.dataset.etapaId);
         const currentIndex = etapas.findIndex(e => parseInt(e.id) === etapaActualId);
-        console.log(etapaActualId, etapaOriginal.id);
         if (currentIndex == etapas.length - 1) {
             btnAvanzarEtapa.classList.add('hidden');
         }
@@ -474,6 +491,8 @@ window.addEventListener('DOMContentLoaded', function() {
     }
     
     // Verificar al cargar la página
+    toggleFechaDisponibilidadPresupuestaria();
+    toggleFechaTopeFirmaContrato();
     toggleAdjudicacion();
     toggleFechasSolicitudRegimenInterno();
     toggleEvaluacionOferta();
@@ -522,6 +541,8 @@ window.addEventListener('DOMContentLoaded', function() {
             }
             
             // Llamar a las funciones para mostrar/ocultar campos específicos por etapa
+            toggleFechaDisponibilidadPresupuestaria();
+            toggleFechaTopeFirmaContrato();
             toggleAdjudicacion();
             toggleFechasSolicitudRegimenInterno();
             toggleEvaluacionOferta();
@@ -600,6 +621,8 @@ window.addEventListener('DOMContentLoaded', function() {
             }
             
             // Llamar a las funciones para mostrar/ocultar campos específicos por etapa
+            toggleFechaDisponibilidadPresupuestaria();
+            toggleFechaTopeFirmaContrato();
             toggleAdjudicacion();
             toggleFechasSolicitudRegimenInterno();
             toggleEvaluacionOferta();
@@ -801,26 +824,6 @@ window.addEventListener('DOMContentLoaded', function() {
                     idMercadoPublicoInput.value = '';
                 }
                 
-                // Limpiar campos de Recepción de Ofertas
-                const numeroOfertasInput = document.getElementById('numeroOfertasInput');
-                if (numeroOfertasInput) {
-                    numeroOfertasInput.value = '';
-                    numeroOfertasInput.style.borderColor = '';
-                    numeroOfertasInput.style.backgroundColor = '';
-                }
-                
-                const empresaNombreInput = document.getElementById('empresaNombreInput');
-                if (empresaNombreInput) {
-                    empresaNombreInput.value = '';
-                }
-                
-                const empresaRutInput = document.getElementById('empresaRutInput');
-                if (empresaRutInput) {
-                    empresaRutInput.value = '';
-                    empresaRutInput.style.borderColor = '';
-                    empresaRutInput.style.backgroundColor = '';
-                }
-                
                 if (accionEtapa) accionEtapa.value = 'none';
                 if (previewContainer) previewContainer.innerHTML = '';
                 
@@ -861,84 +864,176 @@ window.addEventListener('DOMContentLoaded', function() {
         formObservacionBitacora.addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const licitacionId = this.querySelector('input[name="licitacion_id"]').value;        const texto = document.getElementById('observacionTexto').value;
-        
-        // Solo obtener archivos si el campo existe (panel de operadores)
-        const archivosInput = document.getElementById('observacionArchivos');
-        const archivos = archivosInput ? archivosInput.files : [];
-        
-        // Solo obtener elementos de marcado como fallida si existen (panel de operadores)
-        const marcarFallidaCheckbox = document.getElementById('marcarFallidaCheckbox');
-        const tipoFallidaSelect = document.getElementById('tipoFallidaSelect');
-        const marcarFallida = marcarFallidaCheckbox ? marcarFallidaCheckbox.checked : false;
-        const tipoFallida = tipoFallidaSelect ? tipoFallidaSelect.value : '';
-        
-        const accionEtapaValue = accionEtapa ? accionEtapa.value : 'none';
-        
-        // Solo obtener ID Mercado Público si el campo existe (panel de operadores)
-        const idMercadoPublicoInput = document.getElementById('idMercadoPublicoInput');
-        const idMercadoPublico = idMercadoPublicoInput ? idMercadoPublicoInput.value.trim() : '';
-        
-        if (!texto.trim()) {
-            alert('La observación no puede estar vacía.');
-            return;
-        }
-        
-        // Validar que si se marca como fallida, se seleccione un tipo
-        if (marcarFallida && !tipoFallida) {
-            alert('Debe seleccionar un tipo de falla.');
-            return;
-        }
-        
-        const formData = new FormData();
-        formData.append('texto', texto);
-        
-        // Agregar ID Mercado Público si está presente
-        if (idMercadoPublico) {
-            formData.append('id_mercado_publico', idMercadoPublico);
-        }
-        
-        for (let i = 0; i < archivos.length; i++) {
-            formData.append('archivos', archivos[i]);
-        }
-        
-        if (marcarFallida) {
-            formData.append('marcar_fallida', 'on');
-            if (tipoFallida) {
-                formData.append('tipo_fallida', tipoFallida);
+            const licitacionId = this.querySelector('input[name="licitacion_id"]').value;
+            const texto = document.getElementById('observacionTexto').value;
+            const etapaActualId = parseInt(nombreEtapaActual.dataset.etapaId);
+            // Solo obtener archivos si el campo existe (panel de operadores)
+            const archivosInput = document.getElementById('observacionArchivos');
+            const archivos = archivosInput ? archivosInput.files : [];
+            
+            // Solo obtener elementos de marcado como fallida si existen (panel de operadores)
+            const marcarFallidaCheckbox = document.getElementById('marcarFallidaCheckbox');
+            const tipoFallidaSelect = document.getElementById('tipoFallidaSelect');
+            const marcarFallida = marcarFallidaCheckbox ? marcarFallidaCheckbox.checked : false;
+            const tipoFallida = tipoFallidaSelect ? tipoFallidaSelect.value : '';
+            
+            const accionEtapaValue = accionEtapa ? accionEtapa.value : 'none';
+            
+            // Solo obtener ID Mercado Público si el campo existe (panel de operadores)
+            const idMercadoPublicoInput = document.getElementById('idMercadoPublicoInput');
+            const idMercadoPublico = idMercadoPublicoInput ? idMercadoPublicoInput.value.trim() : '';
+            
+            // Campos para Publicación portal
+            const cierrePreguntasInput = document.getElementById('cierrePreguntasInput');
+            const cierrePreguntas = cierrePreguntasInput ? cierrePreguntasInput.value.trim() : '';
+            const respuestaInput = document.getElementById('respuestaInput');
+            const respuesta = respuestaInput ? respuestaInput.value.trim() : '';
+            const visitaTerrenoInput = document.getElementById('visitaTerrenoInput');
+            const visitaTerreno = visitaTerrenoInput ? visitaTerrenoInput.value.trim() : '';
+            const cierreOfertaInput = document.getElementById('cierreOfertaInput');
+            const cierreOferta = cierreOfertaInput ? cierreOfertaInput.value.trim() : '';
+            const AperturaTecnicaInput = document.getElementById('aperturaTecnicaInput');
+            const AperturaTecnica = AperturaTecnicaInput ? AperturaTecnicaInput.value.trim() : '';
+            const AperturaEconomicaInput = document.getElementById('aperturaEconomicaInput');
+            const AperturaEconomica = AperturaEconomicaInput ? AperturaEconomicaInput.value.trim() : '';
+            const fechaEstimadaAdjudicacionInput = document.getElementById('fechaEstimadaAdjudicacionInput');
+            const fechaEstimadaAdjudicacion = fechaEstimadaAdjudicacionInput ? fechaEstimadaAdjudicacionInput.value.trim() : '';
+
+            // Campo para Disponibilidad presupuestaria
+            const fechaDisponibilidadPresupuestariaInput = document.getElementById('fechaDisponibilidadPresupuestariaInput');
+            const fechaDisponibilidadPresupuestaria = fechaDisponibilidadPresupuestariaInput ? fechaDisponibilidadPresupuestariaInput.value.trim() : '';
+
+            // Campos para Adjudicación
+            const empresaRutInput = document.getElementById('empresaRutInput');
+            const empresaRut = empresaRutInput ? empresaRutInput.value.trim() : '';
+            const empresaNombreInput = document.getElementById('empresaNombreInput');
+            const empresaNombre = empresaNombreInput ? empresaNombreInput.value.trim() : '';
+            const montoAdjudicadoInput = document.getElementById('montoAdjudicadoInput');
+            const montoAdjudicado = montoAdjudicadoInput ? parseInt(montoAdjudicadoInput.value.trim()) : '';
+            const fechaDecretoInput = document.getElementById('fechaDecretoInput');
+            const fechaDecreto = fechaDecretoInput ? fechaDecretoInput.value.trim() : '';
+            const fechaSubidaMercadoPublicoInput = document.getElementById('fechaSubidaMercadoPublicoInput');
+            const fechaSubidaMercadoPublico = fechaSubidaMercadoPublicoInput ? fechaSubidaMercadoPublicoInput.value.trim() : '';
+            const numeroOrdenCompraInput = document.getElementById('numeroOrdenCompraInput');
+            const numeroOrdenCompra = numeroOrdenCompraInput ? parseInt(numeroOrdenCompraInput.value.trim()) : '';
+            
+            // Campos para Evaluación de oferta
+            const fechaEvaluacionTecnicaInput = document.getElementById('fechaEvaluacionTecnicaInput');
+            const fechaEvaluacionTecnica = fechaEvaluacionTecnicaInput ? fechaEvaluacionTecnicaInput.value.trim() : '';
+            const nombreIntegranteUnoEvaluacionInput = document.getElementById('nombreIntegranteUnoEvaluacionInput');
+            const nombreIntegranteUnoEvaluacion = nombreIntegranteUnoEvaluacionInput ? nombreIntegranteUnoEvaluacionInput.value.trim() : '';
+            const nombreIntegranteDosEvaluacionInput = document.getElementById('nombreIntegranteDosEvaluacionInput');
+            const nombreIntegranteDosEvaluacion = nombreIntegranteDosEvaluacionInput ? nombreIntegranteDosEvaluacionInput.value.trim() : '';
+            const nombreIntegranteTresEvaluacionInput = document.getElementById('nombreIntegranteTresEvaluacionInput');
+            const nombreIntegranteTresEvaluacion = nombreIntegranteTresEvaluacionInput ? nombreIntegranteTresEvaluacionInput.value.trim() : '';
+            const fechaComisionInput = document.getElementById('fechaComisionInput');
+            const fechaComision = fechaComisionInput ? fechaComisionInput.value.trim() : '';
+
+            // Campos para Solcitud de comisión de régimen Interno
+            const fechaSolicitudRegimenInterno = document.getElementById('fechaSolicitudRegimenInternoInput');
+            const fechaSolicitudRegimenInternoValue = fechaSolicitudRegimenInterno ? fechaSolicitudRegimenInterno.value.trim() : '';
+
+            // Campo para Recepción de documento de régimen interno
+            const fechaRecepcionDocumentoRegimenInterno = document.getElementById('fechaRecepcionDocumentoRegimenInternoInput');
+            const fechaRecepcionDocumentoRegimenInternoValue = fechaRecepcionDocumentoRegimenInterno ? fechaRecepcionDocumentoRegimenInterno.value.trim() : '';
+            
+            // Campo para firma de contrato
+            const fechaTopeFirmaContratoInput = document.getElementById('fechaTopeFirmaContratoInput');
+            const fechaTopeFirmaContratoValue = fechaTopeFirmaContratoInput ? fechaTopeFirmaContratoInput.value.trim() : '';
+
+            
+            if (!texto.trim()) {
+                alert('La observación no puede estar vacía.');
+                return;
             }
-        }
-        
-        if (accionEtapaValue === 'advance') {
-            formData.append('avanzar_etapa', 'on');
-        }
-                  // En lugar de enviar vía fetch, usar el formulario estándar
-        const form = document.getElementById('formObservacionBitacora');
-        
-        // Agregar los campos necesarios si no están presentes
-        if (accionEtapaValue !== 'none') {
-            let accionEtapaInput = document.getElementById('accionEtapa');
-            if (!accionEtapaInput) {
-                accionEtapaInput = document.createElement('input');
-                accionEtapaInput.type = 'hidden';
-                accionEtapaInput.name = 'accion_etapa';
-                accionEtapaInput.id = 'accionEtapa';
-                form.appendChild(accionEtapaInput);
+            
+            // Validar que si se marca como fallida, se seleccione un tipo
+            if (marcarFallida && !tipoFallida) {
+                alert('Debe seleccionar un tipo de falla.');
+                return;
             }
-            accionEtapaInput.value = accionEtapaValue;
-        }
-        
-        // Agregar etapa actual si se está avanzando
-        if (accionEtapaValue === 'advance' && nombreEtapaActual) {
-            let etapaInput = document.createElement('input');
-            etapaInput.type = 'hidden';
-            etapaInput.name = 'etapa';
-            etapaInput.value = nombreEtapaActual.dataset.etapaId;
-            form.appendChild(etapaInput);
-        }
-        
-        // Enviar el formulario de manera estándar
-        form.submit();
+            
+            const formData = new FormData();
+            formData.append('texto', texto);
+            
+            // Agregar ID Mercado Público si está presente
+            if (idMercadoPublico) {
+                formData.append('id_mercado_publico', idMercadoPublico);
+            }
+
+            // Agregar campos de Recepción de Ofertas
+            console.log(cierrePreguntas, respuesta, visitaTerreno, cierreOferta);
+            formData.append('etapa', etapaActualId);
+            if (cierrePreguntas) formData.append('fecha_cierre_preguntas_publicacionportal', cierrePreguntas);
+            if (respuesta) formData.append('fecha_respuesta_publicacionportal', respuesta);
+            if (visitaTerreno) formData.append('fecha_visita_terreno_publicacionportal', visitaTerreno);
+            if (cierreOferta) formData.append('fecha_cierre_oferta_publicacionportal', cierreOferta);
+            if (AperturaTecnica) formData.append('fecha_apertura_tecnica_publicacionportal', AperturaTecnica);
+            if (AperturaEconomica) formData.append('fecha_apertura_economica_publicacionportal', AperturaEconomica);
+            if (fechaEstimadaAdjudicacion) formData.append('fecha_estimada_adjudicacion_publicacionportal', fechaEstimadaAdjudicacion);
+            // Agregar campos de Disponibilidad presupuestaria
+            if (fechaDisponibilidadPresupuestaria) formData.append('fecha_disponibilidad_presupuestaria', fechaDisponibilidadPresupuestaria);
+            // Agregar campos de Adjudicación
+            if (empresaRut) formData.append('rut_adjudicacion', empresaRut);
+            if (empresaNombre) formData.append('empresa_adjudicacion', empresaNombre);
+            if (montoAdjudicado) formData.append('monto_adjudicacion', montoAdjudicado);
+            if (fechaDecreto) formData.append('fecha_decreto_adjudicacion', fechaDecreto);
+            if (fechaSubidaMercadoPublico) formData.append('fecha_subida_mercado_publico_adjudicacion', fechaSubidaMercadoPublico);
+            if (numeroOrdenCompra) formData.append('orden_compra_adjudicacion', numeroOrdenCompra);
+            // Agregar campos de Evaluación
+            if (fechaEvaluacionTecnica) formData.append('fecha_evaluacion_tecnica_evaluacion', fechaEvaluacionTecnica);
+            if (nombreIntegranteUnoEvaluacion) formData.append('nombre_integrante_uno_evaluacion', nombreIntegranteUnoEvaluacion);
+            if (nombreIntegranteDosEvaluacion) formData.append('nombre_integrante_dos_evaluacion', nombreIntegranteDosEvaluacion);
+            if (nombreIntegranteTresEvaluacion) formData.append('nombre_integrante_tres_evaluacion', nombreIntegranteTresEvaluacion);
+            if (fechaComision) formData.append('fecha_comision_evaluacion', fechaComision);
+            // Agregar campo de Solicitud de comisión de régimen interno
+            if (fechaSolicitudRegimenInternoValue) formData.append('fecha_solicitud_regimen_interno', fechaSolicitudRegimenInternoValue);
+            // Agregar campo de Recepción de documento de régimen interno
+            if (fechaRecepcionDocumentoRegimenInternoValue) formData.append('fecha_recepcion_documento_regimen_interno', fechaRecepcionDocumentoRegimenInternoValue);
+            // Agregar campo de Firma de contrato
+            if (fechaTopeFirmaContratoValue) formData.append('fecha_tope_firma_contrato', fechaTopeFirmaContratoValue);
+            
+            for (let i = 0; i < archivos.length; i++) {
+                formData.append('archivos', archivos[i]);
+            }
+            
+            if (marcarFallida) {
+                formData.append('marcar_fallida', 'on');
+                if (tipoFallida) {
+                    formData.append('tipo_fallida', tipoFallida);
+                }
+            }
+            
+            if (accionEtapaValue === 'advance') {
+                formData.append('avanzar_etapa', 'on');
+            }
+                    // En lugar de enviar vía fetch, usar el formulario estándar
+            const form = document.getElementById('formObservacionBitacora');
+            
+            // Agregar los campos necesarios si no están presentes
+            if (accionEtapaValue !== 'none') {
+                let accionEtapaInput = document.getElementById('accionEtapa');
+                if (!accionEtapaInput) {
+                    accionEtapaInput = document.createElement('input');
+                    accionEtapaInput.type = 'hidden';
+                    accionEtapaInput.name = 'accion_etapa';
+                    accionEtapaInput.id = 'accionEtapa';
+                    form.appendChild(accionEtapaInput);
+                }
+                accionEtapaInput.value = accionEtapaValue;
+            }
+            
+            // Agregar etapa actual si se está avanzando
+            if (accionEtapaValue === 'advance' && nombreEtapaActual) {
+                let etapaInput = document.createElement('input');
+                etapaInput.type = 'hidden';
+                etapaInput.name = 'etapa';
+                etapaInput.value = nombreEtapaActual.dataset.etapaId;
+                form.appendChild(etapaInput);
+            }
+            
+            // Enviar el formulario de manera estándar
+            form.submit();
         });
     }
     

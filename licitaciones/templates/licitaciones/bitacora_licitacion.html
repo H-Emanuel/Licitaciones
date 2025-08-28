@@ -101,41 +101,47 @@
                                 <span class="section-icon">📅</span>
                                 Fechas importantes
                             </h3>
-                            <label for="cierrePreguntas" class="campo-label">
+                            <label for="cierrePreguntasInput" class="campo-label">
                                 <span class="field-icon"></span>
                                 Cierre de preguntas
                             </label>
-                            <input type="date" name="fecha_cierre_preguntas" id="cierrePreguntas" class="empresa-rut-input" required>
+                            <input type="date" name="fecha_cierre_preguntas_publicacionportal" id="cierrePreguntasInput" class="empresa-rut-input">
                             </input>
-                            <label for="respuesta" class="campo-label">
+                            <label for="respuestaInput" class="campo-label">
                                 <span class="field-icon"></span>
                                 Respuesta
                             </label>
-                            <input type="date" name="fecha_respuesta" id="respuesta" class="empresa-rut-input" required>
+                            <input type="date" name="fecha_respuesta_publicacionportal" id="respuestaInput" class="empresa-rut-input">
                             </input>
-                            <label for="visitaTerreno" class="campo-label">
+                            <label for="visitaTerrenoInput" class="campo-label">
                                 <span class="field-icon"></span>
                                 Visita a terreno
                             </label>
-                            <input type="date" name="fecha_visita_terreno" id="visitaTerreno" class="empresa-rut-input" required>
+                            <input type="date" name="fecha_visita_terreno_publicacionportal" id="visitaTerrenoInput" class="empresa-rut-input">
                             </input>
-                            <label for="cierreOferta" class="campo-label">
+                            <label for="cierreOfertaInput" class="campo-label">
                                 <span class="field-icon"></span>
                                 Cierre de oferta
                             </label>
-                            <input type="date" name="fecha_cierre_oferta" id="cierreOferta" class="empresa-rut-input" required>
+                            <input type="date" name="fecha_cierre_oferta_publicacionportal" id="cierreOfertaInput" class="empresa-rut-input">
                             </input>
-                            <label for="aperturaTecnica" class="campo-label">
+                            <label for="aperturaTecnicaInput" class="campo-label">
                                 <span class="field-icon"></span>
                                 Apertura técnica
                             </label>
-                            <input type="date" name="fecha_apertura_tecnica" id="aperturaTecnica" class="empresa-rut-input" required>
+                            <input type="date" name="fecha_apertura_tecnica_publicacionportal" id="aperturaTecnicaInput" class="empresa-rut-input">
                             </input>
-                            <label for="aperturaEconomica" class="campo-label">
+                            <label for="aperturaEconomicaInput" class="campo-label">
                                 <span class="field-icon"></span>
                                 Apertura económica
                             </label>
-                            <input type="date" name="fecha_apertura_economica" id="aperturaEconomica" class="empresa-rut-input" required>
+                            <input type="date" name="fecha_apertura_economica_publicacionportal" id="aperturaEconomicaInput" class="empresa-rut-input">
+                            </input>
+                            <label for="fechaEstimadaAdjudicacionInput" class="campo-label">
+                                <span class="field-icon"></span>
+                                Fecha estimada de adjudicación
+                            </label>
+                            <input type="date" name="fecha_estimada_adjudicacion_publicacionportal" id="fechaEstimadaAdjudicacionInput" class="empresa-rut-input">
                             </input>
                         </div>
 
@@ -148,67 +154,66 @@
                             </label>
                             <select id="tipoSolicitudSelect" name="tipo_solicitud" class="tipo-solicitud-select">
                                 <option value="">Observación corriente</option>
-                                <option value="fecha_evaluacion_tecnica">Fecha que se envía evaluación técnica</option>
+                                <option value="fecha_evaluacion_tecnica_evaluacion">Fecha que se envía evaluación técnica</option>
                                 <option value="comision_evaluadora">Comisión evaluadora</option>
                             </select>
-                            <div class="campo-group">
-                                <div class="evaluacion-tecnica campo-group">
-                                    <label for="fechaEvaluacionTecnica" class="campo-label">
-                                        <span class="field-icono"></span>
-                                        Fecha que se envía evaluación técnica
-                                    </label>
-                                    <input type="date" name="fecha_evaluacion_tecnica" id="fechaEvaluacionTecnica" required>
-                                    </input>
-                                </div>
-                                <div class="comision-evaluadora campo-group">
-                                    <label class="campo-label">
-                                        <span class="field-icono"></span>
-                                        Comisión evaluadora
-                                    </label>
-                                    <label for="comisionEvaluadora1" class="campo-label">
-                                        <span class="field-icono"></span>
-                                        Integrante N° 1
-                                    </label>
-                                    <input type="text" name="comision_evaluadora_n1" id="comisionEvaluadora1" placeholder="Integrante N° 1" required>
-                                    </input>
-                                    <label for="comisionEvaluadora2" class="campo-label">
-                                        <span class="field-icono"></span>
-                                        Integrante N° 2
-                                    </label>
-                                    <input type="text" name="comision_evaluadora_n2" id="comisionEvaluadora2" placeholder="Integrante N° 2" required>
-                                    </input>
-                                    <label for="comisionEvaluadora3" class="campo-label">
-                                        <span class="field-icono"></span>
-                                        Integrante N° 3
-                                    </label>
-                                    <input type="text" name="comision_evaluadora_n3" id="comisionEvaluadora3" placeholder="Integrante N° 3" required>
-                                    </input>
-                                </div>
+                            <div class="evaluacion-tecnica campo-group">
+                                <label for="fechaEvaluacionTecnicaInput" class="campo-label">
+                                    <span class="field-icono"></span>
+                                    Fecha que se envía evaluación técnica
+                                </label>
+                                <input type="date" name="fecha_evaluacion_tecnica_evaluacion" id="fechaEvaluacionTecnicaInput">
+                                </input>
+                            </div>
+                            <div class="comision-evaluadora campo-group">
+                                <label class="campo-label">
+                                    <span class="field-icono"></span>
+                                    Comisión evaluadora
+                                </label>
+                                <label for="nombreIntegranteUnoEvaluacionInput" class="campo-label">
+                                    <span class="field-icono"></span>
+                                    Integrante N° 1
+                                </label>
+                                <input type="text" name="nombre_integrante_uno_evaluacion" id="nombreIntegranteUnoEvaluacionInput" placeholder="Integrante N° 1">
+                                </input>
+                                <label for="nombreIntegranteDosEvaluacionInput" class="campo-label">
+                                    <span class="field-icono"></span>
+                                    Integrante N° 2
+                                </label>
+                                <input type="text" name="nombre_integrante_dos_evaluacion" id="nombreIntegranteDosEvaluacionInput" placeholder="Integrante N° 2">
+                                </input>
+                                <label for="nombreIntegranteTresEvaluacionInput" class="campo-label">
+                                    <span class="field-icono"></span>
+                                    Integrante N° 3
+                                </label>
+                                <input type="text" name="nombre_integrante_tres_evaluacion" id="nombreIntegranteTresEvaluacionInput" placeholder="Integrante N° 3">
+                                </input>
+                                <label for="fechaComisionInput" class="campo-label">
+                                    <span class="field-icon"></span>
+                                    Fecha de comisión evaluadora
+                                </label>
+                                <input type="date" name="fecha_comision_evaluacion" id="fechaComisionInput">
                             </div>
                         </div>
 
-                        <div id="fechasSolicitudRegimenInternoContainer" class="fechas-solicitud-regimen-interno-container hidden" style="margin-bottom: 50px;">
+                        <div id="fechaSolicitudRegimenInternoContainer" class="fecha-solicitud-regimen-interno-container hidden" style="margin-bottom: 50px;">
                             <h3 class="section-title" style="cursor: pointer;">
                                 <span class="section-icon">📅</span>
                                 Fecha de solicitud de comisión de régimen interno
                             </h3>
-                            <label for="cierrePreguntas" class="campo-label">
-                                <span class="field-icon"></span>
-                                Fecha de solicitud
-                            </label>
-                            <input type="date" name="fecha_solicitud_regimen_interno" id="fechaSolicitudRegimenInterno" class="empresa-rut-input" required>
+                            <input type="date" name="fecha_solicitud_regimen_interno" id="fechaSolicitudRegimenInternoInput" class="empresa-rut-input">
                             </input>
                         </div>
 
 
 
 
-                        <div id="fechasRecepcionDocumentosRegimenInternoContainer" class="fechas-recepcion-documentos-regimen-interno-container hidden" style="margin-bottom: 50px;">
+                        <div id="fechaRecepcionDocumentosRegimenInternoContainer" class="fecha-recepcion-documentos-regimen-interno-container hidden" style="margin-bottom: 50px;">
                             <h3 class="section-title" style="cursor: pointer;">
                                 <span class="section-icon">📅</span>
                                 Fecha de recepción de documento de régimen interno
                             </h3>
-                            <input type="date" name="fecha_solicitud_regimen_interno" id="fechaSolicitudRegimenInterno" class="empresa-rut-input" required>
+                            <input type="date" name="fecha_recepcion_documento_regimen_interno" id="fechaRecepcionDocumentoRegimenInternoInput" class="empresa-rut-input">
                             </input>
                         </div>
 
@@ -228,7 +233,7 @@
                                 <input 
                                     type="text" 
                                     id="empresaNombreInput" 
-                                    name="empresa_nombre" 
+                                    name="empresa_nombre_adjudicacion" 
                                     class="empresa-nombre-input"
                                     placeholder="Ej: Constructora ABC Ltda."
                                     maxlength="200"
@@ -243,7 +248,7 @@
                                 <input 
                                     type="text" 
                                     id="empresaRutInput" 
-                                    name="empresa_rut" 
+                                    name="empresa_rut_adjudicacion" 
                                     class="empresa-rut-input"
                                     placeholder="Ej: 12.345.678-9"
                                     maxlength="12"
@@ -262,7 +267,7 @@
                                     type="number" 
                                     step="0.01"
                                     id="montoAdjudicadoInput" 
-                                    name="monto_adjudicado" 
+                                    name="monto_adjudicacion" 
                                     class="empresa-rut-input"
                                     placeholder="Ej: 1500000.00"
                                     min="0">
@@ -275,7 +280,7 @@
                                 <input 
                                     type="date" 
                                     id="fechaDecretoInput" 
-                                    name="fecha_decreto" 
+                                    name="fecha_decreto_adjudicacion" 
                                     class="empresa-rut-input">
                             </div>
                             <div class="campo-group">
@@ -286,7 +291,7 @@
                                 <input 
                                     type="date" 
                                     id="fechaSubidaMercadoPublicoInput" 
-                                    name="fecha_subida_mercado_publico" 
+                                    name="fecha_subida_mercado_publico_adjudicacion" 
                                     class="empresa-rut-input">
                             </div>
                             <div class="campo-group">
@@ -297,7 +302,7 @@
                                 <input 
                                     type="number" 
                                     id="numeroOrdenCompraInput" 
-                                    name="numero_orden_compra" 
+                                    name="orden_compra_adjudicacion" 
                                     class="empresa-rut-input"
                                     placeholder="Ej: 12345"
                                     max=999999999>
@@ -310,6 +315,23 @@
                         </button>
 
 
+                        <div id="fechaDisponibilidadPresupuestariaContainer" class="fecha-disponibilidad-presupuestaria-container hidden" style="margin-bottom: 50px;">
+                            <h3 class="section-title" style="cursor: pointer;">
+                                <span class="section-icon">📅</span>
+                                Fecha de disponibilidad presupuestaria
+                            </h3>
+                            <input type="date" name="fecha_disponibilidad_presupuestaria" id="fechaDisponibilidadPresupuestariaInput" class="empresa-rut-input">
+                            </input>
+                        </div>
+
+                        <div id="fechaTopeFirmaContratoContainer" class="fecha-firma-contrato-container hidden" style="margin-bottom: 50px;">
+                            <h3 class="section-title" style="cursor: pointer;">
+                                <span class="section-icon">📅</span>
+                                Fecha tope firma contrato
+                            </h3>
+                            <input type="date" name="fecha_tope_firma_contrato" id="fechaTopeFirmaContratoInput" class="empresa-rut-input">
+                            </input>
+                        </div>
 
 
 
@@ -588,7 +610,7 @@
 
                 <div class="modal-buttons">
                     <button type="button" id="btnCancelarObservacion">Cancelar</button>
-                    {% if not es_admin %}
+                    {% if es_operador %}
                     <button type="submit" id="btnGuardarObservacion">🔄 Redestinar</button>
                     {% endif %}
                 </div>

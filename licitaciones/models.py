@@ -101,6 +101,52 @@ class Licitacion(models.Model):
     direccion = models.CharField(max_length=255, blank=True, null=True, verbose_name="Dirección")
     institucion = models.CharField(max_length=255, blank=True, null=True, verbose_name="Institución")
     pedido_devuelto = models.BooleanField(default=False, verbose_name="Pedido devuelto")
+
+
+
+
+
+
+
+    empresa_adjudicacion = models.CharField(max_length=100, default='')
+    rut_adjudicacion = models.CharField(max_length=20)
+    monto_adjudicacion = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    fecha_decreto_adjudicacion = models.DateField(blank=True, null=True)
+    fecha_subida_mercado_publico_adjudicacion = models.DateField(blank=True, null=True)
+    orden_compra_adjudicacion = models.IntegerField(default=0)
+
+    fecha_evaluacion_tecnica_evaluacion = models.DateField(blank=True, null=True, verbose_name="Fecha que se envía evaluación técnica")
+    nombre_integrante_uno_evaluacion = models.CharField(max_length=100, blank=True, null=True)
+    nombre_integrante_dos_evaluacion = models.CharField(max_length=100, blank=True, null=True)
+    nombre_integrante_tres_evaluacion = models.CharField(max_length=100, blank=True, null=True)
+    fecha_comision_evaluacion = models.DateField(blank=True, null=True, verbose_name="Fecha de comisión")
+
+    fecha_cierre_preguntas_publicacionportal = models.DateField(blank=True, null=True, verbose_name="Fecha de cierre de preguntas")
+    fecha_respuesta_publicacionportal = models.DateField(blank=True, null=True, verbose_name="Fecha de respuesta")
+    fecha_visita_terreno_publicacionportal = models.DateField(blank=True, null=True, verbose_name="Fecha de visita a terreno")
+    fecha_cierre_oferta_publicacionportal = models.DateField(blank=True, null=True, verbose_name="Fecha de cierre de oferta")
+    fecha_apertura_tecnica_publicacionportal = models.DateField(blank=True, null=True, verbose_name="Fecha de apertura técnica")
+    fecha_apertura_economica_publicacionportal = models.DateField(blank=True, null=True, verbose_name="Fecha de apertura económica")
+    fecha_estimada_adjudicacion_publicacionportal = models.DateField(blank=True, null=True, verbose_name="Fecha estimada de adjudicación")
+
+    fecha_disponibilidad_presupuestaria = models.DateField(blank=True, null=True, verbose_name="Fecha que se pide disponibilidad presupuestaria")
+
+    fecha_solicitud_regimen_interno = models.DateField(blank=True, null=True, verbose_name="Fecha de solicitud de régimen interno")
+    fecha_recepcion_documento_regimen_interno = models.DateField(blank=True, null=True, verbose_name="Fecha de llegada de documento")
+
+    fecha_tope_firma_contrato = models.DateField(blank=True, null=True, verbose_name="Fecha tope de firma de contrato")
+
+
+
+
+
+
+
+
+
+
+
+
     #informacion_adicional = models.OneToOneField('InformacionAdicional', on_delete=models.SET_NULL, null=True, blank=True, related_name='licitacion', verbose_name="Información adicional")
     # Tipos de licitación fallida (cuando fallida es True)
     TIPO_FALLIDA_CHOICES = [
@@ -258,8 +304,8 @@ class Licitacion(models.Model):
 
 
 
-"""
 
+"""
 class Adjudicacion(models.Model):
     empresa = models.CharField(max_length=100, unique=True)
     rut = models.CharField(max_length=20, unique=True)
@@ -272,14 +318,14 @@ class Adjudicacion(models.Model):
         return self.nombre
     
 class Evaluacion(models.Model):
-    fecha_evaluacion_tecnica = models.DateField(blank=True, null=True, verbose_name="Fecha de evaluación técnica")
+    fecha_evaluacion_tecnica = models.DateField(blank=True, null=True, verbose_name="Fecha que se envía evaluación técnica")
     nombre_integrante_uno = models.CharField(max_length=100, blank=True, null=True)
     nombre_integrante_dos = models.CharField(max_length=100, blank=True, null=True)
     nombre_integrante_tres = models.CharField(max_length=100, blank=True, null=True)
-    fecha_comision = models.DateField(blank=True, null=True)
+    fecha_comision = models.DateField(blank=True, null=True, verbose_name="Fecha de comisión")
 
     def __str__(self):
-        return self.fecha_evaluacion.strftime('%d/%m/%Y') if self.fecha_evaluacion else "Sin fecha"
+        return self.fecha_evaluacion_tecnica.strftime('%d/%m/%Y') if self.fecha_evaluacion_tecnica else "Sin fecha"
     
 
 class PublicacionPortal(models.Model):
@@ -291,17 +337,27 @@ class PublicacionPortal(models.Model):
     fecha_apertura_economica = models.DateField(blank=True, null=True, verbose_name="Fecha de apertura económica")
     fecha_estimada_adjudicacion = models.DateField(blank=True, null=True, verbose_name="Fecha estimada de adjudicación")
 
+class DisponibilidadPresupuestaria(models.Model):
+    fecha_disponibilidad_presupuestaria = models.DateField(blank=True, null=True, verbose_name="Fecha que se pide disponibilidad presupuestaria")
+
+
+class ComisionRegimenInterno(models.model):
+    fecha_solicitud_regimen_interno = models.DateField(blank=True, null=True, verbose_name="Fecha de solicitud de régimen interno")
+    fecha_llegada_documento_regimen_interno = models.DateField(blank=True, null=True, verbose_name="Fecha de llegada de documento")
+
+class FirmaContrato(models.model):
+    fecha_tope_firma_contrato = models.DateField(blank=True, null=True, verbose_name="Fecha tope de firma de contrato")
+
 class InformacionAdicional(models.Model):
     adjudicacion = models.OneToOneField(Adjudicacion, on_delete=models.SET_NULL, null=True, blank=True)
     evaluacion = models.OneToOneField(Evaluacion, on_delete=models.SET_NULL, null=True, blank=True)
     publicacion_portal = models.OneToOneField(PublicacionPortal, on_delete=models.SET_NULL, null=True, blank=True)
-    fecha_disponibilidad_presupuestaria = models.DateField(blank=True, null=True, verbose_name="Fecha que se pide disponibilidad presupuestaria")
-    fecha_comision = models.DateField(blank=True, null=True, verbose_name="Fecha de comisión")
-    fecha_solicitud_regimen_interno = models.DateField(blank=True, null=True, verbose_name="Fecha de solicitud de régimen interno")
-    fecha_llegada_documento_regimen_interno = models.DateField(blank=True, null=True, verbose_name="Fecha de llegada de documento")
-    fecha_tope_firma_contrato = models.DateField(blank=True, null=True, verbose_name="Fecha tope de firma de contrato")
+    disponibilidad_presupuestaria = models.OneToOneField(DisponibilidadPresupuestaria, on_delete=models.SET_NULL, null=True, blank=True)
+    comision_regimen_interno = models.OneToOneField(ComisionRegimenInterno, on_delete=models.SET_NULL, null=True, blank=True)
+    firma_contrato = models.OneToOneField(FirmaContrato, on_delete=models.SET_NULL, null=True, blank=True)
+    """
 
-"""
+
 
 
 
