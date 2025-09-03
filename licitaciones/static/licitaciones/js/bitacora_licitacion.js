@@ -330,15 +330,24 @@ window.addEventListener('DOMContentLoaded', function() {
         };
     }
 
-
-
+    function toggleFechaRecepcionDocumentosRegimenInterno() {
+        const fechaDisponibilidadPresupuestaria = document.getElementById('fechaRecepcionDocumentosRegimenInternoContainer');
+        if (!fechaDisponibilidadPresupuestaria || !nombreEtapaActual) return;
+        const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
+        // Mostrar campo si la etapa es "Solicitud de comisión de régimen interno"
+        if (etapaActualTexto === 'recepcion de documento de regimen interno' || etapaActualTexto === 'recepción de documento de régimen interno') {
+            fechaDisponibilidadPresupuestaria.classList.remove('hidden');
+        } else {
+            fechaDisponibilidadPresupuestaria.classList.add('hidden');
+        }
+    }
 
     function toggleFechaDisponibilidadPresupuestaria() {
         const fechaDisponibilidadPresupuestaria = document.getElementById('fechaDisponibilidadPresupuestariaContainer');
         if (!fechaDisponibilidadPresupuestaria || !nombreEtapaActual) return;
         const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
-        // Mostrar campo si la etapa es "firma de contrato"
-        if (etapaActualTexto === 'firma de contrato') {
+        // Mostrar campo si la etapa es "disponibilidad presupuestaria"
+        if (etapaActualTexto === 'disponibilidad presupuestaria') {
             fechaDisponibilidadPresupuestaria.classList.remove('hidden');
         } else {
             fechaDisponibilidadPresupuestaria.classList.add('hidden');
@@ -350,7 +359,7 @@ window.addEventListener('DOMContentLoaded', function() {
         if (!fechaTopeFirmaContrato || !nombreEtapaActual) return;
         const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
         // Mostrar campo si la etapa es "firma de contrato"
-        if (etapaActualTexto === 'firma de contrato') {
+        if (etapaActualTexto === 'firma de contrato' || etapaActualTexto === 'firma de contrato y orden de compra') {
             fechaTopeFirmaContrato.classList.remove('hidden');
         } else {
             fechaTopeFirmaContrato.classList.add('hidden');
@@ -365,7 +374,7 @@ window.addEventListener('DOMContentLoaded', function() {
         const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
         
         // Mostrar campo si la etapa es "solicitud de comision de regimen interno"
-        if (etapaActualTexto === 'adjudicacion y resolucion correspondiente' || etapaActualTexto === 'adjudicación y resolución correspondiente') {
+        if (etapaActualTexto === 'adjudicacion' || etapaActualTexto === 'adjudicación') {
             adjudicacion.classList.remove('hidden');
         } else {
             adjudicacion.classList.add('hidden');
@@ -373,7 +382,7 @@ window.addEventListener('DOMContentLoaded', function() {
     }
 
     function toggleFechasSolicitudRegimenInterno() {
-        const fechasSolicitudRegimenInterno = document.getElementById('fechasSolicitudRegimenInternoContainer');
+        const fechasSolicitudRegimenInterno = document.getElementById('fechaSolicitudRegimenInternoContainer');
         
         if (!fechasSolicitudRegimenInterno || !nombreEtapaActual) return;
         
@@ -395,7 +404,7 @@ window.addEventListener('DOMContentLoaded', function() {
         const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
         
         // Mostrar campo si la etapa es "evaluacion oferta"
-        if (etapaActualTexto === 'evaluacion oferta' || etapaActualTexto === 'evaluación ofertas') {
+        if (etapaActualTexto === 'evaluacion de ofertas' || etapaActualTexto === 'evaluación de ofertas') {
             evaluacionOferta.classList.remove('hidden');
         } else {
             evaluacionOferta.classList.add('hidden');
@@ -410,7 +419,7 @@ window.addEventListener('DOMContentLoaded', function() {
         const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
         
         // Mostrar campo si la etapa es "recepcion de documento regimen interno"
-        if (etapaActualTexto === 'recepcion de documento regimen interno' || etapaActualTexto === 'recepción de documento régimen interno') {
+        if (etapaActualTexto === 'recepcion de documento de regimen interno' || etapaActualTexto === 'recepción de documento de régimen interno') {
             fechasRecepcionDocumentosRegimenInterno.classList.remove('hidden');
         } else {
             fechasRecepcionDocumentosRegimenInterno.classList.add('hidden');
@@ -491,6 +500,7 @@ window.addEventListener('DOMContentLoaded', function() {
     }
     
     // Verificar al cargar la página
+    toggleFechaRecepcionDocumentosRegimenInterno();
     toggleFechaDisponibilidadPresupuestaria();
     toggleFechaTopeFirmaContrato();
     toggleAdjudicacion();
@@ -541,6 +551,7 @@ window.addEventListener('DOMContentLoaded', function() {
             }
             
             // Llamar a las funciones para mostrar/ocultar campos específicos por etapa
+            toggleFechaRecepcionDocumentosRegimenInterno();
             toggleFechaDisponibilidadPresupuestaria();
             toggleFechaTopeFirmaContrato();
             toggleAdjudicacion();
@@ -621,6 +632,7 @@ window.addEventListener('DOMContentLoaded', function() {
             }
             
             // Llamar a las funciones para mostrar/ocultar campos específicos por etapa
+            toggleFechaRecepcionDocumentosRegimenInterno();
             toggleFechaDisponibilidadPresupuestaria();
             toggleFechaTopeFirmaContrato();
             toggleAdjudicacion();
@@ -1024,7 +1036,7 @@ window.addEventListener('DOMContentLoaded', function() {
             }
             
             // Agregar etapa actual si se está avanzando
-            if (accionEtapaValue === 'advance' && nombreEtapaActual) {
+            if (nombreEtapaActual) {
                 let etapaInput = document.createElement('input');
                 etapaInput.type = 'hidden';
                 etapaInput.name = 'etapa';
@@ -1413,9 +1425,10 @@ window.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        empresaRutInput.addEventListener('blur', function() {
+        empresaRutInput.addEventListener('change', function() {
             if (this.value && !validarRUT(this.value)) {
                 alert('El RUT ingresado no es válido. Por favor verifique.');
+                empresaRutInput.ariaDisabled=true;
                 this.focus();
             }
         });
