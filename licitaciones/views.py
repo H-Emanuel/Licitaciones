@@ -730,7 +730,7 @@ def bitacora_licitacion(request, licitacion_id):
             .order_by('-orden')
             .first()
         )
-        # SI NO SE DEFINE UNA ETAPA O ES UNA ETAPA MUY AVANZADA RESPECTO A LA ULTIMA OBSERVACION OMITIR POST
+        # SI NO SE DEFINE UNA ETAPA O ES UNA ETAPA MUY AVANZADA RESPECTO A LA ULTIMA ETAPA DE LAS OBSERVACIONES OMITIR POST
         if not etapa_obj or not tipo_licitacion_etapa_observacion or tipo_licitacion_etapa_observacion.orden > tipo_licitacion_etapa_ultima_observacion.orden + 1:
             print('etapa muy avanzada')
             return redirect('bitacora_licitacion', licitacion_id)
