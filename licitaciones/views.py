@@ -694,9 +694,19 @@ def bitacora_licitacion(request, licitacion_id):
         texto = request.POST.get('texto', '').strip()
         archivo = request.FILES.get('archivo')
         etapa_id = request.POST.get('etapa')
+        etapa_nombre = request.POST.get('etapa_nombre')
         id_mercado_publico = request.POST.get('id_mercado_publico', '').strip()
         
         # Campos específicos
+        fecha_solicitud_intencion_compra = request.POST.get('fecha_solicitud_intencion_compra', '').strip()
+
+        nombre_integrante_uno_comision_base = request.POST.get('nombre_integrante_uno_comision_base', '').strip()
+        nombre_integrante_dos_comision_base = request.POST.get('nombre_integrante_dos_comision_base', '').strip()
+        nombre_integrante_tres_comision_base = request.POST.get('nombre_integrante_tres_comision_base', '').strip()
+
+        fecha_evaluacion_cotizacion = request.POST.get('fecha_evaluacion_cotizacion', '').strip()
+        monto_estimado_cotizacion = request.POST.get('monto_estimado_cotizacion', '').strip()
+
         empresa_adjudicacion = request.POST.get('empresa_adjudicacion', '').strip()
         rut_adjudicacion = request.POST.get('rut_adjudicacion', '').strip()
         monto_adjudicacion = request.POST.get('monto_adjudicacion', '').strip()
@@ -720,6 +730,9 @@ def bitacora_licitacion(request, licitacion_id):
 
         fecha_disponibilidad_presupuestaria = request.POST.get('fecha_disponibilidad_presupuestaria', '').strip()
 
+        fecha_publicación_mercado_publico = request.POST.get('fecha_publicacion_mercado_publico', '').strip()
+        fecha_cierre_ofertas_mercado_publico = request.POST.get('fecha_cierre_ofertas_mercado_publico', '').strip()
+
         fecha_solicitud_regimen_interno = request.POST.get('fecha_solicitud_regimen_interno', '').strip()
 
         fecha_recepcion_documento_regimen_interno = request.POST.get('fecha_recepcion_documento_regimen_interno', '').strip()
@@ -730,6 +743,11 @@ def bitacora_licitacion(request, licitacion_id):
         if etapa_id:
             try:
                 etapa_obj = Etapa.objects.get(id=etapa_id)
+            except Etapa.DoesNotExist:
+                etapa_obj = None
+        elif etapa_nombre:
+            try:
+                etapa_obj = Etapa.objects.get(nombre=etapa_nombre)
             except Etapa.DoesNotExist:
                 etapa_obj = None
         # Manejar avance/retroceso de etapa
@@ -747,6 +765,30 @@ def bitacora_licitacion(request, licitacion_id):
         
         
         valores = {}
+        if etapa_obj and 'decreto de intención de compra' in etapa_obj.nombre.lower().strip():
+            if fecha_solicitud_intencion_compra and licitacion.fecha_solicitud_intencion_compra!= fecha_solicitud_intencion_compra:
+                valores['Fecha de la evaluación de cotización'] = str(fecha_solicitud_intencion_compra)
+                licitacion.fecha_solicitud_intencion_compra = fecha_solicitud_intencion_compra
+        
+        if etapa_obj and 'comisión de base' in etapa_obj.nombre.lower().strip():
+            if nombre_integrante_uno_comision_base and licitacion.nombre_integrante_uno_comision_base != nombre_integrante_uno_comision_base:
+                valores['Nombre integrante uno comisión de base'] = str(nombre_integrante_uno_comision_base)
+                licitacion.nombre_integrante_uno_comision_base = nombre_integrante_uno_comision_base
+            if nombre_integrante_dos_comision_base and licitacion.nombre_integrante_dos_comision_base != nombre_integrante_dos_comision_base:
+                valores['Nombre integrante dos comisión de base'] = str(nombre_integrante_dos_comision_base)
+                licitacion.nombre_integrante_dos_comision_base = nombre_integrante_dos_comision_base
+            if nombre_integrante_tres_comision_base and licitacion.nombre_integrante_tres_comision_base != nombre_integrante_tres_comision_base:
+                valores['Nombre integrante tres comisión de base'] = str(nombre_integrante_tres_comision_base)
+                licitacion.nombre_integrante_tres_comision_base = nombre_integrante_tres_comision_base
+
+        if etapa_obj and 'evaluación de la cotización' in etapa_obj.nombre.lower().strip():
+            if fecha_evaluacion_cotizacion and licitacion.fecha_evaluacion_cotizacion != fecha_evaluacion_cotizacion:
+                valores['Fecha de la evaluación de cotización'] = str(fecha_evaluacion_cotizacion)
+                licitacion.fecha_evaluacion_cotizacion = fecha_evaluacion_cotizacion
+            if monto_estimado_cotizacion and licitacion.monto_estimado_cotizacion != monto_estimado_cotizacion:
+                valores['Monto estimado de la cotización'] = str(monto_estimado_cotizacion)
+                licitacion.monto_estimado_cotizacion = monto_estimado_cotizacion
+
         if etapa_obj and 'adjudicación' in etapa_obj.nombre.lower().strip():
             if empresa_adjudicacion and licitacion.empresa_adjudicacion != empresa_adjudicacion:
                 valores['Empresa adjudicada'] = str(empresa_adjudicacion)
@@ -769,7 +811,6 @@ def bitacora_licitacion(request, licitacion_id):
             if orden_compra_adjudicacion and licitacion.orden_compra_adjudicacion != orden_compra_adjudicacion:
                 valores['Orden de compra'] = str(orden_compra_adjudicacion)
                 licitacion.orden_compra_adjudicacion = orden_compra_adjudicacion
-        print(valores)
         if etapa_obj and 'evaluación de ofertas' in etapa_obj.nombre.lower().strip():
             if fecha_evaluacion_tecnica_evaluacion and licitacion.fecha_evaluacion_tecnica_evaluacion != fecha_evaluacion_tecnica_evaluacion:
                 valores['Fecha de evaluación técnica'] = str(fecha_evaluacion_tecnica_evaluacion)
@@ -808,11 +849,20 @@ def bitacora_licitacion(request, licitacion_id):
             if fecha_estimada_adjudicacion_publicacionportal and licitacion.fecha_estimada_adjudicacion_publicacionportal != fecha_estimada_adjudicacion_publicacionportal:
                 valores['Fecha estimada de adjudicación'] = str(fecha_estimada_adjudicacion_publicacionportal)
                 licitacion.fecha_estimada_adjudicacion_publicacionportal = fecha_estimada_adjudicacion_publicacionportal
-            if fecha_disponibilidad_presupuestaria and licitacion.fecha_disponibilidad_presupuestaria != fecha_disponibilidad_presupuestaria:
-                valores['Fecha de disponibilidad presupuestaria'] = str(fecha_disponibilidad_presupuestaria)
-                licitacion.fecha_disponibilidad_presupuestaria = fecha_disponibilidad_presupuestaria
+
         
-        if fecha_solicitud_regimen_interno and licitacion.fecha_solicitud_regimen_interno != fecha_solicitud_regimen_interno and etapa_obj and 'solicitud de comisión de régimen interno' in etapa_obj.nombre.lower().strip():
+        if fecha_disponibilidad_presupuestaria and licitacion.fecha_disponibilidad_presupuestaria != fecha_disponibilidad_presupuestaria and etapa_obj and 'disponibilidad presupuestaria' in etapa_obj.nombre.lower().strip():
+            valores['Fecha de disponibilidad presupuestaria'] = str(fecha_disponibilidad_presupuestaria)
+        
+        if etapa_obj and 'publicación mercado público' in etapa_obj.nombre.lower().strip():
+            if fecha_publicación_mercado_publico and licitacion.fecha_publicación_mercado_publico != fecha_publicación_mercado_publico:
+                valores['Fecha de publicación en mercado público'] = str(fecha_publicación_mercado_publico)
+                licitacion.fecha_publicación_mercado_publico = fecha_publicación_mercado_publico
+            if fecha_cierre_ofertas_mercado_publico and licitacion.fecha_cierre_ofertas_mercado_publico != fecha_cierre_ofertas_mercado_publico:
+                valores['Fecha de cierre de ofertas en mercado público'] = str(fecha_cierre_ofertas_mercado_publico)
+                licitacion.fecha_cierre_ofertas_mercado_publico = fecha_cierre_ofertas_mercado_publico
+
+        if fecha_solicitud_regimen_interno and licitacion.fecha_solicitud_regimen_interno != fecha_solicitud_regimen_interno and etapa_obj and ('solicitud de comisión de régimen interno' in etapa_obj.nombre.lower().strip() or 'solicitud de régimen interno' in etapa_obj.nombre.lower().strip()):
             valores['Fecha de solicitud de régimen interno'] = str(fecha_solicitud_regimen_interno)
             licitacion.fecha_solicitud_regimen_interno = fecha_solicitud_regimen_interno
         if fecha_recepcion_documento_regimen_interno and licitacion.fecha_recepcion_documento_regimen_interno != fecha_recepcion_documento_regimen_interno and etapa_obj and 'recepción de documento de régimen interno' in etapa_obj.nombre.lower().strip():

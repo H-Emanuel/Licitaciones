@@ -147,6 +147,85 @@ window.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
+    function showModalRedestinar(bitacoraId, texto) {
+        const modalContainer = document.querySelector('.modal-container');
+        modalContainer.classList.add('active');
+        document.getElementById('observacionBitacoraId').value = bitacoraId;
+        document.getElementById('modalObservacionTexto').value = texto || '';
+    }
+    function closeModalRedestinar() {
+        const modalContainer = document.querySelector('.modal-container');
+        modalContainer.style.display = 'none';
+       
+        modalContainer.classList.remove('active');
+        
+        // Limpiar archivos del modal
+        modalSelectedFiles = [];
+        if (modalArchivos) modalArchivos.value = '';
+        if (modalPreviewArchivos) modalPreviewArchivos.innerHTML = '';
+        
+        // Limpiar texto del modal
+        const modalTexto = document.getElementById('modalObservacionTexto');
+        if (modalTexto) modalTexto.value = '';
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    document.getElementById('btnModalRedestinar').onclick = showModalRedestinar;
+    document.getElementById('cerrarModalRedestinar').onclick = closeModalRedestinar;
+    document.getElementById('btnCancelarRedestinar').onclick = closeModalRedestinar;
+
+    // Manejo del formulario del modal (separado)
+    const formModalRedestinar = document.getElementById('formModalRedestinar');
+    if (formModalRedestinar) {
+        formModalRedestinar.onsubmit = function(e) {
+            e.preventDefault();
+            const formData = formModalRedestinar;
+            formData.append('accion_etapa', 'retreat');
+            formData.append('etapa_nombre', 'Evaluación de ofertas');
+            formData.submit();
+        };
+    }
+
+
+
+
+
+
+
+
+
+
+
+
     document.getElementById('cerrarModalObservacion').onclick = closeModalObservacion;
     document.getElementById('btnCancelarObservacion').onclick = closeModalObservacion;
     const formObservacionBitacora = document.getElementById('formObservacionBitacora');
@@ -330,6 +409,79 @@ window.addEventListener('DOMContentLoaded', function() {
         };
     }
 
+
+
+
+
+
+
+
+    function toggleEvaluacionCotizacion() {
+        const evaluacionCotizacion = document.getElementById('evaluacionCotizacionContainer');
+        if (!evaluacionCotizacion || !nombreEtapaActual) return;
+        const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
+        // Mostrar campo si la etapa es "evaluación de la cotización"
+        if (etapaActualTexto === 'evaluacion de la cotizacion' || etapaActualTexto === 'evaluación de la cotización') {
+            evaluacionCotizacion.classList.remove('hidden');
+        } else {
+            evaluacionCotizacion.classList.add('hidden');
+        }
+    }
+
+    function toggleDecretoIntencionCompra() {
+        const decretoIntencionCompra = document.getElementById('decretoIntencionCompraContainer');
+        if (!decretoIntencionCompra || !nombreEtapaActual) return;
+        const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
+        // Mostrar campo si la etapa es "Decreto de intención de compra"
+        if (etapaActualTexto === 'decreto de intencion de compra' || etapaActualTexto === 'decreto de intención de compra') {
+            decretoIntencionCompra.classList.remove('hidden');
+        } else {
+            decretoIntencionCompra.classList.add('hidden');
+        }
+    }
+
+
+    function toggleComisionBase() {
+        const comisionBase = document.getElementById('comisionBaseContainer');
+        if (!comisionBase || !nombreEtapaActual) return;
+        const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
+        // Mostrar campo si la etapa es "Decreto de intención de compra"
+        if (etapaActualTexto === 'comision de base' || etapaActualTexto === 'comisión de base') {
+            comisionBase.classList.remove('hidden');
+        } else {
+            comisionBase.classList.add('hidden');
+        }
+    }
+
+    function togglePublicacionMercadoPublico() {
+        const publicacionMercadoPublico = document.getElementById('publicacionMercadoPublicoContainer');
+        if (!publicacionMercadoPublico || !nombreEtapaActual) return;
+        const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
+        // Mostrar campo si la etapa es "Decreto de intención de compra"
+        if (etapaActualTexto === 'publicacion mercado publico' || etapaActualTexto === 'publicación mercado público') {
+            publicacionMercadoPublico.classList.remove('hidden');
+        } else {
+            publicacionMercadoPublico.classList.add('hidden');
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     function toggleFechaRecepcionDocumentosRegimenInterno() {
         const fechaDisponibilidadPresupuestaria = document.getElementById('fechaRecepcionDocumentosRegimenInternoContainer');
         if (!fechaDisponibilidadPresupuestaria || !nombreEtapaActual) return;
@@ -381,18 +533,18 @@ window.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function toggleFechasSolicitudRegimenInterno() {
-        const fechasSolicitudRegimenInterno = document.getElementById('fechaSolicitudRegimenInternoContainer');
+    function toggleFechaSolicitudRegimenInterno() {
+        const fechaSolicitudRegimenInterno = document.getElementById('fechaSolicitudRegimenInternoContainer');
         
-        if (!fechasSolicitudRegimenInterno || !nombreEtapaActual) return;
+        if (!fechaSolicitudRegimenInterno || !nombreEtapaActual) return;
         
         const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
         
         // Mostrar campo si la etapa es "solicitud de comision de regimen interno"
-        if (etapaActualTexto === 'solicitud de comision de regimen interno' || etapaActualTexto === 'solicitud de comisión de régimen interno') {
-            fechasSolicitudRegimenInterno.classList.remove('hidden');
+        if (etapaActualTexto === 'solicitud de comision de regimen interno' || etapaActualTexto === 'solicitud de comisión de régimen interno' || etapaActualTexto === 'solicitud de régimen interno') {
+            fechaSolicitudRegimenInterno.classList.remove('hidden');
         } else {
-            fechasSolicitudRegimenInterno.classList.add('hidden');
+            fechaSolicitudRegimenInterno.classList.add('hidden');
         }
     }
 
@@ -411,18 +563,18 @@ window.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function toggleFechasRecepcionDocumentosRegimenInterno() {
-        const fechasRecepcionDocumentosRegimenInterno = document.getElementById('fechasRecepcionDocumentosRegimenInternoContainer');
+    function toggleFechaRecepcionDocumentosRegimenInterno() {
+        const fechaRecepcionDocumentosRegimenInterno = document.getElementById('fechaRecepcionDocumentosRegimenInternoContainer');
         
-        if (!fechasRecepcionDocumentosRegimenInterno || !nombreEtapaActual) return;
+        if (!fechaRecepcionDocumentosRegimenInterno || !nombreEtapaActual) return;
         
         const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
         
         // Mostrar campo si la etapa es "recepcion de documento regimen interno"
         if (etapaActualTexto === 'recepcion de documento de regimen interno' || etapaActualTexto === 'recepción de documento de régimen interno') {
-            fechasRecepcionDocumentosRegimenInterno.classList.remove('hidden');
+            fechaRecepcionDocumentosRegimenInterno.classList.remove('hidden');
         } else {
-            fechasRecepcionDocumentosRegimenInterno.classList.add('hidden');
+            fechaRecepcionDocumentosRegimenInterno.classList.add('hidden');
         }
     }
     
@@ -500,13 +652,16 @@ window.addEventListener('DOMContentLoaded', function() {
     }
     
     // Verificar al cargar la página
-    toggleFechaRecepcionDocumentosRegimenInterno();
+    toggleEvaluacionCotizacion();
+    toggleDecretoIntencionCompra();
+    toggleComisionBase();
+    togglePublicacionMercadoPublico();
     toggleFechaDisponibilidadPresupuestaria();
     toggleFechaTopeFirmaContrato();
     toggleAdjudicacion();
-    toggleFechasSolicitudRegimenInterno();
+    toggleFechaSolicitudRegimenInterno();
     toggleEvaluacionOferta();
-    toggleFechasRecepcionDocumentosRegimenInterno();
+    toggleFechaRecepcionDocumentosRegimenInterno();
     toggleFechasImportantes();
     toggleIdMercadoPublico();
     toggleRecepcionOfertas();
@@ -551,13 +706,16 @@ window.addEventListener('DOMContentLoaded', function() {
             }
             
             // Llamar a las funciones para mostrar/ocultar campos específicos por etapa
-            toggleFechaRecepcionDocumentosRegimenInterno();
+            toggleEvaluacionCotizacion();
+            toggleDecretoIntencionCompra();
+            toggleComisionBase();
+            togglePublicacionMercadoPublico();
             toggleFechaDisponibilidadPresupuestaria();
             toggleFechaTopeFirmaContrato();
             toggleAdjudicacion();
-            toggleFechasSolicitudRegimenInterno();
+            toggleFechaSolicitudRegimenInterno();
             toggleEvaluacionOferta();
-            toggleFechasRecepcionDocumentosRegimenInterno();
+            toggleFechaRecepcionDocumentosRegimenInterno();
             toggleFechasImportantes();
             toggleIdMercadoPublico();
             toggleRecepcionOfertas();
@@ -632,13 +790,16 @@ window.addEventListener('DOMContentLoaded', function() {
             }
             
             // Llamar a las funciones para mostrar/ocultar campos específicos por etapa
+            toggleEvaluacionCotizacion();
+            toggleDecretoIntencionCompra();
+            toggleComisionBase();
+            togglePublicacionMercadoPublico();
             toggleFechaRecepcionDocumentosRegimenInterno();
             toggleFechaDisponibilidadPresupuestaria();
             toggleFechaTopeFirmaContrato();
             toggleAdjudicacion();
-            toggleFechasSolicitudRegimenInterno();
+            toggleFechaSolicitudRegimenInterno();
             toggleEvaluacionOferta();
-            toggleFechasRecepcionDocumentosRegimenInterno();
             toggleFechasImportantes();
             toggleIdMercadoPublico();
             toggleRecepcionOfertas();
@@ -894,6 +1055,39 @@ window.addEventListener('DOMContentLoaded', function() {
             // Solo obtener ID Mercado Público si el campo existe (panel de operadores)
             const idMercadoPublicoInput = document.getElementById('idMercadoPublicoInput');
             const idMercadoPublico = idMercadoPublicoInput ? idMercadoPublicoInput.value.trim() : '';
+
+
+
+
+            // Campos para Evaluacion de cotizacion
+            const fechaEvaluacionCotizacionInput = document.getElementById('fechaEvaluacionCotizacionInput');
+            const fechaEvaluacionCotizacion = fechaEvaluacionCotizacionInput ? fechaEvaluacionCotizacionInput.value.trim() : '';
+            const montoEstimadoCotizacionInput = document.getElementById('montoEstimadoCotizacionInput');
+            const montoEstimadoCotizacion = montoEstimadoCotizacionInput ? montoEstimadoCotizacionInput.value.trim() : '';
+
+            // Campos para Intencion de compra
+            const fechaSolicitudIntencionCompraInput = document.getElementById('fechaSolicitudIntencionCompraInput');
+            const fechaSolicitudIntencionCompra = fechaSolicitudIntencionCompraInput ? fechaSolicitudIntencionCompraInput.value.trim() : '';
+
+            // Campos para Comision de base
+            const nombreIntegranteUnoComisionBaseInput = document.getElementById('nombreIntegranteUnoComisionBaseInput');
+            const nombreIntegranteUnoComisionBase = nombreIntegranteUnoComisionBaseInput ? nombreIntegranteUnoComisionBaseInput.value.trim() : '';
+            const nombreIntegranteDosComisionBaseInput = document.getElementById('nombreIntegranteDosComisionBaseInput');
+            const nombreIntegranteDosComisionBase = nombreIntegranteDosComisionBaseInput ? nombreIntegranteDosComisionBaseInput.value.trim() : '';
+            const nombreIntegranteTresComisionBaseInput = document.getElementById('nombreIntegranteTresComisionBaseInput');
+            const nombreIntegranteTresComisionBase = nombreIntegranteTresComisionBaseInput ? nombreIntegranteTresComisionBaseInput.value.trim() : '';
+
+            // Campos para Publicacion mercado publico
+            const fechaPublicacionMercadoPublicoInput = document.getElementById('fechaPublicacionMercadoPublicoInput');
+            const fechaPublicacionMercadoPublico = fechaPublicacionMercadoPublicoInput ? fechaPublicacionMercadoPublicoInput.value.trim() : '';
+            const fechaCierreOfertasMercadoPublicoInput = document.getElementById('fechaCierreOfertasMercadoPublicoInput');
+            const fechaCierreOfertasMercadoPublico = fechaCierreOfertasMercadoPublicoInput ? fechaCierreOfertasMercadoPublicoInput.value.trim() : '';
+
+
+
+
+
+
             
             // Campos para Publicación portal
             const cierrePreguntasInput = document.getElementById('cierrePreguntasInput');
@@ -976,6 +1170,15 @@ window.addEventListener('DOMContentLoaded', function() {
             // Agregar campos de Recepción de Ofertas
             console.log(cierrePreguntas, respuesta, visitaTerreno, cierreOferta);
             formData.append('etapa', etapaActualId);
+            if (fechaEvaluacionCotizacion) formData.append('fecha_evaluacion_cotizacion', fechaEvaluacionCotizacion);
+            if (montoEstimadoCotizacion) formData.append('monto_estimado_cotizacion', montoEstimadoCotizacion);
+            if (fechaSolicitudIntencionCompra) formData.append('fecha_solicitud_intencion_compra', fechaSolicitudIntencionCompra);
+            if (nombreIntegranteUnoComisionBase) formData.append('nombre_integrante_uno_comision_base', nombreIntegranteUnoComisionBase);
+            if (nombreIntegranteDosComisionBase) formData.append('nombre_integrante_dos_comision_base', nombreIntegranteDosComisionBase);
+            if (nombreIntegranteTresComisionBase) formData.append('nombre_integrante_tres_comision_base', nombreIntegranteTresComisionBase);
+            if (fechaPublicacionMercadoPublico) formData.append('fecha_publicacion_mercado_publico', fechaPublicacionMercadoPublico);
+            if (fechaCierreOfertasMercadoPublico) formData.append('fecha_cierre_ofertas_mercado_publico', fechaCierreOfertasMercadoPublico);
+
             if (cierrePreguntas) formData.append('fecha_cierre_preguntas_publicacionportal', cierrePreguntas);
             if (respuesta) formData.append('fecha_respuesta_publicacionportal', respuesta);
             if (visitaTerreno) formData.append('fecha_visita_terreno_publicacionportal', visitaTerreno);

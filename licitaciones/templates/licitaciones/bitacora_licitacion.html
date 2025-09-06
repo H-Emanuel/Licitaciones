@@ -105,43 +105,43 @@
                                 <span class="field-icon"></span>
                                 Cierre de preguntas
                             </label>
-                            <input type="date" name="fecha_cierre_preguntas_publicacionportal" id="cierrePreguntasInput" class="empresa-rut-input">
+                            <input type="date" name="fecha_cierre_preguntas_publicacionportal" id="cierrePreguntasInput" class="empresa-rut-input" value="{{ licitacion.fecha_cierre_preguntas_publicacionportal|date:"Y-m-d"|default:'' }}">
                             </input>
                             <label for="respuestaInput" class="campo-label">
                                 <span class="field-icon"></span>
                                 Respuesta
                             </label>
-                            <input type="date" name="fecha_respuesta_publicacionportal" id="respuestaInput" class="empresa-rut-input">
+                            <input type="date" name="fecha_respuesta_publicacionportal" id="respuestaInput" class="empresa-rut-input" value="{{ licitacion.fecha_respuesta_publicacionportal|date:"Y-m-d"|default:'' }}">
                             </input>
                             <label for="visitaTerrenoInput" class="campo-label">
                                 <span class="field-icon"></span>
                                 Visita a terreno
                             </label>
-                            <input type="date" name="fecha_visita_terreno_publicacionportal" id="visitaTerrenoInput" class="empresa-rut-input">
+                            <input type="date" name="fecha_visita_terreno_publicacionportal" id="visitaTerrenoInput" class="empresa-rut-input"  value="{{ licitacion.fecha_visita_terreno_publicacionportal|date:"Y-m-d"|default:'' }}">
                             </input>
                             <label for="cierreOfertaInput" class="campo-label">
                                 <span class="field-icon"></span>
                                 Cierre de oferta
                             </label>
-                            <input type="date" name="fecha_cierre_oferta_publicacionportal" id="cierreOfertaInput" class="empresa-rut-input">
+                            <input type="date" name="fecha_cierre_oferta_publicacionportal" id="cierreOfertaInput" class="empresa-rut-input"  value="{{ licitacion.fecha_cierre_oferta_publicacionportal|date:"Y-m-d"|default:'' }}">
                             </input>
                             <label for="aperturaTecnicaInput" class="campo-label">
                                 <span class="field-icon"></span>
                                 Apertura técnica
                             </label>
-                            <input type="date" name="fecha_apertura_tecnica_publicacionportal" id="aperturaTecnicaInput" class="empresa-rut-input">
+                            <input type="date" name="fecha_apertura_tecnica_publicacionportal" id="aperturaTecnicaInput" class="empresa-rut-input"  value="{{ licitacion.fecha_apertura_tecnica_publicacionportal|date:"Y-m-d"|default:'' }}">
                             </input>
                             <label for="aperturaEconomicaInput" class="campo-label">
                                 <span class="field-icon"></span>
                                 Apertura económica
                             </label>
-                            <input type="date" name="fecha_apertura_economica_publicacionportal" id="aperturaEconomicaInput" class="empresa-rut-input">
+                            <input type="date" name="fecha_apertura_economica_publicacionportal" id="aperturaEconomicaInput" class="empresa-rut-input"  value="{{ licitacion.fecha_apertura_economica_publicacionportal|date:"Y-m-d"|default:'' }}">
                             </input>
                             <label for="fechaEstimadaAdjudicacionInput" class="campo-label">
                                 <span class="field-icon"></span>
                                 Fecha estimada de adjudicación
                             </label>
-                            <input type="date" name="fecha_estimada_adjudicacion_publicacionportal" id="fechaEstimadaAdjudicacionInput" class="empresa-rut-input">
+                            <input type="date" name="fecha_estimada_adjudicacion_publicacionportal" id="fechaEstimadaAdjudicacionInput" class="empresa-rut-input"  value="{{ licitacion.fecha_estimada_adjudicacion_publicacionportal|date:"Y-m-d"|default:'' }}">
                             </input>
                         </div>
 
@@ -173,7 +173,7 @@
                                     <span class="section-icon">📅</span>
                                     Fecha que se envía evaluación técnica
                                 </h3>
-                                <input type="date" name="fecha_evaluacion_tecnica_evaluacion" id="fechaEvaluacionTecnicaInput" class="empresa-rut-input">
+                                <input type="date" name="fecha_evaluacion_tecnica_evaluacion" id="fechaEvaluacionTecnicaInput" class="empresa-rut-input" value="{{ licitacion.fecha_evaluacion_tecnica_evaluacion|date:"Y-m-d"|default:'' }}">
                                 </input>
                             </div>
                             <div class="comision-evaluadora campo-group hidden">
@@ -185,25 +185,25 @@
                                     <span class="field-icono"></span>
                                     Integrante N° 1
                                 </label>
-                                <input type="text" name="nombre_integrante_uno_evaluacion" id="nombreIntegranteUnoEvaluacionInput" placeholder="Integrante N° 1" class="empresa-rut-input">
+                                <input type="text" name="nombre_integrante_uno_evaluacion" id="nombreIntegranteUnoEvaluacionInput" placeholder="Integrante N° 1" class="empresa-rut-input" value="{{ licitacion.nombre_integrante_uno_evaluacion|date:"Y-m-d"|default:'' }}">
                                 </input>
                                 <label for="nombreIntegranteDosEvaluacionInput" class="campo-label">
                                     <span class="field-icono"></span>
                                     Integrante N° 2
                                 </label>
-                                <input type="text" name="nombre_integrante_dos_evaluacion" id="nombreIntegranteDosEvaluacionInput" placeholder="Integrante N° 2" class="empresa-rut-input">
+                                <input type="text" name="nombre_integrante_dos_evaluacion" id="nombreIntegranteDosEvaluacionInput" placeholder="Integrante N° 2" class="empresa-rut-input" value="{{ licitacion.nombre_integrante_dos_evaluacion|default:'' }}">
                                 </input>
                                 <label for="nombreIntegranteTresEvaluacionInput" class="campo-label">
                                     <span class="field-icono"></span>
                                     Integrante N° 3
                                 </label>
-                                <input type="text" name="nombre_integrante_tres_evaluacion" id="nombreIntegranteTresEvaluacionInput" placeholder="Integrante N° 3" class="empresa-rut-input">
+                                <input type="text" name="nombre_integrante_tres_evaluacion" id="nombreIntegranteTresEvaluacionInput" placeholder="Integrante N° 3" class="empresa-rut-input" value="{{ licitacion.nombre_integrante_tres_evaluacion|default:'' }}">
                                 </input>
                                 <label for="fechaComisionInput" class="campo-label">
                                     <span class="field-icon"></span>
                                     Fecha de comisión evaluadora
                                 </label>
-                                <input type="date" name="fecha_comision_evaluacion" id="fechaComisionInput" class="empresa-rut-input">
+                                <input type="date" name="fecha_comision_evaluacion" id="fechaComisionInput" class="empresa-rut-input" value="{{ licitacion.fecha_comision_evaluadora|date:"Y-m-d"|default:'' }}">
                             </div>
                         </div>
 
@@ -212,7 +212,7 @@
                                 <span class="section-icon">📅</span>
                                 Fecha de solicitud de comisión de régimen interno
                             </h3>
-                            <input type="date" name="fecha_solicitud_regimen_interno" id="fechaSolicitudRegimenInternoInput" class="empresa-rut-input">
+                            <input type="date" name="fecha_solicitud_regimen_interno" id="fechaSolicitudRegimenInternoInput" class="empresa-rut-input" value="{{ licitacion.fecha_solicitud_regimen_interno|date:"Y-m-d"|default:'' }}">
                             </input>
                         </div>
 
@@ -224,7 +224,7 @@
                                 <span class="section-icon">📅</span>
                                 Fecha de recepción de documento de régimen interno
                             </h3>
-                            <input type="date" name="fecha_recepcion_documento_regimen_interno" id="fechaRecepcionDocumentoRegimenInternoInput" class="empresa-rut-input">
+                            <input type="date" name="fecha_recepcion_documento_regimen_interno" id="fechaRecepcionDocumentoRegimenInternoInput" class="empresa-rut-input" value="{{ licitacion.fecha_recepcion_documento_regimen_interno|date:"Y-m-d"|default:'' }}">
                             </input>
                         </div>
 
@@ -248,6 +248,7 @@
                                     class="empresa-nombre-input"
                                     placeholder="Ej: Constructora ABC Ltda."
                                     maxlength="200"
+                                    value="{{ licitacion.empresa_adjudicacion|default:'' }}"
                                 >
                             </div>
                             
@@ -263,6 +264,7 @@
                                     class="empresa-rut-input"
                                     placeholder="Ej: 12.345.678-9"
                                     maxlength="12"
+                                    value="{{ licitacion.rut_adjudicacion|default:'' }}"
                                 >
                                 <div class="campo-ayuda">
                                     <span class="ayuda-icono">💡</span>
@@ -281,7 +283,8 @@
                                     name="monto_adjudicacion" 
                                     class="empresa-rut-input"
                                     placeholder="Ej: 1500000.00"
-                                    min="0">
+                                    min="0"
+                                    value="{{ licitacion.monto_adjudicacion|default:'' }}">
                                 <div class="campo-ayuda">
                                     <span class="ayuda-icono">💡</span>
                                     <span class="ayuda-texto">En pesos</span>
@@ -296,7 +299,8 @@
                                     type="date" 
                                     id="fechaDecretoInput" 
                                     name="fecha_decreto_adjudicacion" 
-                                    class="empresa-rut-input">
+                                    class="empresa-rut-input"
+                                    value="{{ licitacion.fecha_decreto_adjudicacion|date:"Y-m-d"|default:'' }}">
                             </div>
                             <div class="campo-grupo">
                                 <label for="fechaSubidaMercadoPublicoInput" class="campo-label">
@@ -307,7 +311,8 @@
                                     type="date" 
                                     id="fechaSubidaMercadoPublicoInput" 
                                     name="fecha_subida_mercado_publico_adjudicacion" 
-                                    class="empresa-rut-input">
+                                    class="empresa-rut-input"
+                                    value="{{ licitacion.fecha_subida_mercado_publico_adjudicacion|date:"Y-m-d"|default:'' }}">
                             </div>
                             <div class="campo-grupo">
                                 <label for="numeroOrdenCompraInput" class="campo-label">
@@ -320,7 +325,8 @@
                                     name="orden_compra_adjudicacion" 
                                     class="empresa-rut-input"
                                     placeholder="Ej: 12345"
-                                    max=999999999>
+                                    max=999999999
+                                    value="{{ licitacion.orden_compra_adjudicacion|default:'' }}">
                             </div>
                         </div>
 
@@ -330,7 +336,7 @@
                                 <span class="section-icon">📅</span>
                                 Fecha de disponibilidad presupuestaria
                             </h3>
-                            <input type="date" name="fecha_disponibilidad_presupuestaria" id="fechaDisponibilidadPresupuestariaInput" class="empresa-rut-input">
+                            <input type="date" name="fecha_disponibilidad_presupuestaria" id="fechaDisponibilidadPresupuestariaInput" class="empresa-rut-input" value="{{ licitacion.fecha_disponibilidad_presupuestaria|date:"Y-m-d"|default:'' }}">
                             </input>
                         </div>
 
@@ -339,13 +345,162 @@
                                 <span class="section-icon">📅</span>
                                 Fecha tope de firma de contrato
                             </h3>
-                            <input type="date" name="fecha_tope_firma_contrato" id="fechaTopeFirmaContratoInput" class="empresa-rut-input">
+                            <input type="date" name="fecha_tope_firma_contrato" id="fechaTopeFirmaContratoInput" class="empresa-rut-input" value="{{ licitacion.fecha_tope_firma_contrato|date:"Y-m-d"|default:'' }}">
                             </input>
-                            <button type="button" id="btnModalRedestinar" class="btn-accion btn-primario" onclick="document.getElementById('modalRedestinar').style.display=''; document.getElementById('modalRedestinar').classList.add('active');">
+                            <button type="button" id="btnModalRedestinar" class="btn-accion btn-primario">
                                 <span class="btn-icono">🔄</span>
                                 Redestinar
                             </button>
                         </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    <div id="evaluacionCotizacionContainer" class="evaluacion-cotizacion-container hidden" style="margin-bottom: 50px;">
+                        <h3 class="section-title" style="cursor: pointer;">
+                            <span class="section-icon"></span>
+                            Evaluación de la cotización:
+                        </h3>
+                        <div class="campo-grupo">
+                            <label for="fechaEvaluacionCotizacionInput" class="campo-label">
+                                <span class="label-icono">📅</span>
+                                Fecha de evaluación:
+                            </label>
+                            <input 
+                                type="date" 
+                                id="fechaEvaluacionCotizacionInput" 
+                                name="fecha_evaluacion_cotizacion" 
+                                class="empresa-rut-input"
+                                value="{{ licitacion.fecha_evaluacion_cotizacion|date:"Y-m-d"|default:'' }}">
+                        </div>
+                        <div class="campo-grupo">
+                            <label for="montoEstimadoCotizacionInput" class="campo-label">
+                                <span class="label-icono">💰</span>
+                                Monto estimado:
+                            </label>
+                            <input 
+                                type="number" 
+                                step="0.01"
+                                id="montoEstimadoCotizacionInput" 
+                                name="monto_estimado_cotizacion" 
+                                class="empresa-rut-input"
+                                placeholder="Ej: 1500000.00"
+                                min="0"
+                                value="{{ licitacion.monto_estimado_cotizacion|default:'' }}">
+                            <div class="campo-ayuda">
+                                <span class="ayuda-icono">💡</span>
+                                <span class="ayuda-texto">En pesos</span>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+
+
+
+                    <div id="decretoIntencionCompraContainer" class="decreto-intencion-compra-container hidden" style="margin-bottom: 50px;">
+                        <div class="campo-grupo">
+                            <label for="fechaSolicitudIntencionCompraInput" class="campo-label">
+                                <span class="label-icono">📅</span>
+                                Fecha de decreto:
+                            </label>
+                            <input 
+                                type="date" 
+                                id="fechaSolicitudIntencionCompraInput" 
+                                name="fecha_solicitud_intencion_compra" 
+                                class="empresa-rut-input"
+                                value="{{ licitacion.fecha_evaluacion_cotizacion|date:"Y-m-d"|default:'' }}">
+                        </div>
+                    </div>
+
+
+
+
+
+
+
+                    <div id="comisionBaseContainer" class="comision-base-container hidden" style="margin-bottom: 50px;">
+                        <h3 class="section-title" style="cursor: pointer;">
+                            <span class="section-icon"></span>
+                            Comision de base:
+                        </h3>
+                        <label for="nombreIntegranteUnoComisionBaseInput" class="campo-label">
+                            <span class="field-icono"></span>
+                            Integrante N° 1
+                        </label>
+                        <input type="text" name="nombre_integrante_uno_comision_base" id="nombreIntegranteUnoComisionBaseInput" placeholder="Integrante N° 1" class="empresa-rut-input" value="{{ licitacion.nombre_integrante_uno_comision_base|default:'' }}">
+                        </input>
+                        <label for="nombreIntegranteDosComisionBaseInput" class="campo-label">
+                            <span class="field-icono"></span>
+                            Integrante N° 2
+                        </label>
+                        <input type="text" name="nombre_integrante_dos_comision_base" id="nombreIntegranteDosComisionBaseInput" placeholder="Integrante N° 2" class="empresa-rut-input" value="{{ licitacion.nombre_integrante_dos_comision_base|default:'' }}">
+                        </input>
+                        <label for="nombreIntegranteTresComisionBaseInput" class="campo-label">
+                            <span class="field-icono"></span>
+                            Integrante N° 3
+                        </label>
+                        <input type="text" name="nombre_integrante_tres_comision_base" id="nombreIntegranteTresComisionBaseInput" placeholder="Integrante N° 3" class="empresa-rut-input" value="{{ licitacion.nombre_integrante_tres_comision_base|default:'' }}">
+                        </input>
+                    </div>
+
+
+
+
+
+
+
+
+
+
+                    <div id="publicacionMercadoPublicoContainer" class="publicacion-mercado-publico-container hidden" style="margin-bottom: 50px;">
+                        <h3 class="section-title" style="cursor: pointer;">
+                            <span class="section-icon"></span>
+                            Fechas de mercado público:
+                        </h3>
+                        <div class="campo-grupo">
+                            <label for="fechaPublicacionMercadoPublicoInput" class="campo-label">
+                                <span class="label-icono">📅</span>
+                                Fecha de publicación:
+                            </label>
+                            <input 
+                                type="date" 
+                                id="fechaPublicacionMercadoPublicoInput" 
+                                name="fecha_publicacion_mercado_publico" 
+                                class="empresa-rut-input"
+                                value="{{ licitacion.fecha_publicacion_mercado_publico|date:"Y-m-d"|default:'' }}">
+                        </div>
+                        <div class="campo-grupo">
+                            <label for="fechaCierreOfertasMercadoPublicoInput" class="campo-label">
+                                <span class="label-icono">📅</span>
+                                Fecha de cierre de ofertas:
+                            </label>
+                            <input 
+                                type="date" 
+                                id="fechaCierreOfertasMercadoPublicoInput" 
+                                name="fecha_cierre_ofertas_mercado_publico" 
+                                class="empresa-rut-input"
+                                value="{{ licitacion.fecha_cierre_ofertas_mercado_publico|date:"Y-m-d"|default:'' }}">
+                        </div>
+                    </div>
+
+
+
 
 
 
@@ -606,15 +761,15 @@
 
     <div class="modal-container" id="modalRedestinar">
         <div class="modal-content" style="padding: 20px 20px;">
-            <span id="cerrarModalObservacion" class="btn-close">&times;</span>
-            <h2 id="tituloModalObservacion">Redestinación</h2>
-            <form id="formModalObservacion" method="post" enctype="multipart/form-data">
+            <span id="cerrarModalRedestinar" class="btn-close">&times;</span>
+            <h2 id="tituloModalRedestinar">Redestinación</h2>
+            <form id="formModalRedestinar" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
-                <input type="hidden" name="bitacora_id" id="observacionBitacoraId">
+                <input type="hidden" name="bitacora_id" id="redestinarBitacoraId">
                 
                 <div class="modal-field-container">
-                    <label for="modalObservacionTexto" class="modal-field-label">Razón:</label>
-                    <textarea id="modalObservacionTexto" name="texto" rows="4" class="modal-textarea" required {% if es_admin %}readonly{% endif %} placeholder="Escribe la razón de redestinación..."></textarea>
+                    <label for="modalRedestinarTexto" class="modal-field-label">Razón:</label>
+                    <textarea id="modalRedestinarTexto" name="texto" rows="4" class="modal-textarea" required {% if es_admin %}readonly{% endif %} placeholder="Escribe la razón de redestinación..."></textarea>
                 </div>
                 <!-- Información de ayuda -->
                 <div class="modal-file-help">
@@ -623,9 +778,9 @@
                 </div>
 
                 <div class="modal-buttons">
-                    <button type="button" id="btnCancelarObservacion">Cancelar</button>
+                    <button type="button" id="btnCancelarRedestinar">Cancelar</button>
                     {% if es_operador %}
-                    <button type="submit" id="btnGuardarObservacion">🔄 Redestinar</button>
+                    <button type="submit" id="btnRedestinar">🔄 Redestinar</button>
                     {% endif %}
                 </div>
             </form>
@@ -696,9 +851,9 @@
                 {% endif %}
                 
                 <div class="modal-buttons">
-                    <button type="button" id="btnCancelarRedestinar">Cancelar</button>
+                    <button type="button" id="btnCancelarObservacion">Cancelar</button>
                     {% if es_admin %}
-                    <button type="submit" id="btnRedestinar">💾 Guardar</button>
+                    <button type="submit" id="btnGuardarObservacion">💾 Guardar</button>
                     {% endif %}
                 </div>
             </form>
