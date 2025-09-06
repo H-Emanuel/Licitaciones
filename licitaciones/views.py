@@ -695,6 +695,46 @@ def bitacora_licitacion(request, licitacion_id):
         archivo = request.FILES.get('archivo')
         etapa_id = request.POST.get('etapa')
         etapa_nombre = request.POST.get('etapa_nombre')
+        
+
+        etapa_obj = None
+        if etapa_id:
+            try:
+                etapa_obj = Etapa.objects.get(id=etapa_id)
+            except Etapa.DoesNotExist:
+                etapa_obj = None
+        elif etapa_nombre:
+            try:
+                etapa_obj = Etapa.objects.get(nombre=etapa_nombre)
+            except Etapa.DoesNotExist:
+                etapa_obj = None
+        
+        tipo_licitacion_etapa_observacion = (
+            TipoLicitacionEtapa.objects
+            .filter(etapa=etapa_obj, tipo_licitacion=licitacion.tipo_licitacion)
+            .order_by('-orden')
+            .first()
+        )
+
+        bitacoras_etapas = BitacoraLicitacion.objects.filter(
+            licitacion=licitacion
+        ).values_list('etapa', flat=True)
+
+        tipo_licitacion_etapa_ultima_observacion = (
+            TipoLicitacionEtapa.objects
+            .filter(etapa__in=bitacoras_etapas, tipo_licitacion=licitacion.tipo_licitacion)
+            .order_by('-orden')
+            .first()
+            or TipoLicitacionEtapa.objects
+            .filter(etapa=licitacion.etapa_fk, tipo_licitacion=licitacion.tipo_licitacion)
+            .order_by('-orden')
+            .first()
+        )
+        # SI NO SE DEFINE UNA ETAPA O ES UNA ETAPA MUY AVANZADA RESPECTO A LA ULTIMA OBSERVACION OMITIR POST
+        if not etapa_obj or not tipo_licitacion_etapa_observacion or tipo_licitacion_etapa_observacion.orden > tipo_licitacion_etapa_ultima_observacion.orden + 1:
+            print('etapa muy avanzada')
+            return redirect('bitacora_licitacion', licitacion_id)
+        
         id_mercado_publico = request.POST.get('id_mercado_publico', '').strip()
         
         # Campos específicos
@@ -738,18 +778,6 @@ def bitacora_licitacion(request, licitacion_id):
         fecha_recepcion_documento_regimen_interno = request.POST.get('fecha_recepcion_documento_regimen_interno', '').strip()
 
         fecha_tope_firma_contrato = request.POST.get('fecha_tope_firma_contrato', '').strip()
-
-        etapa_obj = None
-        if etapa_id:
-            try:
-                etapa_obj = Etapa.objects.get(id=etapa_id)
-            except Etapa.DoesNotExist:
-                etapa_obj = None
-        elif etapa_nombre:
-            try:
-                etapa_obj = Etapa.objects.get(nombre=etapa_nombre)
-            except Etapa.DoesNotExist:
-                etapa_obj = None
         # Manejar avance/retroceso de etapa
         accion_etapa = request.POST.get('accion_etapa')
         if accion_etapa == 'advance' and etapa_obj:
