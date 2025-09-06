@@ -34,7 +34,7 @@ insert into licitaciones_etapa (nombre) values
 ('Recepción de ofertas'),
 ('Disponibilidad presupuestaria'),
 ('Solicitud de régimen interno'),
-('Publicación mercado publico'),
+('Publicación mercado público'),
 ('Evaluación de ofertas'),
 ('Solicitud de comisión de régimen interno'),
 ('Recepción de documento de régimen interno'),
