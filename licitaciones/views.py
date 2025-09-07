@@ -685,30 +685,26 @@ def bitacora_licitacion(request, licitacion_id):
     if request.method == 'POST' and (es_admin or es_operador or es_operador_manual):
         # Verificar permisos para operadores
         if (es_operador or es_operador_manual) and not licitacion.puede_operar_usuario(request.user):
-            print('sin permisos')
             return JsonResponse({
                 'ok': False, 
                 'error': f'Solo el operador activo puede agregar entradas. Operador activo actual: {licitacion.get_operador_activo()}'
             }, status=403)
-        
+        valores = {}
         texto = request.POST.get('texto', '').strip()
         archivo = request.FILES.get('archivo')
         etapa_id = request.POST.get('etapa')
         etapa_nombre = request.POST.get('etapa_nombre')
-        
-
         etapa_obj = None
         if etapa_id:
             try:
                 etapa_obj = Etapa.objects.get(id=etapa_id)
             except Etapa.DoesNotExist:
                 etapa_obj = None
-        elif etapa_nombre:
+        if etapa_nombre:
             try:
                 etapa_obj = Etapa.objects.get(nombre=etapa_nombre)
             except Etapa.DoesNotExist:
                 etapa_obj = None
-        
         tipo_licitacion_etapa_observacion = (
             TipoLicitacionEtapa.objects
             .filter(etapa=etapa_obj, tipo_licitacion=licitacion.tipo_licitacion)
@@ -779,12 +775,12 @@ def bitacora_licitacion(request, licitacion_id):
         fecha_tope_firma_contrato = request.POST.get('fecha_tope_firma_contrato', '').strip()
         # Manejar avance/retroceso de etapa
         accion_etapa = request.POST.get('accion_etapa')
+        if request.POST.get('redestinar', '')=='true' and etapa_obj:
+            valores['Redestinado'] = str(etapa_nombre)
         if accion_etapa == 'advance' and etapa_obj:
-            valores['Avanzar etapa'] = str(etapa_obj.nombre)
             licitacion.etapa_fk = etapa_obj
             licitacion.save()
         elif accion_etapa == 'retreat' and etapa_obj:
-            valores['Retroceder etapa'] = str(etapa_obj.nombre)
             licitacion.etapa_fk = etapa_obj
             licitacion.save()
 
@@ -793,7 +789,7 @@ def bitacora_licitacion(request, licitacion_id):
             licitacion.id_mercado_publico = id_mercado_publico
         
         
-        valores = {}
+        
         if etapa_obj and 'decreto de intención de compra' in etapa_obj.nombre.lower().strip():
             if fecha_solicitud_intencion_compra and licitacion.fecha_solicitud_intencion_compra!= fecha_solicitud_intencion_compra:
                 valores['Fecha de la evaluación de cotización'] = str(fecha_solicitud_intencion_compra)
@@ -882,6 +878,7 @@ def bitacora_licitacion(request, licitacion_id):
         
         if fecha_disponibilidad_presupuestaria and licitacion.fecha_disponibilidad_presupuestaria != fecha_disponibilidad_presupuestaria and etapa_obj and 'disponibilidad presupuestaria' in etapa_obj.nombre.lower().strip():
             valores['Fecha de disponibilidad presupuestaria'] = str(fecha_disponibilidad_presupuestaria)
+            licitacion.fecha_disponibilidad_presupuestaria = fecha_disponibilidad_presupuestaria
         
         if etapa_obj and 'publicación mercado público' in etapa_obj.nombre.lower().strip():
             if fecha_publicación_mercado_publico and licitacion.fecha_publicación_mercado_publico != fecha_publicación_mercado_publico:

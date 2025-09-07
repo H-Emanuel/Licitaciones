@@ -765,8 +765,7 @@
             <h2 id="tituloModalRedestinar">Redestinación</h2>
             <form id="formModalRedestinar" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
-                <input type="hidden" name="bitacora_id" id="redestinarBitacoraId">
-                
+                <input type="hidden" name="licitacion_id" value="{{ licitacion.id }}">
                 <div class="modal-field-container">
                     <label for="modalRedestinarTexto" class="modal-field-label">Razón:</label>
                     <textarea id="modalRedestinarTexto" name="texto" rows="4" class="modal-textarea" required {% if es_admin %}readonly{% endif %} placeholder="Escribe la razón de redestinación..."></textarea>
@@ -774,7 +773,7 @@
                 <!-- Información de ayuda -->
                 <div class="modal-file-help">
                     <span class="help-icon">💡</span>
-                    <span class="help-text">Se redestinará la licitacion actual a etapa "Evaluación de ofertas" y se registrará en la bitácora</span>
+                    <span class="help-text">Se redestinará la licitacion a "Evaluación de ofertas" y se registrará en la bitácora</span>
                 </div>
 
                 <div class="modal-buttons">

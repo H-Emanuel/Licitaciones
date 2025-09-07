@@ -202,16 +202,36 @@ window.addEventListener('DOMContentLoaded', function() {
     document.getElementById('btnModalRedestinar').onclick = showModalRedestinar;
     document.getElementById('cerrarModalRedestinar').onclick = closeModalRedestinar;
     document.getElementById('btnCancelarRedestinar').onclick = closeModalRedestinar;
-
-    // Manejo del formulario del modal (separado)
+    const nombreEtapaActual = document.getElementById('nombreEtapaActual');
     const formModalRedestinar = document.getElementById('formModalRedestinar');
     if (formModalRedestinar) {
         formModalRedestinar.onsubmit = function(e) {
             e.preventDefault();
-            const formData = formModalRedestinar;
-            formData.append('accion_etapa', 'retreat');
-            formData.append('etapa_nombre', 'Evaluación de ofertas');
-            formData.submit();
+            const form = formModalRedestinar;
+
+            let redestinar = document.createElement('input');
+            redestinar.type = 'hidden';
+            redestinar.name = 'redestinar';
+            redestinar.value = true;
+            form.appendChild(redestinar);
+            let accionEtapaInput = document.getElementById('accionEtapa');
+
+            accionEtapaInput = document.createElement('input');
+            accionEtapaInput.type = 'hidden';
+            accionEtapaInput.name = 'accion_etapa';
+            accionEtapaInput.id = 'accionEtapa';
+            accionEtapaInput.value = 'retreat';
+            form.appendChild(accionEtapaInput);
+            
+            // Agregar etapa actual si se está avanzando
+            if (nombreEtapaActual) {
+                let etapaInput = document.createElement('input');
+                etapaInput.type = 'hidden';
+                etapaInput.name = 'etapa_nombre';
+                etapaInput.value = 'Evaluación de ofertas';
+                form.appendChild(etapaInput);
+            }
+            form.submit();
         };
     }
 
@@ -394,7 +414,6 @@ window.addEventListener('DOMContentLoaded', function() {
     
     // Funcionalidad de avanzar etapa
     const btnAvanzarEtapa = document.getElementById('btnAvanzarEtapa');
-    const nombreEtapaActual = document.getElementById('nombreEtapaActual');
     const accionEtapa = document.getElementById('accionEtapa');
     const btnRetrocederEtapa = document.getElementById('btnRetrocederEtapa');
     
