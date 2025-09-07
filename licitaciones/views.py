@@ -690,6 +690,7 @@ def bitacora_licitacion(request, licitacion_id):
                 'error': f'Solo el operador activo puede agregar entradas. Operador activo actual: {licitacion.get_operador_activo()}'
             }, status=403)
         valores = {}
+        saltar_etapas = []
         texto = request.POST.get('texto', '').strip()
         archivo = request.FILES.get('archivo')
         etapa_id = request.POST.get('etapa')
@@ -705,10 +706,13 @@ def bitacora_licitacion(request, licitacion_id):
                 etapa_obj = Etapa.objects.get(nombre=etapa_nombre)
             except Etapa.DoesNotExist:
                 etapa_obj = None
+        
+        
+        
         tipo_licitacion_etapa_observacion = (
             TipoLicitacionEtapa.objects
             .filter(etapa=etapa_obj, tipo_licitacion=licitacion.tipo_licitacion)
-            .order_by('-orden')
+            .order_by('orden')
             .first()
         )
 
@@ -719,17 +723,53 @@ def bitacora_licitacion(request, licitacion_id):
         tipo_licitacion_etapa_ultima_observacion = (
             TipoLicitacionEtapa.objects
             .filter(etapa__in=bitacoras_etapas, tipo_licitacion=licitacion.tipo_licitacion)
-            .order_by('-orden')
+            .order_by('orden')
             .first()
             or TipoLicitacionEtapa.objects
             .filter(etapa=licitacion.etapa_fk, tipo_licitacion=licitacion.tipo_licitacion)
-            .order_by('-orden')
+            .order_by('orden')
             .first()
         )
-        # SI NO SE DEFINE UNA ETAPA O ES UNA ETAPA MUY AVANZADA RESPECTO A LA ULTIMA ETAPA DE LAS OBSERVACIONES OMITIR POST
-        if not etapa_obj or not tipo_licitacion_etapa_observacion or tipo_licitacion_etapa_observacion.orden > tipo_licitacion_etapa_ultima_observacion.orden + 1:
-            return redirect('bitacora_licitacion', licitacion_id)
+
+
+        tipo_licitacion_etapa_observacion_next = (
+            TipoLicitacionEtapa.objects
+            .filter(tipo_licitacion=licitacion.tipo_licitacion, orden__gt=tipo_licitacion_etapa_observacion.orden)
+            .order_by('orden')
+            .first()
+        )
+
+        tipo_licitacion_etapa_ultima_observacion_next = (
+            TipoLicitacionEtapa.objects
+            .filter(tipo_licitacion=licitacion.tipo_licitacion, orden__gt=tipo_licitacion_etapa_ultima_observacion.orden)
+            .order_by("orden")
+            .first()
+        )
+
+        # saltar etapas solicitud de comision de regimen interno y recepcion de documento de regimen interno segun monto presupuestado
+        monedas = {'uf': 39156.08, 'dolar': 965.64, 'dólar': 965.64, 'euro': 1125.59, 'utm': 68647, 'clp': 1}
+        if monedas[licitacion.moneda.nombre.lower()]*float(licitacion.monto_presupuestado)/monedas['utm'] < 500:
+            saltar_etapas.append((14, 15))
         
+        # HANDLER SALTAR ETAPAS
+        salta_etapas = False
+        for e_inicio, e_final in saltar_etapas:
+            tipo_licitacion_etapa_e_final = (
+                TipoLicitacionEtapa.objects
+                .filter(etapa=e_final, tipo_licitacion=licitacion.tipo_licitacion)
+                .order_by('orden')
+                .first()
+            )
+            if (tipo_licitacion_etapa_ultima_observacion_next.etapa == e_inicio):
+                if (tipo_licitacion_etapa_observacion.orden > tipo_licitacion_etapa_e_final.orden + 1):
+                    return redirect('bitacora_licitacion', licitacion_id)
+                # si hay al menos una ocurrencia en saltar_etapas es necesario dejar registro para no llamar al handler general si la etapa hace el salto bien
+                salta_etapas = True
+        
+        # SI NO SE DEFINE UNA ETAPA O ES UNA ETAPA MUY AVANZADA RESPECTO A LA ULTIMA ETAPA DE LAS OBSERVACIONES OMITIR POST
+        if not salta_etapas and (not etapa_obj or not tipo_licitacion_etapa_observacion or (tipo_licitacion_etapa_observacion.orden > tipo_licitacion_etapa_ultima_observacion.orden + 1)):
+            return redirect('bitacora_licitacion', licitacion_id)
+
         id_mercado_publico = request.POST.get('id_mercado_publico', '').strip()
         
         # Campos específicos
@@ -949,9 +989,8 @@ def bitacora_licitacion(request, licitacion_id):
         etapas = list(etapas_qs.values('id', 'nombre'))
     else:
         etapas = list(Etapa.objects.order_by('id').values('id', 'nombre'))
-    monedas = {'uf': 39156.08, 'dolar': 965.64, 'dólar': 965.64, 'euro': 1125.59, 'utm': 68647, 'clp': 1}
-    if monedas[licitacion.moneda.nombre.lower()]*float(licitacion.monto_presupuestado)/monedas['utm'] >= 500 and (True for etapa in etapas if etapa['id'] in (14, 15)):
-        etapas = [etapa for etapa in etapas if etapa['id'] not in (14, 15)]
+    if saltar_etapas:
+        etapas = [etapa for etapa in etapas if etapa['id'] not in saltar_etapas]
     return render(request, 'licitaciones/bitacora_licitacion.html', {
         'licitacion': licitacion,
         'bitacoras': bitacoras,
