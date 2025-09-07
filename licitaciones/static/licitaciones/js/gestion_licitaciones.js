@@ -10,7 +10,7 @@ async function obtenerValor(moneda) {
     } catch (error) {
         // En su defecto usar tabla
         console.error('Problema al cargar api mindicador:', error.message);
-        return {'uf': 39156.08, 'dolar': 965.64, 'euro': 1125.59, 'utm': 68647}[moneda.trim().toLowerCase()] ?? null;
+        return {'uf': 39156.08, 'dolar': 965.64, 'dólar': 965.64, 'euro': 1125.59, 'utm': 68647, 'clp': 1}[moneda.trim().toLowerCase()] ?? null;
     }
 }
 

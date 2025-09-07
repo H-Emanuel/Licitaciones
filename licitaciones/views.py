@@ -732,7 +732,6 @@ def bitacora_licitacion(request, licitacion_id):
         )
         # SI NO SE DEFINE UNA ETAPA O ES UNA ETAPA MUY AVANZADA RESPECTO A LA ULTIMA ETAPA DE LAS OBSERVACIONES OMITIR POST
         if not etapa_obj or not tipo_licitacion_etapa_observacion or tipo_licitacion_etapa_observacion.orden > tipo_licitacion_etapa_ultima_observacion.orden + 1:
-            print('etapa muy avanzada')
             return redirect('bitacora_licitacion', licitacion_id)
         
         id_mercado_publico = request.POST.get('id_mercado_publico', '').strip()
@@ -781,9 +780,11 @@ def bitacora_licitacion(request, licitacion_id):
         # Manejar avance/retroceso de etapa
         accion_etapa = request.POST.get('accion_etapa')
         if accion_etapa == 'advance' and etapa_obj:
+            valores['Avanzar etapa'] = str(etapa_obj.nombre)
             licitacion.etapa_fk = etapa_obj
             licitacion.save()
         elif accion_etapa == 'retreat' and etapa_obj:
+            valores['Retroceder etapa'] = str(etapa_obj.nombre)
             licitacion.etapa_fk = etapa_obj
             licitacion.save()
 
@@ -951,6 +952,9 @@ def bitacora_licitacion(request, licitacion_id):
         etapas = list(etapas_qs.values('id', 'nombre'))
     else:
         etapas = list(Etapa.objects.order_by('id').values('id', 'nombre'))
+    monedas = {'uf': 39156.08, 'dolar': 965.64, 'dólar': 965.64, 'euro': 1125.59, 'utm': 68647, 'clp': 1}
+    if monedas[licitacion.moneda.nombre.lower()]*float(licitacion.monto_presupuestado)/monedas['utm'] >= 500 and (True for etapa in etapas if etapa['id'] in (14, 15)):
+        etapas = [etapa for etapa in etapas if etapa['id'] not in (14, 15)]
     return render(request, 'licitaciones/bitacora_licitacion.html', {
         'licitacion': licitacion,
         'bitacoras': bitacoras,
