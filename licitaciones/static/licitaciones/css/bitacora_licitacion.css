@@ -908,7 +908,7 @@
 }
 
 /* Modal save button */
-#btnGuardarObservacion {
+#btnGuardarObservacion, #btnRedestinar {
     background: linear-gradient(135deg, #3498db, #2ecc71);
     color: white;
     border: none;
@@ -919,7 +919,7 @@
     transition: all 0.2s;
 }
 
-#btnGuardarObservacion:hover {
+#btnGuardarObservacion:hover, #btnRedestinar:hover {
     background: linear-gradient(135deg, #2980b9, #27ae60);
     transform: translateY(-1px);
 }

@@ -1163,6 +1163,7 @@ formProyecto.onsubmit = async function(e) {
     let url, method;
     let datosJson = {};
     datos.forEach((v, k) => {
+        console.log(v, k);
         if (k === 'financiamiento') {
             // Recoger todos los seleccionados como array de strings
             const values = datos.getAll('financiamiento');
@@ -1210,17 +1211,22 @@ formProyecto.onsubmit = async function(e) {
         url = '/gestion/agregar_proyecto/';
         method = 'POST';
     }
+    
     const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
     let res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
         body: JSON.stringify(datosJson)
     });
+    console.log(datosJson);
+    console.log(url)
+    console.log(res);
     const resData = await res.json();
     if (!res.ok && resData && resData.error) {
         alert(resData.error);
         return;
     }
+    
     if (res.ok && formProyecto.documentos && formProyecto.documentos.files.length > 0) {
         // Subir archivos si hay
         const formDataArchivos = new FormData();

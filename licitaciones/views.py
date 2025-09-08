@@ -54,7 +54,6 @@ def gestion_licitaciones(request):
         return redirect('vista_operador')
     return redirect('vista_admin')
 
-@login_required
 @csrf_exempt
 def modificar_licitacion(request, licitacion_id):
     if request.method == 'POST':
@@ -64,6 +63,7 @@ def modificar_licitacion(request, licitacion_id):
         campos_modificados = []
         valores_antes = {}
         valores_despues = {}
+        texto_bitacora = ""
         # Solo actualizar el operador si solo viene ese campo
         if ('operador' in data or 'operador_id' in data) and len(data) == 1:
             operador_id = data.get('operador') or data.get('operador_id')
@@ -323,7 +323,15 @@ def modificar_licitacion(request, licitacion_id):
                 valores_antes['N° de cuenta'] = str(licitacion.tipo_presupuesto)
                 valores_despues['N° de cuenta'] = str(tipo_presupuesto)
                 licitacion.tipo_presupuesto = tipo_presupuesto
-            fecha_tentativa_cierre = data.get('fecha_tentativa_cierre', '')
+            fecha_tentativa_cierre_raw = data.get('fecha_tentativa_cierre', '')
+            # Convertir a date o None
+            if fecha_tentativa_cierre_raw:
+                try:
+                    fecha_tentativa_cierre = datetime.strptime(fecha_tentativa_cierre_raw, '%Y-%m-%d').date()
+                except ValueError:
+                    fecha_tentativa_cierre = None
+            else:
+                fecha_tentativa_cierre = None
             if licitacion.fecha_tentativa_cierre != fecha_tentativa_cierre:
                 cambios.append(f"Fecha tentativa de cierre: '{licitacion.fecha_tentativa_cierre}' → '{fecha_tentativa_cierre}'")
                 campos_modificados.append('Fecha tentativa de cierre')
@@ -343,8 +351,6 @@ def modificar_licitacion(request, licitacion_id):
             licitacion.save()
         # Registrar en bitácora si hubo cambios
         if cambios:
-            if (not texto_bitacora):
-                texto_bitacora = ""
             texto_bitacora += "Campos modificados:" + ''.join([
                 f"\n- {campo}: '{valores_antes[campo]}' → '{valores_despues[campo]}'"
                 for campo in campos_modificados
@@ -682,6 +688,12 @@ def bitacora_licitacion(request, licitacion_id):
     page_number = request.GET.get('page')
     paginator = Paginator(bitacora_qs, 10)
     bitacoras = paginator.get_page(page_number)
+    saltar_etapas = []
+    # saltar etapas solicitud de comision de regimen interno y recepcion de documento de regimen interno segun monto presupuestado
+    monedas = {'uf': 39156.08, 'dolar': 965.64, 'dólar': 965.64, 'euro': 1125.59, 'utm': 68647, 'clp': 1}
+    if monedas[licitacion.moneda.nombre.lower()]*float(licitacion.monto_presupuestado)/monedas['utm'] < 500:
+        saltar_etapas.append((14, 15))
+    
     if request.method == 'POST' and (es_admin or es_operador or es_operador_manual):
         # Verificar permisos para operadores
         if (es_operador or es_operador_manual) and not licitacion.puede_operar_usuario(request.user):
@@ -690,7 +702,6 @@ def bitacora_licitacion(request, licitacion_id):
                 'error': f'Solo el operador activo puede agregar entradas. Operador activo actual: {licitacion.get_operador_activo()}'
             }, status=403)
         valores = {}
-        saltar_etapas = []
         texto = request.POST.get('texto', '').strip()
         archivo = request.FILES.get('archivo')
         etapa_id = request.POST.get('etapa')
@@ -712,7 +723,6 @@ def bitacora_licitacion(request, licitacion_id):
         tipo_licitacion_etapa_observacion = (
             TipoLicitacionEtapa.objects
             .filter(etapa=etapa_obj, tipo_licitacion=licitacion.tipo_licitacion)
-            .order_by('orden')
             .first()
         )
 
@@ -723,19 +733,11 @@ def bitacora_licitacion(request, licitacion_id):
         tipo_licitacion_etapa_ultima_observacion = (
             TipoLicitacionEtapa.objects
             .filter(etapa__in=bitacoras_etapas, tipo_licitacion=licitacion.tipo_licitacion)
-            .order_by('orden')
+            .order_by('-orden')
             .first()
             or TipoLicitacionEtapa.objects
             .filter(etapa=licitacion.etapa_fk, tipo_licitacion=licitacion.tipo_licitacion)
-            .order_by('orden')
-            .first()
-        )
-
-
-        tipo_licitacion_etapa_observacion_next = (
-            TipoLicitacionEtapa.objects
-            .filter(tipo_licitacion=licitacion.tipo_licitacion, orden__gt=tipo_licitacion_etapa_observacion.orden)
-            .order_by('orden')
+            .order_by('-orden')
             .first()
         )
 
@@ -745,19 +747,12 @@ def bitacora_licitacion(request, licitacion_id):
             .order_by("orden")
             .first()
         )
-
-        # saltar etapas solicitud de comision de regimen interno y recepcion de documento de regimen interno segun monto presupuestado
-        monedas = {'uf': 39156.08, 'dolar': 965.64, 'dólar': 965.64, 'euro': 1125.59, 'utm': 68647, 'clp': 1}
-        if monedas[licitacion.moneda.nombre.lower()]*float(licitacion.monto_presupuestado)/monedas['utm'] < 500:
-            saltar_etapas.append((14, 15))
-        
-        # HANDLER SALTAR ETAPAS
+       # HANDLER SALTAR ETAPAS
         salta_etapas = False
         for e_inicio, e_final in saltar_etapas:
             tipo_licitacion_etapa_e_final = (
                 TipoLicitacionEtapa.objects
                 .filter(etapa=e_final, tipo_licitacion=licitacion.tipo_licitacion)
-                .order_by('orden')
                 .first()
             )
             if (tipo_licitacion_etapa_ultima_observacion_next.etapa == e_inicio):
