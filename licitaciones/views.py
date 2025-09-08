@@ -985,7 +985,8 @@ def bitacora_licitacion(request, licitacion_id):
     else:
         etapas = list(Etapa.objects.order_by('id').values('id', 'nombre'))
     if saltar_etapas:
-        etapas = [etapa for etapa in etapas if etapa['id'] not in saltar_etapas]
+        for e_inicio, e_fin in saltar_etapas:
+            etapas = [etapa for etapa in etapas if etapa['id'] not in range(e_inicio, e_fin+1)]
     return render(request, 'licitaciones/bitacora_licitacion.html', {
         'licitacion': licitacion,
         'bitacoras': bitacoras,
