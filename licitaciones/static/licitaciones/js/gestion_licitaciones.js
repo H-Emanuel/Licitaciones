@@ -1163,7 +1163,6 @@ formProyecto.onsubmit = async function(e) {
     let url, method;
     let datosJson = {};
     datos.forEach((v, k) => {
-        console.log(v, k);
         if (k === 'financiamiento') {
             // Recoger todos los seleccionados como array de strings
             const values = datos.getAll('financiamiento');
@@ -1218,9 +1217,6 @@ formProyecto.onsubmit = async function(e) {
         headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
         body: JSON.stringify(datosJson)
     });
-    console.log(datosJson);
-    console.log(url)
-    console.log(res);
     const resData = await res.json();
     if (!res.ok && resData && resData.error) {
         alert(resData.error);
@@ -1287,7 +1283,7 @@ formProyecto.onsubmit = async function(e) {
 
     // --- EXPORTAR A EXCEL ---
     document.getElementById('btnExportarTodasLicitaciones')?.addEventListener('click', function() {
-        console.log('Botón Exportar todas las licitaciones clickeado');
+        'Botón Exportar todas las licitaciones clickeado');
         
         // Obtener los parámetros actuales de la URL para mantener los filtros
         const currentUrl = new URL(window.location.href);
