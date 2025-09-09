@@ -1283,7 +1283,7 @@ formProyecto.onsubmit = async function(e) {
 
     // --- EXPORTAR A EXCEL ---
     document.getElementById('btnExportarTodasLicitaciones')?.addEventListener('click', function() {
-        'Botón Exportar todas las licitaciones clickeado');
+        console.log('Botón Exportar todas las licitaciones clickeado');
         
         // Obtener los parámetros actuales de la URL para mantener los filtros
         const currentUrl = new URL(window.location.href);

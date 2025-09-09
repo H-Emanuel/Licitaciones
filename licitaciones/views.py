@@ -688,11 +688,6 @@ def bitacora_licitacion(request, licitacion_id):
     page_number = request.GET.get('page')
     paginator = Paginator(bitacora_qs, 10)
     bitacoras = paginator.get_page(page_number)
-    saltar_etapas = []
-    # saltar etapas solicitud de comision de regimen interno y recepcion de documento de regimen interno segun monto presupuestado
-    monedas = {'uf': 39156.08, 'dolar': 965.64, 'dólar': 965.64, 'euro': 1125.59, 'utm': 68647, 'clp': 1}
-    if monedas[licitacion.moneda.nombre.lower()]*float(licitacion.monto_presupuestado)/monedas['utm'] < 500:
-        saltar_etapas.append((14, 15))
     
     if request.method == 'POST' and (es_admin or es_operador or es_operador_manual):
         # Verificar permisos para operadores
@@ -749,7 +744,7 @@ def bitacora_licitacion(request, licitacion_id):
         )
        # HANDLER SALTAR ETAPAS
         salta_etapas = False
-        for e_inicio, e_final in saltar_etapas:
+        for e_inicio, e_final in licitacion.get_saltar_etapas():
             tipo_licitacion_etapa_e_final = (
                 TipoLicitacionEtapa.objects
                 .filter(etapa=e_final, tipo_licitacion=licitacion.tipo_licitacion)
@@ -984,9 +979,8 @@ def bitacora_licitacion(request, licitacion_id):
         etapas = list(etapas_qs.values('id', 'nombre'))
     else:
         etapas = list(Etapa.objects.order_by('id').values('id', 'nombre'))
-    if saltar_etapas:
-        for e_inicio, e_fin in saltar_etapas:
-            etapas = [etapa for etapa in etapas if etapa['id'] not in range(e_inicio, e_fin+1)]
+    for e_inicio, e_fin in licitacion.get_saltar_etapas():
+        etapas = [etapa for etapa in etapas if etapa['id'] not in range(e_inicio, e_fin+1)]
     return render(request, 'licitaciones/bitacora_licitacion.html', {
         'licitacion': licitacion,
         'bitacoras': bitacoras,
@@ -1142,7 +1136,7 @@ def etapas_licitacion_api(request, licitacion_id):
     
     return JsonResponse({
         'etapas': etapas_data,
-        'debe_saltar_consejo': licitacion.debe_saltar_aprobacion_consejo(),
+        'debe_saltar_consejo': len(licitacion.get_saltar_etapas()) > 0,
         'moneda': licitacion.moneda.nombre if licitacion.moneda else None,
         'monto': float(licitacion.monto_presupuestado) if licitacion.monto_presupuestado else None
     })

@@ -183,34 +183,39 @@ class Licitacion(models.Model):
         Retorna el operador activo según la etapa actual.
         - Operador 1: Hasta la etapa 'Evaluación de Ofertas' (inclusive)
         - Operador 2: Desde la etapa posterior a 'Evaluación de Ofertas'
+        Esta versión es robusta ante etapas saltadas y compara por el campo 'orden'.
         """
         if not self.etapa_fk:
             return self.operador_user
-        
-        # Obtener todas las etapas del tipo de licitación ordenadas
-        etapas_tipo = self.get_etapas_habilitadas()
-        
-        # Buscar la etapa "Evaluación de Ofertas" dentro de las etapas de este tipo de licitación
-        etapa_evaluacion = None
-        posicion_actual = -1
-        posicion_evaluacion = -1
-        
-        for i, rel in enumerate(etapas_tipo):
-            if rel.etapa.id == self.etapa_fk.id:
-                posicion_actual = i
-            
-            # Buscar la etapa que contenga "evaluación de ofertas" en su nombre  <------
-            if 'evaluación de ofertas' in rel.etapa.nombre.lower():
-                etapa_evaluacion = rel.etapa
-                posicion_evaluacion = i
-        
-        # Si no se encontró la etapa de evaluación de ofertas, operador 1 por defecto
-        if etapa_evaluacion is None or posicion_evaluacion == -1:
+
+        # Obtener todas las relaciones etapa-tipo ordenadas
+        etapas_tipo = self.tipo_licitacion.etapas_rel.order_by('orden').all()
+        # Buscar la relación de la etapa actual
+        rel_actual = None
+        orden_actual = None
+        for rel in etapas_tipo:
+            if rel.etapa_id == self.etapa_fk.id:
+                rel_actual = rel
+                orden_actual = rel.orden
+                break
+        if orden_actual is None:
+            # Si la etapa actual no está en la lista, operador 1 por defecto
             return self.operador_user
-        
+
+        # Buscar el menor 'orden' de una etapa que contenga 'evaluación de ofertas'
+        orden_evaluacion = None
+        for rel in etapas_tipo:
+            if 'evaluación de ofertas' in rel.etapa.nombre.lower():
+                if orden_evaluacion is None or rel.orden < orden_evaluacion:
+                    orden_evaluacion = rel.orden
+
+        if orden_evaluacion is None:
+            # Si no se encontró la etapa de evaluación de ofertas, operador 1 por defecto
+            return self.operador_user
+
         # Si estamos en o antes de "Evaluación de Ofertas", operador 1
         # Si estamos después, operador 2
-        if posicion_actual <= posicion_evaluacion:
+        if orden_actual <= orden_evaluacion:
             return self.operador_user
         else:
             return self.operador_2 if self.operador_2 else self.operador_user
@@ -239,26 +244,24 @@ class Licitacion(models.Model):
         operador_activo = self.get_operador_activo()
         return operador_activo == usuario
 
-    def debe_saltar_aprobacion_consejo(self):
+    def get_saltar_etapas(self):
         """
         Determina si esta licitación debe saltar la etapa de 'Aprobación del Concejo Municipal'
         cuando tiene moneda UF y monto menor a 500
         """
+        saltar_etapas = []
         if not self.moneda or not self.monto_presupuestado:
-            return False
+            return saltar_etapas
         
-        # Verificar si la moneda es UF
-        if self.moneda and self.moneda.nombre.upper() == 'UF':
-            # Verificar si el monto es menor a 500
-            try:
-                monto = float(self.monto_presupuestado) if self.monto_presupuestado else 0
-                if monto < 500:
-                    return True
-            except (ValueError, TypeError):
-                # Si no se puede convertir a número, no saltar la aprobación
-                return False
-        
-        return False
+        monedas = {'uf': 39156.08, 'dolar': 965.64, 'dólar': 965.64, 'euro': 1125.59, 'utm': 68647, 'clp': 1}
+        # saltar etapas solicitud de comision de regimen interno y recepcion de documento de regimen interno segun monto presupuestado
+        try:
+            if monedas[self.moneda.nombre.lower()]*float(self.monto_presupuestado)/monedas['utm'] < 500:
+                saltar_etapas.append((14, 15))
+            return saltar_etapas
+        except (ValueError, TypeError):
+            # Si no se puede convertir a número, no saltar la aprobación
+            return saltar_etapas
 
     def get_etapas_habilitadas(self):
         """
@@ -267,14 +270,12 @@ class Licitacion(models.Model):
         """
         # Obtener todas las etapas del tipo de licitación a través de la tabla intermedia
         etapas_tipo = list(self.tipo_licitacion.etapas_rel.order_by('orden').all())
-        
-        # Si debe saltar la aprobación del consejo, filtrarla
-        if self.debe_saltar_aprobacion_consejo():
+        saltar_etapas = self.get_saltar_etapas()
+        for e_inicio, e_fin in saltar_etapas:
             etapas_tipo = [
                 rel for rel in etapas_tipo 
-                if 'aprobación del concejo municipal' not in rel.etapa.nombre.lower()
+                if rel.etapa.id not in range(e_inicio, e_fin)
             ]
-        
         return etapas_tipo
     
     def get_etapas_todas_con_inhabilitacion(self):
@@ -283,9 +284,7 @@ class Licitacion(models.Model):
         """
         # Obtener todas las etapas del tipo de licitación a través de la tabla intermedia
         etapas_tipo = list(self.tipo_licitacion.etapas_rel.order_by('orden').all())
-        
-        # Verificar si debe saltar la aprobación del consejo
-        debe_saltar_consejo = self.debe_saltar_aprobacion_consejo()
+        saltar_etapas = self.get_saltar_etapas()
         
         etapas_con_info = []
         for rel in etapas_tipo:
@@ -295,95 +294,13 @@ class Licitacion(models.Model):
                 'inhabilitada': False
             }
             
-            # Marcar como inhabilitada si es la etapa de aprobación del consejo y debe saltarla
-            if debe_saltar_consejo and 'aprobación del concejo municipal' in rel.etapa.nombre.lower():
-                etapa_info['inhabilitada'] = True
-            
+            for e_inicio, e_fin in saltar_etapas:
+                if rel.etapa.id in range(e_inicio, e_fin):
+                    etapa_info['inhabilitada'] = True
+                
             etapas_con_info.append(etapa_info)
         
         return etapas_con_info
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-"""
-class Adjudicacion(models.Model):
-    empresa = models.CharField(max_length=100, unique=True)
-    rut = models.CharField(max_length=20, unique=True)
-    monto_adjudicado = models.DecimalField(max_digits=15, decimal_places=2, default=0)
-    fecha_decreto = models.DateField(blank=True, null=True)
-    fecha_subida_mercado_publico = models.DateField(blank=True, null=True)
-    orden_compra = models.IntegerField(default=0)
-
-    def __str__(self):
-        return self.nombre
-    
-class Evaluacion(models.Model):
-    fecha_evaluacion_tecnica = models.DateField(blank=True, null=True, verbose_name="Fecha que se envía evaluación técnica")
-    nombre_integrante_uno = models.CharField(max_length=100, blank=True, null=True)
-    nombre_integrante_dos = models.CharField(max_length=100, blank=True, null=True)
-    nombre_integrante_tres = models.CharField(max_length=100, blank=True, null=True)
-    fecha_comision = models.DateField(blank=True, null=True, verbose_name="Fecha de comisión")
-
-    def __str__(self):
-        return self.fecha_evaluacion_tecnica.strftime('%d/%m/%Y') if self.fecha_evaluacion_tecnica else "Sin fecha"
-    
-
-class PublicacionPortal(models.Model):
-    fecha_cierre_preguntas = models.DateField(blank=True, null=True, verbose_name="Fecha de cierre de preguntas")
-    fecha_respuesta = models.DateField(blank=True, null=True, verbose_name="Fecha de respuesta")
-    fecha_visita_terreno = models.DateField(blank=True, null=True, verbose_name="Fecha de visita a terreno")
-    fecha_cierre_oferta = models.DateField(blank=True, null=True, verbose_name="Fecha de cierre de oferta")
-    fecha_apertura_tecnica = models.DateField(blank=True, null=True, verbose_name="Fecha de apertura técnica")
-    fecha_apertura_economica = models.DateField(blank=True, null=True, verbose_name="Fecha de apertura económica")
-    fecha_estimada_adjudicacion = models.DateField(blank=True, null=True, verbose_name="Fecha estimada de adjudicación")
-
-class DisponibilidadPresupuestaria(models.Model):
-    fecha_disponibilidad_presupuestaria = models.DateField(blank=True, null=True, verbose_name="Fecha que se pide disponibilidad presupuestaria")
-
-
-class ComisionRegimenInterno(models.model):
-    fecha_solicitud_regimen_interno = models.DateField(blank=True, null=True, verbose_name="Fecha de solicitud de régimen interno")
-    fecha_llegada_documento_regimen_interno = models.DateField(blank=True, null=True, verbose_name="Fecha de llegada de documento")
-
-class FirmaContrato(models.model):
-    fecha_tope_firma_contrato = models.DateField(blank=True, null=True, verbose_name="Fecha tope de firma de contrato")
-
-class InformacionAdicional(models.Model):
-    adjudicacion = models.OneToOneField(Adjudicacion, on_delete=models.SET_NULL, null=True, blank=True)
-    evaluacion = models.OneToOneField(Evaluacion, on_delete=models.SET_NULL, null=True, blank=True)
-    publicacion_portal = models.OneToOneField(PublicacionPortal, on_delete=models.SET_NULL, null=True, blank=True)
-    disponibilidad_presupuestaria = models.OneToOneField(DisponibilidadPresupuestaria, on_delete=models.SET_NULL, null=True, blank=True)
-    comision_regimen_interno = models.OneToOneField(ComisionRegimenInterno, on_delete=models.SET_NULL, null=True, blank=True)
-    firma_contrato = models.OneToOneField(FirmaContrato, on_delete=models.SET_NULL, null=True, blank=True)
-    """
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 class Perfil(models.Model):
