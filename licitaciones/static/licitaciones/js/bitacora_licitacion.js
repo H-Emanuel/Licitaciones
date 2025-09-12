@@ -41,7 +41,6 @@ window.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-    
 
     // Botón para subir archivo
     const btnSubirArchivo = document.getElementById('btnSubirArchivo');
@@ -148,20 +147,6 @@ window.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-
-
-
-
-
-
-
-
-
-
-
-    
-
-
     function showModalRedestinar(bitacoraId, texto) {
         const modalContainer = document.querySelector('.modal-container');
         modalContainer.classList.add('active');
@@ -183,21 +168,6 @@ window.addEventListener('DOMContentLoaded', function() {
         const modalTexto = document.getElementById('modalObservacionTexto');
         if (modalTexto) modalTexto.value = '';
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     document.getElementById('btnModalRedestinar').onclick = showModalRedestinar;
     document.getElementById('cerrarModalRedestinar').onclick = closeModalRedestinar;
@@ -234,17 +204,6 @@ window.addEventListener('DOMContentLoaded', function() {
             form.submit();
         };
     }
-
-
-
-
-
-
-
-
-
-
-
 
     document.getElementById('cerrarModalObservacion').onclick = closeModalObservacion;
     document.getElementById('btnCancelarObservacion').onclick = closeModalObservacion;
@@ -484,56 +443,39 @@ window.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    function toggleFechaRecepcionDocumentosRegimenInterno() {
-        const fechaDisponibilidadPresupuestaria = document.getElementById('fechaRecepcionDocumentosRegimenInternoContainer');
-        if (!fechaDisponibilidadPresupuestaria || !nombreEtapaActual) return;
+    function toggleRecepcionDocumentosRegimenInterno() {
+        const disponibilidadPresupuestaria = document.getElementById('recepcionDocumentosRegimenInternoContainer');
+        if (!disponibilidadPresupuestaria || !nombreEtapaActual) return;
         const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
         // Mostrar campo si la etapa es "Solicitud de comisión de régimen interno"
         if (etapaActualTexto === 'recepcion de documento de regimen interno' || etapaActualTexto === 'recepción de documento de régimen interno') {
-            fechaDisponibilidadPresupuestaria.classList.remove('hidden');
+            disponibilidadPresupuestaria.classList.remove('hidden');
         } else {
-            fechaDisponibilidadPresupuestaria.classList.add('hidden');
+            disponibilidadPresupuestaria.classList.add('hidden');
         }
     }
 
-    function toggleFechaDisponibilidadPresupuestaria() {
-        const fechaDisponibilidadPresupuestaria = document.getElementById('fechaDisponibilidadPresupuestariaContainer');
-        if (!fechaDisponibilidadPresupuestaria || !nombreEtapaActual) return;
+    function toggleDisponibilidadPresupuestaria() {
+        const disponibilidadPresupuestaria = document.getElementById('disponibilidadPresupuestariaContainer');
+        if (!disponibilidadPresupuestaria || !nombreEtapaActual) return;
         const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
         // Mostrar campo si la etapa es "disponibilidad presupuestaria"
         if (etapaActualTexto === 'disponibilidad presupuestaria') {
-            fechaDisponibilidadPresupuestaria.classList.remove('hidden');
+            disponibilidadPresupuestaria.classList.remove('hidden');
         } else {
-            fechaDisponibilidadPresupuestaria.classList.add('hidden');
+            disponibilidadPresupuestaria.classList.add('hidden');
         }
     }
 
-    function toggleFechaTopeFirmaContrato() {
-        const fechaTopeFirmaContrato = document.getElementById('fechaTopeFirmaContratoContainer');
-        if (!fechaTopeFirmaContrato || !nombreEtapaActual) return;
+    function toggleTopeFirmaContrato() {
+        const topeFirmaContrato = document.getElementById('topeFirmaContratoContainer');
+        if (!topeFirmaContrato || !nombreEtapaActual) return;
         const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
         // Mostrar campo si la etapa es "firma de contrato"
         if (etapaActualTexto === 'firma de contrato' || etapaActualTexto === 'firma de contrato y orden de compra') {
-            fechaTopeFirmaContrato.classList.remove('hidden');
+            topeFirmaContrato.classList.remove('hidden');
         } else {
-            fechaTopeFirmaContrato.classList.add('hidden');
+            topeFirmaContrato.classList.add('hidden');
         }
     }
 
@@ -552,18 +494,18 @@ window.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function toggleFechaSolicitudRegimenInterno() {
-        const fechaSolicitudRegimenInterno = document.getElementById('fechaSolicitudRegimenInternoContainer');
+    function toggleSolicitudRegimenInterno() {
+        const solicitudRegimenInterno = document.getElementById('solicitudRegimenInternoContainer');
         
-        if (!fechaSolicitudRegimenInterno || !nombreEtapaActual) return;
+        if (!solicitudRegimenInterno || !nombreEtapaActual) return;
         
         const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
         
         // Mostrar campo si la etapa es "solicitud de comision de regimen interno"
         if (etapaActualTexto === 'solicitud de comision de regimen interno' || etapaActualTexto === 'solicitud de comisión de régimen interno' || etapaActualTexto === 'solicitud de régimen interno') {
-            fechaSolicitudRegimenInterno.classList.remove('hidden');
+            solicitudRegimenInterno.classList.remove('hidden');
         } else {
-            fechaSolicitudRegimenInterno.classList.add('hidden');
+            solicitudRegimenInterno.classList.add('hidden');
         }
     }
 
@@ -582,18 +524,18 @@ window.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function toggleFechaRecepcionDocumentosRegimenInterno() {
-        const fechaRecepcionDocumentosRegimenInterno = document.getElementById('fechaRecepcionDocumentosRegimenInternoContainer');
+    function toggleRecepcionDocumentosRegimenInterno() {
+        const recepcionDocumentosRegimenInterno = document.getElementById('recepcionDocumentosRegimenInternoContainer');
         
-        if (!fechaRecepcionDocumentosRegimenInterno || !nombreEtapaActual) return;
+        if (!recepcionDocumentosRegimenInterno || !nombreEtapaActual) return;
         
         const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
         
         // Mostrar campo si la etapa es "recepcion de documento regimen interno"
         if (etapaActualTexto === 'recepcion de documento de regimen interno' || etapaActualTexto === 'recepción de documento de régimen interno') {
-            fechaRecepcionDocumentosRegimenInterno.classList.remove('hidden');
+            recepcionDocumentosRegimenInterno.classList.remove('hidden');
         } else {
-            fechaRecepcionDocumentosRegimenInterno.classList.add('hidden');
+            recepcionDocumentosRegimenInterno.classList.add('hidden');
         }
     }
     
@@ -655,32 +597,58 @@ window.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Función para verificar si puede avanzar
+    async function verificarPuedeAvanzar() {
+        try {
+            const licitacionId = window.location.pathname.match(/\/bitacora\/(\d+)\//)?.[1];
+            const response = await fetch(`/api/licitacion/${licitacionId}/puede_avanzar/`);
+            if (response.ok) {
+                const data = await response.json();
+                console.log(data);
+                return data.puede_avanzar;
+            }
+            return false;
+        } catch (error) {
+            return false;
+        }
+    }
+
+    
     function toggleEtapaButton() {
         const etapaActualId = parseInt(nombreEtapaActual.dataset.etapaId);
         const currentIndex = etapas.findIndex(e => parseInt(e.id) === etapaActualId);
-        if (currentIndex == etapas.length - 1) {
-            btnAvanzarEtapa.classList.add('hidden');
-        }
-        else if (etapaActualId == parseInt(etapaOriginal.id)) {
-            btnRetrocederEtapa.classList.add('hidden');
-        }
-        else {
-            btnRetrocederEtapa.classList.remove('hidden');
-            btnAvanzarEtapa.classList.remove('hidden');
-        }
+        console.log(etapaOriginal)
+        
+        verificarPuedeAvanzar()
+        .then( puede_avanzar => {
+            if (currentIndex === 0) {
+                console.log('2')
+                btnRetrocederEtapa.classList.add('hidden');
+            }
+            else {
+                btnRetrocederEtapa.classList.remove('hidden');
+            }
+            if (puede_avanzar && (currentIndex === etapas.findIndex(e => parseInt(e.id) === parseInt(etapaOriginal.id)) + 1)) {
+                console.log('asd');
+                btnAvanzarEtapa.classList.add('hidden');
+            }
+            else if (puede_avanzar) {
+                console.log('asd2');
+                btnAvanzarEtapa.classList.remove('hidden');
+            }
+        });
     }
-    
     // Verificar al cargar la página
     toggleEvaluacionCotizacion();
     toggleDecretoIntencionCompra();
     toggleComisionBase();
     togglePublicacionMercadoPublico();
-    toggleFechaDisponibilidadPresupuestaria();
-    toggleFechaTopeFirmaContrato();
+    toggleDisponibilidadPresupuestaria();
+    toggleTopeFirmaContrato();
     toggleAdjudicacion();
-    toggleFechaSolicitudRegimenInterno();
+    toggleSolicitudRegimenInterno();
     toggleEvaluacionOferta();
-    toggleFechaRecepcionDocumentosRegimenInterno();
+    toggleRecepcionDocumentosRegimenInterno();
     toggleFechasImportantes();
     toggleIdMercadoPublico();
     toggleRecepcionOfertas();
@@ -729,12 +697,12 @@ window.addEventListener('DOMContentLoaded', function() {
             toggleDecretoIntencionCompra();
             toggleComisionBase();
             togglePublicacionMercadoPublico();
-            toggleFechaDisponibilidadPresupuestaria();
-            toggleFechaTopeFirmaContrato();
+            toggleDisponibilidadPresupuestaria();
+            toggleTopeFirmaContrato();
             toggleAdjudicacion();
-            toggleFechaSolicitudRegimenInterno();
+            toggleSolicitudRegimenInterno();
             toggleEvaluacionOferta();
-            toggleFechaRecepcionDocumentosRegimenInterno();
+            toggleRecepcionDocumentosRegimenInterno();
             toggleFechasImportantes();
             toggleIdMercadoPublico();
             toggleRecepcionOfertas();
@@ -761,11 +729,10 @@ window.addEventListener('DOMContentLoaded', function() {
     async function actualizarVisibilidadRetroceder() {
         if (!btnRetrocederEtapa) return;
         
-        const licitacionId = window.location.pathname.match(/\/bitacora\/(\d+)\//)?.[1];
+        //const licitacionId = window.location.pathname.match(/\/bitacora\/(\d+)\//)?.[1];
+        const licitacionId = false
         if (!licitacionId) return;
-        // IMPLEMENTACION DESCONTINUADA
-        //const puedeRetroceder = await verificarPuedeRetroceder(licitacionId);
-        const puedeRetroceder = false;
+        const puedeRetroceder = await verificarPuedeRetroceder(licitacionId);
         if (puedeRetroceder) {
             btnRetrocederEtapa.classList.remove('hidden');
             btnRetrocederEtapa.style.display = 'inline-flex';
@@ -813,11 +780,11 @@ window.addEventListener('DOMContentLoaded', function() {
             toggleDecretoIntencionCompra();
             toggleComisionBase();
             togglePublicacionMercadoPublico();
-            toggleFechaRecepcionDocumentosRegimenInterno();
-            toggleFechaDisponibilidadPresupuestaria();
-            toggleFechaTopeFirmaContrato();
+            toggleRecepcionDocumentosRegimenInterno();
+            toggleDisponibilidadPresupuestaria();
+            toggleTopeFirmaContrato();
             toggleAdjudicacion();
-            toggleFechaSolicitudRegimenInterno();
+            toggleSolicitudRegimenInterno();
             toggleEvaluacionOferta();
             toggleFechasImportantes();
             toggleIdMercadoPublico();

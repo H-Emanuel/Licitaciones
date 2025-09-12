@@ -779,7 +779,7 @@
     margin-bottom: 0;
 }
 
-.numero-ofertas-input, .empresa-nombre-input, .empresa-rut-input {
+.campoEtapa {
     width: fit-content;
     border: 2px solid #e2e8f0;
     border-radius: 6px;
@@ -789,29 +789,18 @@
     background: white;
 }
 
-.numero-ofertas-input {
-    font-family: 'Courier New', monospace;
-    font-weight: 600;
-    text-align: center;
-    max-width: 120px;
-}
-
-.empresa-rut-input {
+.campoEtapa {
     font-family: 'Courier New', monospace;
     max-width: 50vw;
 }
-
-.numero-ofertas-input:focus, 
-.empresa-nombre-input:focus, 
-.empresa-rut-input:focus {
+ 
+.campoEtapa:focus {
     outline: none;
     border-color: #16a34a;
     box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
 }
 
-.numero-ofertas-input::placeholder, 
-.empresa-nombre-input::placeholder, 
-.empresa-rut-input::placeholder {
+.campoEtapa::placeholder {
     color: #9ca3af;
     font-style: italic;
 }

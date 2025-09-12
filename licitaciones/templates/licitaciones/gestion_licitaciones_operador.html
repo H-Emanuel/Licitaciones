@@ -47,7 +47,7 @@
                             <th data-col="numero_pedido">N° de pedido</th>
                             <th data-col="id_mercado_publico">ID Mercado Público</th>
                             <th data-col="orden_compra">Orden de compra</th>
-                            <th data-col="fecha_tentativa_termino">Fecha tentativa de término</th>
+                            <th data-col="fecha_tentativa_termino">Fecha adjudicación</th>
                             <th data-col="operadores">Profesionales a Cargo</th>
                             <th data-col="etapa">Etapa</th>
                             <th data-col="estado">Status</th>
@@ -75,7 +75,7 @@
                     <td data-campo="numero_pedido" data-col="numero_pedido" data-label="N° de pedido">{{ licitacion.numero_pedido }}</td>
                     <td data-campo="id_mercado_publico" data-col="id_mercado_publico" data-label="ID Mercado Público">{{ licitacion.id_mercado_publico|default:"-" }}</td>
                     <td data-campo="orden_compra" data-col="orden_compra" data-label="Orden de compra">{{ licitacion.orden_compra_adjudicacion|default:"-" }}</td>
-                    <td data-campo="fecha_tentativa_termino" data-col="fecha_tentativa_termino" data-label="Fecha tentativa de término"></td>
+                    <td data-campo="fecha_tentativa_termino" data-col="fecha_tentativa_termino" data-label="Fecha tentativa de término" >{{ licitacion.fecha_estimada_adjudicacion_publicacionportal|date:"d/m/Y"|default:"-" }}</td>
                     <td data-campo="operadores" data-col="operadores" data-label="Profesionales a Cargo">
                         <div class="operadores-container">
                             <span class="operador-badge operador-1 {% if licitacion.get_numero_operador_activo == 1 %}activo{% endif %}" title="Operador 1: Gestiona hasta Evaluación de Ofertas">
@@ -138,37 +138,6 @@
                         {% endif %}
                     </td>
                 </tr>
-                <script>
-                    (function() {
-                        const fila = document.querySelector(`tr[data-id='{{ licitacion.id }}']`);
-                        const fechaCreacionStr = "{{ licitacion.fecha_creacion|date:'Y-m-d' }}";
-                        const fechaCreacion = new Date(fechaCreacionStr);
-                        const celda = fila.querySelector("td[data-campo='fecha_tentativa_termino']");
-                        if (celda.textContent.trim()!=="") {
-                            celda.textContent = "-";
-                            return;
-                        }
-                        switch (fila.querySelector("td[data-campo='tipo_presupuesto']").innerHTML){
-                            case 'LP':
-                                fechaCreacion.setDate(fechaCreacion.getDate() + 130);
-                                break;
-                            case 'LR':
-                                fechaCreacion.setDate(fechaCreacion.getDate() + 150);
-                                break;
-                            default:
-                                fechaCreacion.setDate(fechaCreacion.getDate() + 80);
-                        }
-                        const dia = String(fechaCreacion.getDate()).padStart(2, '0');
-                        const mes = String(fechaCreacion.getMonth() + 1).padStart(2, '0'); // Mes empieza en 0
-                        const anio = fechaCreacion.getFullYear();
-                        const fechaFormateada = `${dia}/${mes}/${anio}`;
-                        if (fila) {
-                            if (celda) {
-                                celda.textContent = fechaFormateada;
-                            }
-                        }
-                    })();
-                </script>
                 {% endfor %}
             </tbody>
         </table>

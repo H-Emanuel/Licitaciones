@@ -721,18 +721,16 @@ def bitacora_licitacion(request, licitacion_id):
             .first()
         )
 
-        bitacoras_etapas = BitacoraLicitacion.objects.filter(
+        etapa_ultima_bitacora = BitacoraLicitacion.objects.filter(
             licitacion=licitacion
-        ).values_list('etapa', flat=True)
+        ).order_by('-fecha').values_list('etapa', flat=True).first()
 
         tipo_licitacion_etapa_ultima_observacion = (
             TipoLicitacionEtapa.objects
-            .filter(etapa__in=bitacoras_etapas, tipo_licitacion=licitacion.tipo_licitacion)
-            .order_by('-orden')
+            .filter(etapa=etapa_ultima_bitacora, tipo_licitacion=licitacion.tipo_licitacion)
             .first()
             or TipoLicitacionEtapa.objects
             .filter(etapa=licitacion.etapa_fk, tipo_licitacion=licitacion.tipo_licitacion)
-            .order_by('-orden')
             .first()
         )
 
@@ -750,13 +748,15 @@ def bitacora_licitacion(request, licitacion_id):
                 .filter(etapa=e_final, tipo_licitacion=licitacion.tipo_licitacion)
                 .first()
             )
-            if (tipo_licitacion_etapa_ultima_observacion_next.etapa == e_inicio):
-                if (tipo_licitacion_etapa_observacion.orden > tipo_licitacion_etapa_e_final.orden + 1):
+            if (tipo_licitacion_etapa_ultima_observacion_next.etapa.id == e_inicio):
+                print('anterior a:', e_inicio)
+                if (tipo_licitacion_etapa_observacion.orden > tipo_licitacion_etapa_e_final.orden + 2):
                     return redirect('bitacora_licitacion', licitacion_id)
                 # si hay al menos una ocurrencia en saltar_etapas es necesario dejar registro para no llamar al handler general si la etapa hace el salto bien
                 salta_etapas = True
         
         # SI NO SE DEFINE UNA ETAPA O ES UNA ETAPA MUY AVANZADA RESPECTO A LA ULTIMA ETAPA DE LAS OBSERVACIONES OMITIR POST
+        print(tipo_licitacion_etapa_observacion.orden, tipo_licitacion_etapa_ultima_observacion.orden, salta_etapas)
         if not salta_etapas and (not etapa_obj or not tipo_licitacion_etapa_observacion or (tipo_licitacion_etapa_observacion.orden > tipo_licitacion_etapa_ultima_observacion.orden + 1)):
             return redirect('bitacora_licitacion', licitacion_id)
 
@@ -2221,4 +2221,45 @@ def api_puede_retroceder_etapa(request, licitacion_id):
         'ok': True, 
         'puede_retroceder': puede_retroceder,
         'razon': 'La última observación avanzó etapa' if not puede_retroceder else 'Puede retroceder'
+    })
+
+@csrf_exempt
+@require_GET
+def api_puede_avanzar_etapa(request, licitacion_id):
+    """
+    API para verificar si el operador puede avanzar etapa.
+    Solo puede avanzar hay al menos una observación en etapa anterior.
+    """
+    # Solo operadores pueden acceder
+    if not (request.user.is_authenticated or 'operador_manual_id' in request.session or 'operador_id' in request.session):
+        return JsonResponse({'ok': False, 'error': 'No autorizado'}, status=403)
+    
+    licitacion = Licitacion.objects.filter(id=licitacion_id).first()
+    if not licitacion:
+        return JsonResponse({'ok': False, 'error': 'Licitación no encontrada'}, status=404)
+    
+    # Obtener el operador actual
+    operador_user = None
+    if hasattr(request.user, 'perfil') and getattr(request.user.perfil, 'rol', None) == 'operador':
+        operador_user = request.user
+    elif 'operador_manual_id' in request.session:
+        operador_user = User.objects.filter(id=request.session['operador_manual_id']).first()
+    
+    if not operador_user:
+        return JsonResponse({'ok': False, 'puede_avanzar': False})
+    
+    # Buscar la etapa de última observación del operador para esta licitación
+    ultima_bitacora = BitacoraLicitacion.objects.filter(
+        licitacion=licitacion, 
+        operador_user=operador_user
+    ).order_by('-fecha').values_list('etapa', flat=True).first()
+    
+    puede_avanzar = False
+    if ultima_bitacora and ultima_bitacora == licitacion.etapa_fk.id:
+        puede_avanzar = True
+
+    
+    return JsonResponse({
+        'ok': True, 
+        'puede_avanzar': puede_avanzar,
     })

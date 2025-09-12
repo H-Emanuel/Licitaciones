@@ -3,6 +3,7 @@ let uploadedFiles = [];
 async function obtenerValor(moneda) {
     // Por defecto consultar api mindicador para obtener valores
     try {
+        if (moneda.trim().toLowerCase() === 'clp') return 1;
         const response = await fetch(`https://mindicador.cl/api/${moneda.trim().toLowerCase()}`);
         if (!response.ok) throw new Error('Error al obtener los datos');
         const data = await response.json();
@@ -10,7 +11,7 @@ async function obtenerValor(moneda) {
     } catch (error) {
         // En su defecto usar tabla
         console.error('Problema al cargar api mindicador:', error.message);
-        return {'uf': 39156.08, 'dolar': 965.64, 'dólar': 965.64, 'euro': 1125.59, 'utm': 68647, 'clp': 1}[moneda.trim().toLowerCase()] ?? null;
+        return {'uf': 39156.08, 'dolar': 965.64, 'dólar': 965.64, 'usd': 965.64, 'euro': 1125.59, 'eur': 1125.59, 'utm': 68647, 'clp': 1}[moneda.trim().toLowerCase()] ?? null;
     }
 }
 
@@ -34,7 +35,7 @@ async function asignarTipoPresupuesto() {
             montoConvertido = monto;
         } else {
             // Otras monedas: convierte primero moneda a CLP y luego a UF
-            const valorMoneda = await obtenerValor(monedaSelected.text==='USD' ? 'dolar' : monedaSelected.text);
+            const valorMoneda = await obtenerValor(monedaSelected.text.trim().toLowerCase==='usd' ? 'dolar' : monedaSelected.text);
             if (valorMoneda && valorUTM) montoConvertido = (monto * valorMoneda) / valorUTM;
         }
         console.log(`Valor convertido en ${montoConvertido} utm`);
@@ -49,30 +50,33 @@ async function asignarTipoPresupuesto() {
     }
 }
 
+async function saltarEtapas() {
+    const tipoLicitaiconId = 
+    getEtapasPorTipo(tipoLicitacionId);
+    const etapaSelect = document.getElementById('etapaSelect');
+    if (!select) return;
+    moneda = (window.monedasLicitacion || []).find(m => m.id == moneda)?.nombre || moneda;
+    monto_presupuestado = parseFloat(monto_presupuestado);
+    valor = await obtenerValor(moneda);
+    utm = await obtenerValor('UTM');
+    select.innerHTML = '<option value="">Seleccione una etapa</option>';
+    etapas.forEach(etapa => {
+        if (!((etapa.id === 14 || etapa.id === 15) && valor < 500*utm)){
+            const opt = document.createElement('option');
+            opt.value = etapa.id;
+            opt.textContent = etapa.nombre;
+            if (String(etapa.nombre) === String(selectedId.nombre)) opt.selected = true;
+            select.appendChild(opt);
+        }
+    });
+}
+
 const ids = ['monedaSelect', 'montoPresupuestadoInput'];
 ids.forEach(id => {
     document.getElementById(id).addEventListener('change', function() {
         asignarTipoPresupuesto();
     });
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 function getIdFromCell(cell, list, key='nombre') {
     let found = '';
@@ -195,46 +199,6 @@ function initToggleAccionesDinamicas() {
     });
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // Variable global para controlar el modo de operación del formulario
 let modoAgregar = false;
 
@@ -355,16 +319,39 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     
     // --- UTILIDAD GLOBAL: Renderizar opciones de etapas en un <select> ---
-    function renderEtapasSelect(select, etapas, selectedId) {
+    function renderEtapasSelect(select, etapas, selectedId, moneda, monto_presupuestado) {
         if (!select) return;
         select.innerHTML = '<option value="">Seleccione una etapa</option>';
-        etapas.forEach(etapa => {
+        const flujo_normal = (etapa) => {
             const opt = document.createElement('option');
             opt.value = etapa.id;
             opt.textContent = etapa.nombre;
             if (String(etapa.nombre) === String(selectedId.nombre)) opt.selected = true;
             select.appendChild(opt);
-        });
+        };
+        if (moneda && monto_presupuestado){
+            moneda = (window.monedasLicitacion || []).find(m => m.id == moneda)?.nombre || moneda;
+            monto_presupuestado = parseFloat(monto_presupuestado);
+            obtenerValor(moneda)
+            .then( valor => obtenerValor('UTM')
+                .then( utm => {
+                        etapas.forEach(etapa => {
+                        if (!((etapa.id === 14 || etapa.id === 15) && valor < 500*utm)){
+                            flujo_normal(etapa);
+                        }
+                    });
+                })
+                .catch(
+                    () => {etapas.forEach(etapa => flujo_normal(etapa));}
+                )
+            )
+            .catch(
+                () => {etapas.forEach(etapa => flujo_normal(etapa))}
+            );
+        }
+        else {
+            etapas.forEach(etapa => flujo_normal(etapa))
+        }
     }
 
     // --- UTILIDAD GLOBAL: Filtrar etapas por tipo de licitación ---
@@ -637,7 +624,7 @@ document.addEventListener("DOMContentLoaded", function () {
         let etapasFiltradas = getEtapasPorTipo(tipoLicitacionId);        // Etapa: preseleccionar la etapa de la licitación
         let etapaSeleccionada = '';
         if (datos && datos.etapa) etapaSeleccionada = datos.etapa;
-        renderEtapasSelect(etapaSelect, etapasFiltradas, etapaSeleccionada);
+        renderEtapasSelect(etapaSelect, etapasFiltradas, etapaSeleccionada, datos.moneda, datos.monto_presupuestado);
         modal.classList.add('active');
         gestionarOverflowBody();
         asignarTipoPresupuesto();

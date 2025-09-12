@@ -102,12 +102,6 @@ class Licitacion(models.Model):
     institucion = models.CharField(max_length=255, blank=True, null=True, verbose_name="Institución")
     pedido_devuelto = models.BooleanField(default=False, verbose_name="Pedido devuelto")
 
-
-
-
-
-
-
     empresa_adjudicacion = models.CharField(max_length=100, default='')
     rut_adjudicacion = models.CharField(max_length=20)
     monto_adjudicacion = models.DecimalField(max_digits=15, decimal_places=2, default=0)
@@ -137,7 +131,7 @@ class Licitacion(models.Model):
     fecha_tope_firma_contrato = models.DateField(blank=True, null=True, verbose_name="Fecha tope de firma de contrato")
 
     fecha_evaluacion_cotizacion = models.DateField(blank=True, null=True, verbose_name="Fecha de evaluacion de la cotizacion")
-    monto_estimado_cotizacion = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    monto_estimado_cotizacion = models.DecimalField(blank=True, null=True, max_digits=15, decimal_places=2, default=0)
 
     fecha_solicitud_intencion_compra = models.DateField(blank=True, null=True, verbose_name="Fecha de la solicitud de intencion de compra")
 
@@ -148,17 +142,6 @@ class Licitacion(models.Model):
     fecha_publicación_mercado_publico = models.DateField(blank=True, null=True, verbose_name="Fecha de publicación en mercado público")
     fecha_cierre_ofertas_mercado_publico = models.DateField(blank=True, null=True, verbose_name="Fecha de cierre de ofertas en mercado público")
 
-
-
-
-
-
-
-
-
-
-
-    #informacion_adicional = models.OneToOneField('InformacionAdicional', on_delete=models.SET_NULL, null=True, blank=True, related_name='licitacion', verbose_name="Información adicional")
     # Tipos de licitación fallida (cuando fallida es True)
     TIPO_FALLIDA_CHOICES = [
         ('revocada', 'Revocada'),
@@ -253,7 +236,7 @@ class Licitacion(models.Model):
         if not self.moneda or not self.monto_presupuestado:
             return saltar_etapas
         
-        monedas = {'uf': 39156.08, 'dolar': 965.64, 'dólar': 965.64, 'euro': 1125.59, 'utm': 68647, 'clp': 1}
+        monedas = {'uf': 39156.08, 'dolar': 965.64, 'dólar': 965.64, 'usd': 965.64, 'euro': 1125.59, 'eur': 1125.59, 'utm': 68647, 'clp': 1}
         # saltar etapas solicitud de comision de regimen interno y recepcion de documento de regimen interno segun monto presupuestado
         try:
             if monedas[self.moneda.nombre.lower()]*float(self.monto_presupuestado)/monedas['utm'] < 500:

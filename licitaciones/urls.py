@@ -31,6 +31,7 @@ urlpatterns = [
     path('api/validar_numero_pedido/', views.api_validar_numero_pedido, name='api_validar_numero_pedido'),
     path('api/licitacion/<int:licitacion_id>/ultima_observacion/', views.api_ultima_observacion, name='api_ultima_observacion'),
     path('api/licitacion/<int:licitacion_id>/puede_retroceder/', views.api_puede_retroceder_etapa, name='api_puede_retroceder_etapa'),
+    path('api/licitacion/<int:licitacion_id>/puede_avanzar/', views.api_puede_avanzar_etapa, name='api_puede_avanzar_etapa'),
     path('api/licitaciones/fallidas/', views.api_licitaciones_fallidas, name='api_licitaciones_fallidas'),
     path('api/licitacion/linkear-fallida/', views.api_linkear_licitacion_fallida, name='api_linkear_licitacion_fallida'),
     path('api/licitacion/<int:licitacion_id>/actualizar_etapa/', views.actualizar_etapa_api, name='actualizar_etapa_api'),
