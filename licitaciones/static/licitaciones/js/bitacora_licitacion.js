@@ -387,14 +387,16 @@ window.addEventListener('DOMContentLoaded', function() {
         };
     }
 
-    function toggleRequired() {
-        document.querySelectorAll("input.campoEtapa").forEach( campo => {
-            console.log(campo)
-            campo.required = false;
+    function checkRequired() {
+        const campos = document.querySelectorAll("input.campoEtapa");
+        for (const campo of campos) {
             if (!campo.parentNode.classList.contains('hidden') && !campo.parentNode.parentNode.classList.contains('hidden')) {
-                campo.required = true;
+                if (campo.value === "") {
+                    return false;
+                }
             }
-        })
+        }
+        return true;
     }
 
     const tipoSolicitud = document.getElementById('tipoSolicitudSelect');
@@ -409,7 +411,6 @@ window.addEventListener('DOMContentLoaded', function() {
             document.querySelector('.evaluacion-tecnica').classList.add('hidden');
             document.querySelector('.comision-evaluadora').classList.add('hidden');
         }
-        toggleRequired();
     };
 
     function toggleEvaluacionCotizacion() {
@@ -641,16 +642,20 @@ window.addEventListener('DOMContentLoaded', function() {
             else {
                 btnRetrocederEtapa.classList.remove('hidden');
             }
-            if (currentIndex === etapas.length + 1 || (puede_avanzar && (currentIndex === etapas.findIndex(e => parseInt(e.id) === parseInt(ultima_bitacora)) + 1))) {
+            if (currentIndex === etapas.length - 1 || (puede_avanzar && (currentIndex === etapas.findIndex(e => parseInt(e.id) === parseInt(ultima_bitacora)) + 1))) {
+                btnAvanzarEtapa.classList.add('hidden');
+            }
+            else if (!checkRequired()) {
                 btnAvanzarEtapa.classList.add('hidden');
             }
             else if (puede_avanzar) {
                 btnAvanzarEtapa.classList.remove('hidden');
             }
         });
-        toggleRequired();
+        
     }
     // Verificar al cargar la página
+    toggleEtapaButton();
     toggleEvaluacionCotizacion();
     toggleDecretoIntencionCompra();
     toggleComisionBase();
@@ -664,8 +669,6 @@ window.addEventListener('DOMContentLoaded', function() {
     toggleFechasImportantes();
     toggleIdMercadoPublico();
     toggleRecepcionOfertas();
-    toggleEtapaButton();
-    toggleRequired();
 
     if (btnAvanzarEtapa && nombreEtapaActual && etapas.length) {
         btnAvanzarEtapa.addEventListener('click', function() {
@@ -706,6 +709,7 @@ window.addEventListener('DOMContentLoaded', function() {
             }
             
             // Llamar a las funciones para mostrar/ocultar campos específicos por etapa
+            toggleEtapaButton();
             toggleEvaluacionCotizacion();
             toggleDecretoIntencionCompra();
             toggleComisionBase();
@@ -719,7 +723,6 @@ window.addEventListener('DOMContentLoaded', function() {
             toggleFechasImportantes();
             toggleIdMercadoPublico();
             toggleRecepcionOfertas();
-            toggleEtapaButton();
         });
     }
     
@@ -789,6 +792,7 @@ window.addEventListener('DOMContentLoaded', function() {
             }
             
             // Llamar a las funciones para mostrar/ocultar campos específicos por etapa
+            toggleEtapaButton();
             toggleEvaluacionCotizacion();
             toggleDecretoIntencionCompra();
             toggleComisionBase();
@@ -802,7 +806,6 @@ window.addEventListener('DOMContentLoaded', function() {
             toggleFechasImportantes();
             toggleIdMercadoPublico();
             toggleRecepcionOfertas();
-            toggleEtapaButton();
         });
     }
     
@@ -1035,7 +1038,7 @@ window.addEventListener('DOMContentLoaded', function() {
     if (formObservacionBitacora) {
         formObservacionBitacora.addEventListener('submit', async function(e) {
             e.preventDefault();
-            
+
             const licitacionId = this.querySelector('input[name="licitacion_id"]').value;
             const texto = document.getElementById('observacionTexto').value;
             const etapaActualId = parseInt(nombreEtapaActual.dataset.etapaId);
@@ -1222,7 +1225,7 @@ window.addEventListener('DOMContentLoaded', function() {
             }
                     // En lugar de enviar vía fetch, usar el formulario estándar
             const form = document.getElementById('formObservacionBitacora');
-            
+
             // Agregar los campos necesarios si no están presentes
             if (accionEtapaValue !== 'none') {
                 let accionEtapaInput = document.getElementById('accionEtapa');
@@ -1244,7 +1247,7 @@ window.addEventListener('DOMContentLoaded', function() {
                 etapaInput.value = nombreEtapaActual.dataset.etapaId;
                 form.appendChild(etapaInput);
             }
-            
+
             // Enviar el formulario de manera estándar
             form.submit();
         });

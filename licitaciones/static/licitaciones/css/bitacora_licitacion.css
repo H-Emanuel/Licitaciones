@@ -880,7 +880,7 @@
 }
 
 /* Modal cancel button */
-#btnCancelarObservacion {
+#btnCancelarObservacion, #btnCancelarRedestinar {
     background: #ecf0f1;
     color: #7f8c8d;
     border: none;
@@ -891,7 +891,7 @@
     transition: all 0.2s;
 }
 
-#btnCancelarObservacion:hover {
+#btnCancelarObservacion:hover, #btnCancelarRedestinar:hover {
     background: #d5dbdb;
     color: #566573;
 }

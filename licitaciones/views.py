@@ -690,7 +690,6 @@ def bitacora_licitacion(request, licitacion_id):
     bitacoras = paginator.get_page(page_number)
     
     if request.method == 'POST' and (es_admin or es_operador or es_operador_manual):
-        print("asd")
         # Verificar permisos para operadores
         if (es_operador or es_operador_manual) and not licitacion.puede_operar_usuario(request.user):
             return JsonResponse({
@@ -921,7 +920,6 @@ def bitacora_licitacion(request, licitacion_id):
         if fecha_recepcion_documento_regimen_interno and licitacion.fecha_recepcion_documento_regimen_interno != fecha_recepcion_documento_regimen_interno and etapa_obj and 'recepción de documento de régimen interno' in etapa_obj.nombre.lower().strip():
             valores['Fecha de recepción de documento régimen interno'] = str(fecha_recepcion_documento_regimen_interno)
             licitacion.fecha_recepcion_documento_regimen_interno = fecha_recepcion_documento_regimen_interno
-            print(fecha_recepcion_documento_regimen_interno)
         if fecha_tope_firma_contrato and licitacion.fecha_tope_firma_contrato != fecha_tope_firma_contrato and etapa_obj and 'firma de contrato' in etapa_obj.nombre.lower().strip():
             valores['Fecha tope de firma de contrato'] = str(fecha_tope_firma_contrato)
             licitacion.fecha_tope_firma_contrato = fecha_tope_firma_contrato
