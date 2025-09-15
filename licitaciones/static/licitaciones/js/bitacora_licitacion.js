@@ -388,7 +388,8 @@ window.addEventListener('DOMContentLoaded', function() {
     }
 
     function toggleRequired() {
-        document.querySelectorAll("input .campoEtapa").forEach( campo => {
+        document.querySelectorAll("input.campoEtapa").forEach( campo => {
+            console.log(campo)
             campo.required = false;
             if (!campo.parentNode.classList.contains('hidden') && !campo.parentNode.parentNode.classList.contains('hidden')) {
                 campo.required = true;
@@ -634,21 +635,18 @@ window.addEventListener('DOMContentLoaded', function() {
         
         verificarPuedeAvanzar()
         .then( ({puede_avanzar, ultima_bitacora}) => {
-            let etapaUltimaBitacora = parseInt(etapas.findIndex(e => parseInt(e.id) === parseInt(ultima_bitacora)));
-            if (etapaUltimaBitacora < 0) etapaUltimaBitacora = parseInt(etapaOriginal.id);
             if (currentIndex === 0) {
                 btnRetrocederEtapa.classList.add('hidden');
             }
             else {
                 btnRetrocederEtapa.classList.remove('hidden');
             }
-            if (currentIndex === etapas.length - 1) {
+            if (currentIndex === etapas.length + 1 || (puede_avanzar && (currentIndex === etapas.findIndex(e => parseInt(e.id) === parseInt(ultima_bitacora)) + 1))) {
                 btnAvanzarEtapa.classList.add('hidden');
             }
             else if (puede_avanzar) {
                 btnAvanzarEtapa.classList.remove('hidden');
             }
-            console.log(puede_avanzar, parseInt(ultima_bitacora), currentIndex, etapas.length, etapaUltimaBitacora);
         });
         toggleRequired();
     }
@@ -667,6 +665,7 @@ window.addEventListener('DOMContentLoaded', function() {
     toggleIdMercadoPublico();
     toggleRecepcionOfertas();
     toggleEtapaButton();
+    toggleRequired();
 
     if (btnAvanzarEtapa && nombreEtapaActual && etapas.length) {
         btnAvanzarEtapa.addEventListener('click', function() {
