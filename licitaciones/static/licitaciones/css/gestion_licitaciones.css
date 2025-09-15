@@ -1773,7 +1773,7 @@ body {
 }
 
 .btn-close {
-    position: fixed;
+    position: absolute;
     top: 10px;
     right: 10px;
     cursor: pointer;
@@ -2617,7 +2617,7 @@ td[data-col="tipo_falla"] {
     background: #fff;
     border-radius: 12px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.12);
-    padding:30px;
+    padding: 3px;
     border-radius:12px;
     min-width:500px;
     max-width:95vw;

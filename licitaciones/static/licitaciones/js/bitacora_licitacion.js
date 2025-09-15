@@ -387,12 +387,30 @@ window.addEventListener('DOMContentLoaded', function() {
         };
     }
 
+    function toggleRequired() {
+        document.querySelectorAll(".campoEtapa").forEach( campo => {
+            campo.required = false;
+            if (!campo.parentNode.classList.contains('hidden') && !campo.parentNode.parentNode.classList.contains('hidden')) {
+                campo.required = true;
+                console.log(campo);
+            }
+        })
+    }
 
-
-
-
-
-
+    const tipoSolicitud = document.getElementById('tipoSolicitudSelect');
+    tipoSolicitud.onchange = () => {
+        if (tipoSolicitud.value === '1') {
+            document.querySelector('.evaluacion-tecnica').classList.remove('hidden');
+            document.querySelector('.comision-evaluadora').classList.add('hidden');
+        } else if (tipoSolicitud.value === '2') {
+            document.querySelector('.evaluacion-tecnica').classList.add('hidden');
+            document.querySelector('.comision-evaluadora').classList.remove('hidden');
+        } else {
+            document.querySelector('.evaluacion-tecnica').classList.add('hidden');
+            document.querySelector('.comision-evaluadora').classList.add('hidden');
+        }
+        toggleRequired();
+    };
 
     function toggleEvaluacionCotizacion() {
         const evaluacionCotizacion = document.getElementById('evaluacionCotizacionContainer');
@@ -509,7 +527,7 @@ window.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function toggleEvaluacionOferta() {
+    function toggleEvaluacionOfertas() {
         const evaluacionOferta = document.getElementById('evaluacionOfertaContainer');
         
         if (!evaluacionOferta || !nombreEtapaActual) return;
@@ -556,21 +574,20 @@ window.addEventListener('DOMContentLoaded', function() {
 
     // Función para mostrar/ocultar campo ID Mercado Público
     function toggleIdMercadoPublico() {
-        const idMercadoPublicoContainer = document.getElementById('idMercadoPublicoContainer');
-        const idMercadoPublicoInput = document.getElementById('idMercadoPublicoInput');
+        const idMercadoPublico = document.getElementById('idMercadoPublicoContainer');
         
-        if (!idMercadoPublicoContainer || !nombreEtapaActual) return;
+        if (!idMercadoPublico || !nombreEtapaActual) return;
         
         const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
         
         // Mostrar campo si la etapa es "Publicacion en portal"
         if (etapaActualTexto === 'publicacion en portal' || etapaActualTexto === 'publicación en portal') {
-            idMercadoPublicoContainer.classList.remove('hidden');
+            idMercadoPublico.classList.remove('hidden');
             /*if (idMercadoPublicoInput) {
                 idMercadoPublicoInput.focus();
             }*/
         } else {
-            idMercadoPublicoContainer.classList.add('hidden');
+            idMercadoPublico.classList.add('hidden');
         }
     }
     
@@ -604,8 +621,7 @@ window.addEventListener('DOMContentLoaded', function() {
             const response = await fetch(`/api/licitacion/${licitacionId}/puede_avanzar/`);
             if (response.ok) {
                 const data = await response.json();
-                console.log(data);
-                return data.puede_avanzar;
+                return {puede_avanzar: data.puede_avanzar, ultima_bitacora: data.ultima_bitacora};
             }
             return false;
         } catch (error) {
@@ -613,30 +629,26 @@ window.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    
     function toggleEtapaButton() {
         const etapaActualId = parseInt(nombreEtapaActual.dataset.etapaId);
         const currentIndex = etapas.findIndex(e => parseInt(e.id) === etapaActualId);
-        console.log(etapaOriginal)
         
         verificarPuedeAvanzar()
-        .then( puede_avanzar => {
+        .then( ({puede_avanzar, ultima_bitacora}) => {
             if (currentIndex === 0) {
-                console.log('2')
                 btnRetrocederEtapa.classList.add('hidden');
             }
             else {
                 btnRetrocederEtapa.classList.remove('hidden');
             }
-            if (puede_avanzar && (currentIndex === etapas.findIndex(e => parseInt(e.id) === parseInt(etapaOriginal.id)) + 1)) {
-                console.log('asd');
+            if (currentIndex === etapas.length + 1 || (puede_avanzar && (currentIndex === etapas.findIndex(e => parseInt(e.id) === parseInt(ultima_bitacora)) + 1))) {
                 btnAvanzarEtapa.classList.add('hidden');
             }
             else if (puede_avanzar) {
-                console.log('asd2');
                 btnAvanzarEtapa.classList.remove('hidden');
             }
         });
+        toggleRequired();
     }
     // Verificar al cargar la página
     toggleEvaluacionCotizacion();
@@ -647,7 +659,7 @@ window.addEventListener('DOMContentLoaded', function() {
     toggleTopeFirmaContrato();
     toggleAdjudicacion();
     toggleSolicitudRegimenInterno();
-    toggleEvaluacionOferta();
+    toggleEvaluacionOfertas();
     toggleRecepcionDocumentosRegimenInterno();
     toggleFechasImportantes();
     toggleIdMercadoPublico();
@@ -701,7 +713,7 @@ window.addEventListener('DOMContentLoaded', function() {
             toggleTopeFirmaContrato();
             toggleAdjudicacion();
             toggleSolicitudRegimenInterno();
-            toggleEvaluacionOferta();
+            toggleEvaluacionOfertas();
             toggleRecepcionDocumentosRegimenInterno();
             toggleFechasImportantes();
             toggleIdMercadoPublico();
@@ -785,7 +797,7 @@ window.addEventListener('DOMContentLoaded', function() {
             toggleTopeFirmaContrato();
             toggleAdjudicacion();
             toggleSolicitudRegimenInterno();
-            toggleEvaluacionOferta();
+            toggleEvaluacionOfertas();
             toggleFechasImportantes();
             toggleIdMercadoPublico();
             toggleRecepcionOfertas();
@@ -1154,7 +1166,6 @@ window.addEventListener('DOMContentLoaded', function() {
             }
 
             // Agregar campos de Recepción de Ofertas
-            console.log(cierrePreguntas, respuesta, visitaTerreno, cierreOferta);
             formData.append('etapa', etapaActualId);
             if (fechaEvaluacionCotizacion) formData.append('fecha_evaluacion_cotizacion', fechaEvaluacionCotizacion);
             if (montoEstimadoCotizacion) formData.append('monto_estimado_cotizacion', montoEstimadoCotizacion);

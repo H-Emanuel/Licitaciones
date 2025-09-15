@@ -4,6 +4,7 @@ async function obtenerValor(moneda) {
     // Por defecto consultar api mindicador para obtener valores
     try {
         if (moneda.trim().toLowerCase() === 'clp') return 1;
+        if (moneda.trim().toLowerCase() === 'usd') moneda = 'dolar';
         const response = await fetch(`https://mindicador.cl/api/${moneda.trim().toLowerCase()}`);
         if (!response.ok) throw new Error('Error al obtener los datos');
         const data = await response.json();
@@ -48,27 +49,6 @@ async function asignarTipoPresupuesto() {
             tipoPresupuesto.value = 'LR';
         }
     }
-}
-
-async function saltarEtapas() {
-    const tipoLicitaiconId = 
-    getEtapasPorTipo(tipoLicitacionId);
-    const etapaSelect = document.getElementById('etapaSelect');
-    if (!select) return;
-    moneda = (window.monedasLicitacion || []).find(m => m.id == moneda)?.nombre || moneda;
-    monto_presupuestado = parseFloat(monto_presupuestado);
-    valor = await obtenerValor(moneda);
-    utm = await obtenerValor('UTM');
-    select.innerHTML = '<option value="">Seleccione una etapa</option>';
-    etapas.forEach(etapa => {
-        if (!((etapa.id === 14 || etapa.id === 15) && valor < 500*utm)){
-            const opt = document.createElement('option');
-            opt.value = etapa.id;
-            opt.textContent = etapa.nombre;
-            if (String(etapa.nombre) === String(selectedId.nombre)) opt.selected = true;
-            select.appendChild(opt);
-        }
-    });
 }
 
 const ids = ['monedaSelect', 'montoPresupuestadoInput'];
@@ -326,7 +306,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const opt = document.createElement('option');
             opt.value = etapa.id;
             opt.textContent = etapa.nombre;
-            if (String(etapa.nombre) === String(selectedId.nombre)) opt.selected = true;
+            if (etapa.id === selectedId) opt.selected = true;
             select.appendChild(opt);
         };
         if (moneda && monto_presupuestado){
@@ -336,7 +316,8 @@ document.addEventListener("DOMContentLoaded", function () {
             .then( valor => obtenerValor('UTM')
                 .then( utm => {
                         etapas.forEach(etapa => {
-                        if (!((etapa.id === 14 || etapa.id === 15) && valor < 500*utm)){
+                        
+                        if (!((etapa.id === 14 || etapa.id === 15) && monto_presupuestado*valor < 500 * utm)){
                             flujo_normal(etapa);
                         }
                     });
@@ -888,7 +869,6 @@ document.querySelectorAll('.editar-fila').forEach(btn => {
                     if (operador1) operadorId = operador1.id;
                 }
             }
-            console.log(document.getElementById('operadores-licitacion-data'));
             if (operador2Badge && !operador2Badge.classList.contains('no-asignado')) {
                 const texto2 = operador2Badge.textContent.replace('OP2: ', '').trim();
                 if (texto2 !== 'No asignado') {
@@ -1503,7 +1483,6 @@ formProyecto.onsubmit = async function(e) {
         url.searchParams.delete('solo_fallidas');
         url.searchParams.delete('q');
         url.searchParams.delete('page');
-        console.log(url.searchParams);
         window.location.href = url.toString();
     });    // Movemos la validación al evento onsubmit principal para evitar conflictos
     // La función validarNumeroPedido se usará dentro del onsubmit

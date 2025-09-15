@@ -690,6 +690,7 @@ def bitacora_licitacion(request, licitacion_id):
     bitacoras = paginator.get_page(page_number)
     
     if request.method == 'POST' and (es_admin or es_operador or es_operador_manual):
+        print("asd")
         # Verificar permisos para operadores
         if (es_operador or es_operador_manual) and not licitacion.puede_operar_usuario(request.user):
             return JsonResponse({
@@ -713,8 +714,6 @@ def bitacora_licitacion(request, licitacion_id):
             except Etapa.DoesNotExist:
                 etapa_obj = None
         
-        
-        
         tipo_licitacion_etapa_observacion = (
             TipoLicitacionEtapa.objects
             .filter(etapa=etapa_obj, tipo_licitacion=licitacion.tipo_licitacion)
@@ -723,7 +722,7 @@ def bitacora_licitacion(request, licitacion_id):
 
         etapa_ultima_bitacora = BitacoraLicitacion.objects.filter(
             licitacion=licitacion
-        ).order_by('-fecha').values_list('etapa', flat=True).first()
+        ).order_by('-etapa').values_list('etapa', flat=True).first()
 
         tipo_licitacion_etapa_ultima_observacion = (
             TipoLicitacionEtapa.objects
@@ -749,14 +748,12 @@ def bitacora_licitacion(request, licitacion_id):
                 .first()
             )
             if (tipo_licitacion_etapa_ultima_observacion_next.etapa.id == e_inicio):
-                print('anterior a:', e_inicio)
                 if (tipo_licitacion_etapa_observacion.orden > tipo_licitacion_etapa_e_final.orden + 2):
                     return redirect('bitacora_licitacion', licitacion_id)
                 # si hay al menos una ocurrencia en saltar_etapas es necesario dejar registro para no llamar al handler general si la etapa hace el salto bien
                 salta_etapas = True
         
         # SI NO SE DEFINE UNA ETAPA O ES UNA ETAPA MUY AVANZADA RESPECTO A LA ULTIMA ETAPA DE LAS OBSERVACIONES OMITIR POST
-        print(tipo_licitacion_etapa_observacion.orden, tipo_licitacion_etapa_ultima_observacion.orden, salta_etapas)
         if not salta_etapas and (not etapa_obj or not tipo_licitacion_etapa_observacion or (tipo_licitacion_etapa_observacion.orden > tipo_licitacion_etapa_ultima_observacion.orden + 1)):
             return redirect('bitacora_licitacion', licitacion_id)
 
@@ -924,6 +921,7 @@ def bitacora_licitacion(request, licitacion_id):
         if fecha_recepcion_documento_regimen_interno and licitacion.fecha_recepcion_documento_regimen_interno != fecha_recepcion_documento_regimen_interno and etapa_obj and 'recepción de documento de régimen interno' in etapa_obj.nombre.lower().strip():
             valores['Fecha de recepción de documento régimen interno'] = str(fecha_recepcion_documento_regimen_interno)
             licitacion.fecha_recepcion_documento_regimen_interno = fecha_recepcion_documento_regimen_interno
+            print(fecha_recepcion_documento_regimen_interno)
         if fecha_tope_firma_contrato and licitacion.fecha_tope_firma_contrato != fecha_tope_firma_contrato and etapa_obj and 'firma de contrato' in etapa_obj.nombre.lower().strip():
             valores['Fecha tope de firma de contrato'] = str(fecha_tope_firma_contrato)
             licitacion.fecha_tope_firma_contrato = fecha_tope_firma_contrato
@@ -2252,14 +2250,15 @@ def api_puede_avanzar_etapa(request, licitacion_id):
     ultima_bitacora = BitacoraLicitacion.objects.filter(
         licitacion=licitacion, 
         operador_user=operador_user
-    ).order_by('-fecha').values_list('etapa', flat=True).first()
+    ).order_by('-etapa').values_list('etapa', flat=True).first()
     
     puede_avanzar = False
-    if ultima_bitacora and ultima_bitacora == licitacion.etapa_fk.id:
+    if ultima_bitacora and ultima_bitacora >= licitacion.etapa_fk.id:
         puede_avanzar = True
 
     
     return JsonResponse({
         'ok': True, 
         'puede_avanzar': puede_avanzar,
+        'ultima_bitacora': ultima_bitacora,
     })

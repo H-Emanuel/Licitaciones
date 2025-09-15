@@ -127,18 +127,7 @@
                                 <span class="section-icon"></span>
                                 Tipo de solicitud:
                             </h3>
-                            <select id="tipoSolicitudSelect" name="tipo_solicitud" class="campoEtapa" style="margin-bottom: 2vh;" onchange="
-                                if (this.value === '1') {
-                                    document.querySelector('.evaluacion-tecnica').classList.remove('hidden');
-                                    document.querySelector('.comision-evaluadora').classList.add('hidden');
-                                } else if (this.value === '2') {
-                                    document.querySelector('.evaluacion-tecnica').classList.add('hidden');
-                                    document.querySelector('.comision-evaluadora').classList.remove('hidden');
-                                } else {
-                                    document.querySelector('.evaluacion-tecnica').classList.add('hidden');
-                                    document.querySelector('.comision-evaluadora').classList.add('hidden');
-                                }
-                            ">
+                            <select id="tipoSolicitudSelect" name="tipo_solicitud" class="campoEtapa" style="margin-bottom: 2vh;">
                                 <option value="">Observación corriente</option>
                                 <option value="1">Fecha que se envía evaluación técnica</option>
                                 <option value="2">Comisión evaluadora</option>
