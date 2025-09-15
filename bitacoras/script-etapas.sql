@@ -14,7 +14,7 @@ alter table licitacion_licitacion alter column etapa_fk_id drop not null;
 
 alter table licitacion_licitacion add column etapa2_fk_id bigint;
 update licitacion_licitacion set etapa2_fk_id=etapa_fk_id;
-update licitaciones_licitacion set etapa_fk_id=null;
+update licitacion_licitacion set etapa_fk_id=null;
 
 alter table licitaciones_bitacoralicitacion add column etapa2_id bigint;
 update licitaciones_bitacoralicitacion set etapa2_id=etapa_id;

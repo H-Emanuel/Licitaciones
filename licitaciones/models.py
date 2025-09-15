@@ -102,17 +102,17 @@ class Licitacion(models.Model):
     institucion = models.CharField(max_length=255, blank=True, null=True, verbose_name="Institución")
     pedido_devuelto = models.BooleanField(default=False, verbose_name="Pedido devuelto")
 
-    empresa_adjudicacion = models.CharField(max_length=100, default='')
-    rut_adjudicacion = models.CharField(max_length=20)
-    monto_adjudicacion = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    empresa_adjudicacion = models.CharField(max_length=100, blank=True, null=True, verbose_name="Empresa de adjudicación")
+    rut_adjudicacion = models.CharField(max_length=20, blank=True, null=True, verbose_name="Rut de empresa de adjudicación")
+    monto_adjudicacion = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True, verbose_name="Fecha de decreto de adjudicación")
     fecha_decreto_adjudicacion = models.DateField(blank=True, null=True)
-    fecha_subida_mercado_publico_adjudicacion = models.DateField(blank=True, null=True)
-    orden_compra_adjudicacion = models.IntegerField(default=0)
+    fecha_subida_mercado_publico_adjudicacion = models.DateField(blank=True, null=True, verbose_name="Fecha de subida de adjudicación a mercado público")
+    orden_compra_adjudicacion = models.IntegerField(default=0, blank=True, null=True, verbose_name="Orden de compra de adjudicación")
 
     fecha_evaluacion_tecnica_evaluacion = models.DateField(blank=True, null=True, verbose_name="Fecha que se envía evaluación técnica")
-    nombre_integrante_uno_evaluacion = models.CharField(max_length=100, blank=True, null=True)
-    nombre_integrante_dos_evaluacion = models.CharField(max_length=100, blank=True, null=True)
-    nombre_integrante_tres_evaluacion = models.CharField(max_length=100, blank=True, null=True)
+    nombre_integrante_uno_evaluacion = models.CharField(max_length=100, blank=True, null=True, verbose_name="Integrante uno evaluación")
+    nombre_integrante_dos_evaluacion = models.CharField(max_length=100, blank=True, null=True, verbose_name="Integrante dos evaluación")
+    nombre_integrante_tres_evaluacion = models.CharField(max_length=100, blank=True, null=True, verbose_name="Integrante tres evaluación")
     fecha_comision_evaluacion = models.DateField(blank=True, null=True, verbose_name="Fecha de comisión")
 
     fecha_cierre_preguntas_publicacionportal = models.DateField(blank=True, null=True, verbose_name="Fecha de cierre de preguntas")
@@ -131,13 +131,13 @@ class Licitacion(models.Model):
     fecha_tope_firma_contrato = models.DateField(blank=True, null=True, verbose_name="Fecha tope de firma de contrato")
 
     fecha_evaluacion_cotizacion = models.DateField(blank=True, null=True, verbose_name="Fecha de evaluacion de la cotizacion")
-    monto_estimado_cotizacion = models.DecimalField(blank=True, null=True, max_digits=15, decimal_places=2, default=0)
+    monto_estimado_cotizacion = models.DecimalField(blank=True, null=True, max_digits=15, decimal_places=2, verbose_name="Monto estimado de cotización")
 
     fecha_solicitud_intencion_compra = models.DateField(blank=True, null=True, verbose_name="Fecha de la solicitud de intencion de compra")
 
-    nombre_integrante_uno_comision_base = models.CharField(max_length=100, blank=True, null=True)
-    nombre_integrante_dos_comision_base = models.CharField(max_length=100, blank=True, null=True)
-    nombre_integrante_tres_comision_base = models.CharField(max_length=100, blank=True, null=True)
+    nombre_integrante_uno_comision_base = models.CharField(max_length=100, blank=True, null=True, verbose_name="Integrante uno de la comisión")
+    nombre_integrante_dos_comision_base = models.CharField(max_length=100, blank=True, null=True, verbose_name="Integrante dos de la comisión")
+    nombre_integrante_tres_comision_base = models.CharField(max_length=100, blank=True, null=True, verbose_name="Integrante tres de la comisión")
 
     fecha_publicación_mercado_publico = models.DateField(blank=True, null=True, verbose_name="Fecha de publicación en mercado público")
     fecha_cierre_ofertas_mercado_publico = models.DateField(blank=True, null=True, verbose_name="Fecha de cierre de ofertas en mercado público")
