@@ -323,21 +323,21 @@ def modificar_licitacion(request, licitacion_id):
                 valores_antes['N° de cuenta'] = str(licitacion.tipo_presupuesto)
                 valores_despues['N° de cuenta'] = str(tipo_presupuesto)
                 licitacion.tipo_presupuesto = tipo_presupuesto
-            fecha_tentativa_cierre_raw = data.get('fecha_tentativa_cierre', '')
+            fecha_tentativa_termino_raw = data.get('fecha_tentativa_termino', '')
             # Convertir a date o None
-            if fecha_tentativa_cierre_raw:
+            if fecha_tentativa_termino_raw:
                 try:
-                    fecha_tentativa_cierre = datetime.strptime(fecha_tentativa_cierre_raw, '%Y-%m-%d').date()
+                    fecha_tentativa_termino = datetime.strptime(fecha_tentativa_termino_raw, '%Y-%m-%d').date()
                 except ValueError:
-                    fecha_tentativa_cierre = None
+                    fecha_tentativa_termino = None
             else:
-                fecha_tentativa_cierre = None
-            if licitacion.fecha_tentativa_cierre != fecha_tentativa_cierre:
-                cambios.append(f"Fecha tentativa de cierre: '{licitacion.fecha_tentativa_cierre}' → '{fecha_tentativa_cierre}'")
+                fecha_tentativa_termino = None
+            if licitacion.fecha_tentativa_termino != fecha_tentativa_termino:
+                cambios.append(f"Fecha tentativa de cierre: '{licitacion.fecha_tentativa_termino}' → '{fecha_tentativa_termino}'")
                 campos_modificados.append('Fecha tentativa de cierre')
-                valores_antes['Fecha tentativa de cierre'] = str(licitacion.fecha_tentativa_cierre)
-                valores_despues['Fecha tentativa de cierre'] = str(fecha_tentativa_cierre)
-                licitacion.fecha_tentativa_cierre = fecha_tentativa_cierre
+                valores_antes['Fecha tentativa de cierre'] = str(licitacion.fecha_tentativa_termino)
+                valores_despues['Fecha tentativa de cierre'] = str(fecha_tentativa_termino)
+                licitacion.fecha_tentativa_termino = fecha_tentativa_termino
             # Licitacion fallida linkeada
             licitacion_fallida_linkeada_id = data.get('licitacion_fallida_linkeada')
             licitacion_fallida_linkeada_obj = Licitacion.objects.get(id=licitacion_fallida_linkeada_id) if licitacion_fallida_linkeada_id else None
@@ -1393,7 +1393,6 @@ def agregar_proyecto(request):
             monto_presupuestado = 0
         #tipo_presupuesto = get_tipo_presupuesto(Moneda.objects.get(id=data.get('moneda')) if data.get('moneda') else None, monto_presupuestado)
         tipo_presupuesto = data.get('tipo_presupuesto')
-        fecha_tentativa_cierre = data.get('fecha_tentativa_cierre')
         
         # Crear la licitación
         licitacion = Licitacion(

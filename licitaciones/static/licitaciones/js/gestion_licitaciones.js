@@ -540,9 +540,9 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
 
-        if (datos && datos.fecha_tentativa_cierre !== undefined) {
-            const fecha_tentativa_cierre = formProyecto['fecha_tentativa_cierre'];
-            if (fecha_tentativa_cierre) fecha_tentativa_cierre.value = datos.fecha_tentativa_cierre;
+        if (datos && datos.fecha_tentativa_termino !== undefined) {
+            const fecha_tentativa_termino = formProyecto['fecha_tentativa_termino'];
+            if (fecha_tentativa_termino) fecha_tentativa_termino.value = datos.fecha_tentativa_termino;
         }
 
         if (datos && datos.fecha_cierre_preguntas !== undefined) {
@@ -605,7 +605,9 @@ document.addEventListener("DOMContentLoaded", function () {
         let etapasFiltradas = getEtapasPorTipo(tipoLicitacionId);        // Etapa: preseleccionar la etapa de la licitación
         let etapaSeleccionada = '';
         if (datos && datos.etapa) etapaSeleccionada = datos.etapa;
-        renderEtapasSelect(etapaSelect, etapasFiltradas, etapaSeleccionada, datos.moneda, datos.monto_presupuestado);
+        if (datos.moneda && datos.monto_presupuestado && !etapaSeleccionada && etapasFiltradas.length > 0) {
+            renderEtapasSelect(etapaSelect, etapasFiltradas, etapaSeleccionada, datos.moneda, datos.monto_presupuestado);
+        }
         modal.classList.add('active');
         gestionarOverflowBody();
         asignarTipoPresupuesto();
