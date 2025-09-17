@@ -636,20 +636,15 @@ window.addEventListener('DOMContentLoaded', function() {
         
         verificarPuedeAvanzar()
         .then( ({puede_avanzar, ultima_bitacora}) => {
-            if (currentIndex === 0) {
+            if (etapaActualId === parseInt(etapaOriginal.id) || currentIndex === 0) {
                 btnRetrocederEtapa.classList.add('hidden');
+                if (puede_avanzar && checkRequired()) {
+                    btnAvanzarEtapa.classList.remove('hidden');
+                }
             }
-            else {
+            else if (currentIndex === etapas.findIndex(e => parseInt(e.id) === parseInt(etapaOriginal.id)) + 1) {
                 btnRetrocederEtapa.classList.remove('hidden');
-            }
-            if (currentIndex === etapas.length - 1 || (puede_avanzar && (currentIndex === etapas.findIndex(e => parseInt(e.id) === parseInt(ultima_bitacora)) + 1))) {
                 btnAvanzarEtapa.classList.add('hidden');
-            }
-            else if (!checkRequired()) {
-                btnAvanzarEtapa.classList.add('hidden');
-            }
-            else if (puede_avanzar) {
-                btnAvanzarEtapa.classList.remove('hidden');
             }
         });
         
