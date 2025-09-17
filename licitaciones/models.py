@@ -139,7 +139,7 @@ class Licitacion(models.Model):
     nombre_integrante_dos_comision_base = models.CharField(max_length=100, blank=True, null=True, verbose_name="Integrante dos de la comisión")
     nombre_integrante_tres_comision_base = models.CharField(max_length=100, blank=True, null=True, verbose_name="Integrante tres de la comisión")
 
-    fecha_publicación_mercado_publico = models.DateField(blank=True, null=True, verbose_name="Fecha de publicación en mercado público")
+    fecha_publicacion_mercado_publico = models.DateField(blank=True, null=True, verbose_name="Fecha de publicación en mercado público")
     fecha_cierre_ofertas_mercado_publico = models.DateField(blank=True, null=True, verbose_name="Fecha de cierre de ofertas en mercado público")
 
     # Tipos de licitación fallida (cuando fallida es True)
@@ -188,7 +188,7 @@ class Licitacion(models.Model):
         # Buscar el menor 'orden' de una etapa que contenga 'evaluación de ofertas'
         orden_evaluacion = None
         for rel in etapas_tipo:
-            if 'evaluación de ofertas' in rel.etapa.nombre.lower():
+            if 'evaluación de ofertas' in rel.etapa.nombre.lower() or 'evaluación de la cotizacion' in rel.etapa.nombre.lower():
                 if orden_evaluacion is None or rel.orden < orden_evaluacion:
                     orden_evaluacion = rel.orden
 

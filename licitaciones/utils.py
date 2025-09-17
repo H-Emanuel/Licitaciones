@@ -1,5 +1,6 @@
 from django.core.paginator import Paginator
 from django.db.models import Q
+from datetime import timedelta
 from .models import Etapa, Estado, TipoLicitacion, Moneda, Categoria, Financiamiento, Departamento, TipoLicitacionEtapa, Licitacion
 '''
 import requests
@@ -44,6 +45,18 @@ def get_tipo_presupuesto(moneda, monto):
         return 'LP'
     return 'LR'
 '''
+
+
+def get_fecha_tentativa_termino(tipo_presupuesto, fecha_creacion):
+    if (tipo_presupuesto is None) or (fecha_creacion is None):
+        return None
+    if tipo_presupuesto.strip().lower() == 'lp':
+        return fecha_creacion + timedelta(days=130)
+    elif tipo_presupuesto.strip().lower() == 'lr':
+        return fecha_creacion + timedelta(days=150)
+    else:
+        return fecha_creacion + timedelta(days=80)
+
 def get_filtered_projects_list(base_queryset, request):
     """
     Filtra una queryset de licitaciones según los parámetros de la solicitud.

@@ -633,9 +633,9 @@ window.addEventListener('DOMContentLoaded', function() {
     function toggleEtapaButton() {
         const etapaActualId = parseInt(nombreEtapaActual.dataset.etapaId);
         const currentIndex = etapas.findIndex(e => parseInt(e.id) === etapaActualId);
-        
         verificarPuedeAvanzar()
         .then( ({puede_avanzar, ultima_bitacora}) => {
+            console.log(puede_avanzar, etapaActualId, currentIndex, parseInt(etapaOriginal.id), etapas);
             if (etapaActualId === parseInt(etapaOriginal.id) || currentIndex === 0) {
                 btnRetrocederEtapa.classList.add('hidden');
                 if (puede_avanzar && checkRequired()) {

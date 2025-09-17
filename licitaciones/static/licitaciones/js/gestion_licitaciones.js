@@ -302,6 +302,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function renderEtapasSelect(select, etapas, selectedId, moneda, monto_presupuestado) {
         if (!select) return;
         select.innerHTML = '<option value="">Seleccione una etapa</option>';
+        console.log(etapas);
         const flujo_normal = (etapa) => {
             const opt = document.createElement('option');
             opt.value = etapa.id;
@@ -607,6 +608,9 @@ document.addEventListener("DOMContentLoaded", function () {
         if (datos && datos.etapa) etapaSeleccionada = datos.etapa;
         if (datos.moneda && datos.monto_presupuestado && !etapaSeleccionada && etapasFiltradas.length > 0) {
             renderEtapasSelect(etapaSelect, etapasFiltradas, etapaSeleccionada, datos.moneda, datos.monto_presupuestado);
+        }
+        else {
+            renderEtapasSelect(etapaSelect, etapasFiltradas, etapaSeleccionada);
         }
         modal.classList.add('active');
         gestionarOverflowBody();

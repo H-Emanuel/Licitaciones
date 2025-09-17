@@ -323,20 +323,13 @@ def modificar_licitacion(request, licitacion_id):
                 valores_antes['N° de cuenta'] = str(licitacion.tipo_presupuesto)
                 valores_despues['N° de cuenta'] = str(tipo_presupuesto)
                 licitacion.tipo_presupuesto = tipo_presupuesto
-            fecha_tentativa_termino_raw = data.get('fecha_tentativa_termino', '')
-            # Convertir a date o None
-            if fecha_tentativa_termino_raw:
-                try:
-                    fecha_tentativa_termino = datetime.strptime(fecha_tentativa_termino_raw, '%Y-%m-%d').date()
-                except ValueError:
-                    fecha_tentativa_termino = None
-            else:
-                fecha_tentativa_termino = None
+            fecha_tentativa_termino = get_fecha_tentativa_termino(data.get('tipo_presupuesto', ''), licitacion.fecha_creacion.date())
             if licitacion.fecha_tentativa_termino != fecha_tentativa_termino:
-                cambios.append(f"Fecha tentativa de cierre: '{str(datetime.strptime(licitacion.fecha_tentativa_termino, '%Y-%m-%d').strftime('%d-%m-%Y'))}' → '{str(fecha_tentativa_termino.strftime('%d-%m-%Y'))}'")
-                campos_modificados.append('Fecha tentativa de cierre')
-                valores_antes['Fecha tentativa de cierre'] = str(datetime.strptime(licitacion.fecha_tentativa_termino, '%Y-%m-%d').strftime('%d-%m-%Y'))
-                valores_despues['Fecha tentativa de cierre'] = str(fecha_tentativa_termino.strftime('%d-%m-%Y'))
+                if (licitacion.fecha_tentativa_termino):
+                    cambios.append(f"Fecha tentativa de término: '{str(licitacion.fecha_tentativa_termino.strftime('%d-%m-%Y'))}' → '{str(fecha_tentativa_termino)}'")
+                    valores_antes['Fecha tentativa de término'] = str(licitacion.fecha_tentativa_termino.strftime('%d-%m-%Y'))
+                campos_modificados.append('Fecha tentativa de término')
+                valores_despues['Fecha tentativa de término'] = str(fecha_tentativa_termino)
                 licitacion.fecha_tentativa_termino = fecha_tentativa_termino
             # Licitacion fallida linkeada
             licitacion_fallida_linkeada_id = data.get('licitacion_fallida_linkeada')
@@ -702,61 +695,20 @@ def bitacora_licitacion(request, licitacion_id):
         etapa_id = request.POST.get('etapa')
         etapa_nombre = request.POST.get('etapa_nombre')
         etapa_obj = None
+        print(etapa_id, etapa_nombre, licitacion.tipo_licitacion.nombre, TipoLicitacionEtapa.objects.filter(tipo_licitacion=licitacion.tipo_licitacion).values_list('etapa__nombre', flat=True))
         if etapa_id:
             try:
                 etapa_obj = Etapa.objects.get(id=etapa_id)
             except Etapa.DoesNotExist:
                 etapa_obj = None
         if etapa_nombre:
-            if 'evaluación de ofertas' in etapa_nombre.strip().lower() and 'trato directo' in licitacion.tipo_licitacion.strip().lower():
+            if 'evaluación de ofertas' in etapa_nombre.strip().lower() and 'trato directo' in licitacion.tipo_licitacion.nombre.strip().lower():
                 etapa_nombre = 'Evaluación de la cotización'
             try:
                 etapa_obj = Etapa.objects.get(nombre = etapa_nombre)
             except Etapa.DoesNotExist:
                 etapa_obj = None
         
-        tipo_licitacion_etapa_observacion = (
-            TipoLicitacionEtapa.objects
-            .filter(etapa=etapa_obj, tipo_licitacion=licitacion.tipo_licitacion)
-            .first()
-        )
-
-        etapa_ultima_bitacora = BitacoraLicitacion.objects.filter(
-            licitacion=licitacion
-        ).order_by('-etapa').values_list('etapa', flat=True).first()
-
-        tipo_licitacion_etapa_ultima_observacion = (
-            TipoLicitacionEtapa.objects
-            .filter(etapa=etapa_ultima_bitacora, tipo_licitacion=licitacion.tipo_licitacion)
-            .first()
-            or TipoLicitacionEtapa.objects
-            .filter(etapa=licitacion.etapa_fk, tipo_licitacion=licitacion.tipo_licitacion)
-            .first()
-        )
-
-        tipo_licitacion_etapa_ultima_observacion_next = (
-            TipoLicitacionEtapa.objects
-            .filter(tipo_licitacion=licitacion.tipo_licitacion, orden__gt=tipo_licitacion_etapa_ultima_observacion.orden)
-            .order_by("orden")
-            .first()
-        )
-       # HANDLER SALTAR ETAPAS
-        salta_etapas = False
-        for e_inicio, e_final in licitacion.get_saltar_etapas():
-            tipo_licitacion_etapa_e_final = (
-                TipoLicitacionEtapa.objects
-                .filter(etapa=e_final, tipo_licitacion=licitacion.tipo_licitacion)
-                .first()
-            )
-            if (tipo_licitacion_etapa_ultima_observacion_next.etapa.id == e_inicio):
-                if (tipo_licitacion_etapa_observacion.orden > tipo_licitacion_etapa_e_final.orden + 2):
-                    return redirect('bitacora_licitacion', licitacion_id)
-                # si hay al menos una ocurrencia en saltar_etapas es necesario dejar registro para no llamar al handler general si la etapa hace el salto bien
-                salta_etapas = True
-        
-        # SI NO SE DEFINE UNA ETAPA O ES UNA ETAPA MUY AVANZADA RESPECTO A LA ULTIMA ETAPA DE LAS OBSERVACIONES OMITIR POST
-        if not salta_etapas and (not etapa_obj or not tipo_licitacion_etapa_observacion or (tipo_licitacion_etapa_observacion.orden > tipo_licitacion_etapa_ultima_observacion.orden + 1)):
-            return redirect('bitacora_licitacion', licitacion_id)
 
         id_mercado_publico = request.POST.get('id_mercado_publico', '').strip()
         
@@ -805,23 +757,23 @@ def bitacora_licitacion(request, licitacion_id):
         accion_etapa = request.POST.get('accion_etapa')
         if request.POST.get('redestinar', '')=='true' and etapa_obj:
             valores['Redestinado'] = str(etapa_nombre)
-            licitacion.fecha_evaluacion_cotizacion = ''
-            licitacion.monto_estimado_cotizacion = ''
-            licitacion.empresa_adjudicacion = ''
-            licitacion.rut_adjudicacion = ''
-            licitacion.monto_adjudicacion = ''
-            licitacion.fecha_decreto_adjudicacion = ''
-            licitacion.fecha_subida_mercado_publico_adjudicacion = ''
-            licitacion.orden_compra_adjudicacion = ''
-            licitacion.fecha_evaluacion_tecnica_evaluacion = ''
-            licitacion.nombre_integrante_uno_evaluacion = ''
-            licitacion.nombre_integrante_dos_evaluacion = ''
-            licitacion.nombre_integrante_tres_evaluacion = ''
-            licitacion.fecha_comision_evaluacion = ''
-            licitacion.fecha_solicitud_regimen_interno = ''
-            licitacion.fecha_recepcion_documento_regimen_interno = ''
-            licitacion.fecha_tope_firma_contrato = ''
-            fecha_tope_firma_contrato = ''
+            licitacion.fecha_evaluacion_cotizacion = None
+            licitacion.monto_estimado_cotizacion = None
+            licitacion.empresa_adjudicacion = None
+            licitacion.rut_adjudicacion = None
+            licitacion.monto_adjudicacion = None
+            licitacion.fecha_decreto_adjudicacion = None
+            licitacion.fecha_subida_mercado_publico_adjudicacion = None
+            licitacion.orden_compra_adjudicacion = None
+            licitacion.fecha_evaluacion_tecnica_evaluacion = None
+            licitacion.nombre_integrante_uno_evaluacion = None
+            licitacion.nombre_integrante_dos_evaluacion = None
+            licitacion.nombre_integrante_tres_evaluacion = None
+            licitacion.fecha_comision_evaluacion = None
+            licitacion.fecha_solicitud_regimen_interno = None
+            licitacion.fecha_recepcion_documento_regimen_interno = None
+            licitacion.fecha_tope_firma_contrato = None
+            fecha_tope_firma_contrato = None
             licitacion.save()
         if accion_etapa == 'advance' and etapa_obj:
             licitacion.etapa_fk = etapa_obj
@@ -1437,6 +1389,23 @@ def agregar_proyecto(request):
             pedido_devuelto=data.get('pedido_devuelto', False),            # Agregar la licitación fallida si se proporcionó un ID
             licitacion_fallida_linkeada=Licitacion.objects.get(id=data.get('licitacion_fallida_linkeada')) if data.get('licitacion_fallida_linkeada') else None,
         )
+        print("antes de save")
+        licitacion.save()
+        print("despues de save")
+
+        fecha_tentativa_termino = get_fecha_tentativa_termino(data.get('tipo_presupuesto', ''), licitacion.fecha_creacion.date())
+        print("antes de fecha tentativa")
+        if fecha_tentativa_termino:
+            try:
+                licitacion.fecha_tentativa_termino = fecha_tentativa_termino
+                print("fecha tentativa seteada")
+            except ValueError:
+                print("error en fecha tentativa")
+                fecha_tentativa_termino = None
+        else:
+            fecha_tentativa_termino = None
+            print("no hay fecha tentativa")
+        print("despues de fecha tentativa")
         licitacion.save()
           # Asignar financiamiento (ManyToMany)
         financiamiento_ids = data.get('financiamiento')
@@ -1606,6 +1575,7 @@ def exportar_todas_licitaciones_excel(request):
                 'ID': licitacion.id,
                 'N° Pedido': licitacion.numero_pedido,
                 'ID Mercado Público': licitacion.id_mercado_publico or '-',
+                'Fecha tentativa de término': licitacion.fecha_tentativa_termino.strftime('%d/%m/%Y') if licitacion.fecha_tentativa_termino else '',
                 'N° Cuenta': licitacion.numero_cuenta,
                 'Profesional a Cargo': licitacion.operador_user.get_full_name() if licitacion.operador_user else licitacion.operador_user.username if licitacion.operador_user else '',
                 'Tipo Licitación': str(licitacion.tipo_licitacion) if licitacion.tipo_licitacion else '',
