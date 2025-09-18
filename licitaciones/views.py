@@ -695,7 +695,6 @@ def bitacora_licitacion(request, licitacion_id):
         etapa_id = request.POST.get('etapa')
         etapa_nombre = request.POST.get('etapa_nombre')
         etapa_obj = None
-        print(etapa_id, etapa_nombre, licitacion.tipo_licitacion.nombre, TipoLicitacionEtapa.objects.filter(tipo_licitacion=licitacion.tipo_licitacion).values_list('etapa__nombre', flat=True))
         if etapa_id:
             try:
                 etapa_obj = Etapa.objects.get(id=etapa_id)
@@ -1389,23 +1388,16 @@ def agregar_proyecto(request):
             pedido_devuelto=data.get('pedido_devuelto', False),            # Agregar la licitación fallida si se proporcionó un ID
             licitacion_fallida_linkeada=Licitacion.objects.get(id=data.get('licitacion_fallida_linkeada')) if data.get('licitacion_fallida_linkeada') else None,
         )
-        print("antes de save")
         licitacion.save()
-        print("despues de save")
 
         fecha_tentativa_termino = get_fecha_tentativa_termino(data.get('tipo_presupuesto', ''), licitacion.fecha_creacion.date())
-        print("antes de fecha tentativa")
         if fecha_tentativa_termino:
             try:
                 licitacion.fecha_tentativa_termino = fecha_tentativa_termino
-                print("fecha tentativa seteada")
             except ValueError:
-                print("error en fecha tentativa")
                 fecha_tentativa_termino = None
         else:
             fecha_tentativa_termino = None
-            print("no hay fecha tentativa")
-        print("despues de fecha tentativa")
         licitacion.save()
           # Asignar financiamiento (ManyToMany)
         financiamiento_ids = data.get('financiamiento')
