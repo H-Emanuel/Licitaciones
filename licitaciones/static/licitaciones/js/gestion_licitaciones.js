@@ -299,41 +299,35 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     
     // --- UTILIDAD GLOBAL: Renderizar opciones de etapas en un <select> ---
-    function renderEtapasSelect(select, etapas, selectedId, moneda, monto_presupuestado) {
+    async function renderEtapasSelect(select, etapas, selectedId, moneda, monto_presupuestado) {
         if (!select) return;
+
         select.innerHTML = '<option value="">Seleccione una etapa</option>';
-        console.log(etapas);
-        const flujo_normal = (etapa) => {
+
+        const getFilteredStages = async () => {
+            if (!moneda || !monto_presupuestado) return etapas;
+            
+            try {
+            const currencyName = (window.monedasLicitacion?.find(m => m.id == moneda)?.nombre) || moneda;
+            const [valor, utm] = await Promise.all([obtenerValor(currencyName), obtenerValor('UTM')]);
+            const threshold = 500 * utm;
+
+            return etapas.filter(etapa => !([14, 15].includes(etapa.id) && parseFloat(monto_presupuestado) * valor < threshold));
+            } catch (error) {
+            console.error('Error al obtener valores de divisas. Se mostrarán todas las etapas.', error);
+            return etapas;
+            }
+        };
+
+        const filteredEtapas = await getFilteredStages();
+
+        filteredEtapas.forEach(etapa => {
             const opt = document.createElement('option');
             opt.value = etapa.id;
             opt.textContent = etapa.nombre;
-            if (etapa.id === selectedId) opt.selected = true;
+            opt.selected = etapa.id === selectedId;
             select.appendChild(opt);
-        };
-        if (moneda && monto_presupuestado){
-            moneda = (window.monedasLicitacion || []).find(m => m.id == moneda)?.nombre || moneda;
-            monto_presupuestado = parseFloat(monto_presupuestado);
-            obtenerValor(moneda)
-            .then( valor => obtenerValor('UTM')
-                .then( utm => {
-                        etapas.forEach(etapa => {
-                        
-                        if (!((etapa.id === 14 || etapa.id === 15) && monto_presupuestado*valor < 500 * utm)){
-                            flujo_normal(etapa);
-                        }
-                    });
-                })
-                .catch(
-                    () => {etapas.forEach(etapa => flujo_normal(etapa));}
-                )
-            )
-            .catch(
-                () => {etapas.forEach(etapa => flujo_normal(etapa))}
-            );
-        }
-        else {
-            etapas.forEach(etapa => flujo_normal(etapa))
-        }
+        });
     }
 
     // --- UTILIDAD GLOBAL: Filtrar etapas por tipo de licitación ---
@@ -606,7 +600,7 @@ document.addEventListener("DOMContentLoaded", function () {
         let etapasFiltradas = getEtapasPorTipo(tipoLicitacionId);        // Etapa: preseleccionar la etapa de la licitación
         let etapaSeleccionada = '';
         if (datos && datos.etapa) etapaSeleccionada = datos.etapa;
-        if (datos.moneda && datos.monto_presupuestado && !etapaSeleccionada && etapasFiltradas.length > 0) {
+        if (datos.moneda && datos.monto_presupuestado && etapasFiltradas.length > 0) {
             renderEtapasSelect(etapaSelect, etapasFiltradas, etapaSeleccionada, datos.moneda, datos.monto_presupuestado);
         }
         else {
