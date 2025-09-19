@@ -51,10 +51,52 @@ async function asignarTipoPresupuesto() {
     }
 }
 
+// --- UTILIDAD GLOBAL: Renderizar opciones de etapas en un <select> ---
+async function renderEtapasSelect(select, etapas, selectedId, moneda, monto_presupuestado) {
+    if (!select) return;
+
+    select.innerHTML = '<option value="">Seleccione una etapa</option>';
+
+    const getFilteredStages = async () => {
+        if (!moneda || !monto_presupuestado) return etapas;
+        
+        try {
+        const currencyName = (window.monedasLicitacion?.find(m => m.id == moneda)?.nombre) || moneda;
+        const [valor, utm] = await Promise.all([obtenerValor(currencyName), obtenerValor('UTM')]);
+        const threshold = 500 * utm;
+
+        return etapas.filter(etapa => !([14, 15].includes(etapa.id) && parseFloat(monto_presupuestado) * valor < threshold));
+        } catch (error) {
+        console.error('Error al obtener valores de divisas. Se mostrarán todas las etapas.', error);
+        return etapas;
+        }
+    };
+
+    const filteredEtapas = await getFilteredStages();
+
+    filteredEtapas.forEach(etapa => {
+        const opt = document.createElement('option');
+        opt.value = etapa.id;
+        opt.textContent = etapa.nombre;
+        opt.selected = etapa.id === selectedId;
+        select.appendChild(opt);
+    });
+}
+
+// --- UTILIDAD GLOBAL: Filtrar etapas por tipo de licitación ---
+function getEtapasPorTipo(tipoId) {
+    if (!tipoId || !window.tiposLicitacionEtapaRaw || !window.etapasLicitacion) return window.etapasLicitacion || [];
+    const ids = (window.tiposLicitacionEtapaRaw[tipoId] || []);
+    if (!ids.length) return window.etapasLicitacion || [];
+    // Ordenar según el orden definido en la relación
+    return window.etapasLicitacion.filter(e => ids.includes(e.id));
+}
+
 const ids = ['monedaSelect', 'montoPresupuestadoInput'];
 ids.forEach(id => {
     document.getElementById(id).addEventListener('change', function() {
         asignarTipoPresupuesto();
+        renderEtapasSelect(document.getElementById('etapaSelect'), getEtapasPorTipo(document.getElementById('tipoLicitacionSelect').value), null, document.getElementById('monedaSelect').value, document.getElementById('montoPresupuestadoInput').value);
     });
 });
 
@@ -296,47 +338,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 sessionStorage.removeItem('from_historial');
             }, 200);
         }
-    }
-    
-    // --- UTILIDAD GLOBAL: Renderizar opciones de etapas en un <select> ---
-    async function renderEtapasSelect(select, etapas, selectedId, moneda, monto_presupuestado) {
-        if (!select) return;
-
-        select.innerHTML = '<option value="">Seleccione una etapa</option>';
-
-        const getFilteredStages = async () => {
-            if (!moneda || !monto_presupuestado) return etapas;
-            
-            try {
-            const currencyName = (window.monedasLicitacion?.find(m => m.id == moneda)?.nombre) || moneda;
-            const [valor, utm] = await Promise.all([obtenerValor(currencyName), obtenerValor('UTM')]);
-            const threshold = 500 * utm;
-
-            return etapas.filter(etapa => !([14, 15].includes(etapa.id) && parseFloat(monto_presupuestado) * valor < threshold));
-            } catch (error) {
-            console.error('Error al obtener valores de divisas. Se mostrarán todas las etapas.', error);
-            return etapas;
-            }
-        };
-
-        const filteredEtapas = await getFilteredStages();
-
-        filteredEtapas.forEach(etapa => {
-            const opt = document.createElement('option');
-            opt.value = etapa.id;
-            opt.textContent = etapa.nombre;
-            opt.selected = etapa.id === selectedId;
-            select.appendChild(opt);
-        });
-    }
-
-    // --- UTILIDAD GLOBAL: Filtrar etapas por tipo de licitación ---
-    function getEtapasPorTipo(tipoId) {
-        if (!tipoId || !window.tiposLicitacionEtapaRaw || !window.etapasLicitacion) return window.etapasLicitacion || [];
-        const ids = (window.tiposLicitacionEtapaRaw[tipoId] || []);
-        if (!ids.length) return window.etapasLicitacion || [];
-        // Ordenar según el orden definido en la relación
-        return window.etapasLicitacion.filter(e => ids.includes(e.id));
     }
 
     // Buscador CUANDO ESTE MAS COMPLETA LA TABLA CON DATOS CAMBIAR Y ACTUALIZAR
