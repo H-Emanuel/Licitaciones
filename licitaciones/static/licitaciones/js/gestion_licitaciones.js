@@ -78,7 +78,7 @@ async function renderEtapasSelect(select, etapas, selectedId, moneda, monto_pres
         const opt = document.createElement('option');
         opt.value = etapa.id;
         opt.textContent = etapa.nombre;
-        opt.selected = etapa.id === selectedId;
+        opt.selected = etapa.id === parseInt(selectedId);
         select.appendChild(opt);
     });
 }
@@ -96,7 +96,8 @@ const ids = ['monedaSelect', 'montoPresupuestadoInput'];
 ids.forEach(id => {
     document.getElementById(id).addEventListener('change', function() {
         asignarTipoPresupuesto();
-        renderEtapasSelect(document.getElementById('etapaSelect'), getEtapasPorTipo(document.getElementById('tipoLicitacionSelect').value), null, document.getElementById('monedaSelect').value, document.getElementById('montoPresupuestadoInput').value);
+        console.log(document.getElementById('etapaSelect').value);
+        renderEtapasSelect(document.getElementById('etapaSelect'), getEtapasPorTipo(document.getElementById('tipoLicitacionSelect').value), document.getElementById('etapaSelect').value, document.getElementById('monedaSelect').value, document.getElementById('montoPresupuestadoInput').value);
     });
 });
 
