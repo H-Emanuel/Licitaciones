@@ -56,19 +56,19 @@ async function renderEtapasSelect(select, etapas, selectedId, moneda, monto_pres
     if (!select) return;
 
     select.innerHTML = '<option value="">Seleccione una etapa</option>';
-
+    
     const getFilteredStages = async () => {
         if (!moneda || !monto_presupuestado) return etapas;
         
         try {
-        const currencyName = (window.monedasLicitacion?.find(m => m.id == moneda)?.nombre) || moneda;
-        const [valor, utm] = await Promise.all([obtenerValor(currencyName), obtenerValor('UTM')]);
-        const threshold = 500 * utm;
+            const currencyName = (window.monedasLicitacion?.find(m => m.id == moneda)?.nombre) || moneda;
+            const [valor, utm] = await Promise.all([obtenerValor(currencyName), obtenerValor('UTM')]);
+            const threshold = 500 * utm;
 
-        return etapas.filter(etapa => !([14, 15].includes(etapa.id) && parseFloat(monto_presupuestado) * valor < threshold));
+            return etapas.filter(etapa => !([14,15,16].includes(etapa.id) && parseFloat(monto_presupuestado) * valor < threshold));
         } catch (error) {
-        console.error('Error al obtener valores de divisas. Se mostrarán todas las etapas.', error);
-        return etapas;
+            console.error('Error al obtener valores de divisas. Se mostrarán todas las etapas.', error);
+            return etapas;
         }
     };
 
@@ -95,8 +95,12 @@ function getEtapasPorTipo(tipoId) {
 const ids = ['monedaSelect', 'montoPresupuestadoInput'];
 ids.forEach(id => {
     document.getElementById(id).addEventListener('change', function() {
+        const hasValues = ids.every(id => {
+            const el = document.getElementById(id);
+            return el && el.value.trim() !== '';
+        });
+        if (!hasValues) return;
         asignarTipoPresupuesto();
-        console.log(document.getElementById('etapaSelect').value);
         renderEtapasSelect(document.getElementById('etapaSelect'), getEtapasPorTipo(document.getElementById('tipoLicitacionSelect').value), document.getElementById('etapaSelect').value, document.getElementById('monedaSelect').value, document.getElementById('montoPresupuestadoInput').value);
     });
 });
@@ -147,8 +151,8 @@ async function reabrirLicitacion(idProyecto, fallida = false) {
                         etapasLicitacion = dataEtapas.etapas || [];
                         
                         // Mostrar información adicional si se detecta que debe saltar etapa
-                        if (dataEtapas.debe_saltar_consejo) {
-                            console.log(`Licitación ${licitacionId}: Saltando etapa de Aprobación del Consejo Municipal (${dataEtapas.moneda}: ${dataEtapas.monto})`);
+                        if (dataEtapas.debe_saltar_etapas) {
+                            console.log(`Licitación ${licitacionId}: Saltando etapas (${dataEtapas.moneda}: ${dataEtapas.monto})`);
                         }
                     }
                     const etapasHabilitadas = etapasLicitacion.filter(e => !e.inhabilitada);
@@ -2407,7 +2411,7 @@ async function abrirModalCronologia(licitacionId) {
                 etapasLicitacion = dataEtapas.etapas || [];
                 
                 // Mostrar información adicional si se detecta que debe saltar etapa
-                if (dataEtapas.debe_saltar_consejo) {
+                if (dataEtapas.debe_saltar_etapas) {
                     console.log(`Licitación ${licitacionId}: Saltando etapa de Aprobación del Consejo Municipal (${dataEtapas.moneda}: ${dataEtapas.monto})`);
                 }
             }

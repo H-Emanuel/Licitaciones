@@ -1103,7 +1103,7 @@ def etapas_licitacion_api(request, licitacion_id):
     
     return JsonResponse({
         'etapas': etapas_data,
-        'debe_saltar_consejo': len(licitacion.get_saltar_etapas()) > 0,
+        'debe_saltar_etapas': len(licitacion.get_saltar_etapas()) > 0,
         'moneda': licitacion.moneda.nombre if licitacion.moneda else None,
         'monto': float(licitacion.monto_presupuestado) if licitacion.monto_presupuestado else None
     })
@@ -1187,7 +1187,7 @@ def guardar_observacion_operador(request, licitacion_id):
             nombre=archivo.name
         )
     nueva_etapa = None
-    # Usar las etapas habilitadas (excluyendo aprobación del consejo si aplica)
+    # Usar las etapas habilitadas (excluyendo etapas saltadas si aplica)
     etapas_habilitadas = licitacion.get_etapas_habilitadas()
     etapas_tipo = [rel.etapa for rel in etapas_habilitadas]
     

@@ -229,22 +229,21 @@ class Licitacion(models.Model):
 
     def get_saltar_etapas(self):
         """
-        Determina si esta licitación debe saltar la etapa de 'Aprobación del Concejo Municipal'
-        cuando tiene moneda UF y monto menor a 500
+        Determina si esta licitación debe saltar las etapas 'Solicitud de comisión de régimen interno', 'Recepción de documento de régimen interno' y 'Aprobación del concejo municipal'
+        cuando el monto es menor a 500 utm
         """
         saltar_etapas = []
-        if not self.moneda or not self.monto_presupuestado:
-            return saltar_etapas
         
         monedas = {'uf': 39156.08, 'dolar': 965.64, 'dólar': 965.64, 'usd': 965.64, 'euro': 1125.59, 'eur': 1125.59, 'utm': 68647, 'clp': 1}
-        # saltar etapas solicitud de comision de regimen interno y recepcion de documento de regimen interno segun monto presupuestado
+        # saltar etapas solicitud de comision de regimen interno, recepcion de documento de regimen interno y aprobacion del concejo municipal segun monto presupuestado
         try:
-            if monedas[self.moneda.nombre.lower()]*float(self.monto_presupuestado)/monedas['utm'] < 500:
-                saltar_etapas.append((14, 15))
+            if monedas[self.moneda.nombre.lower()]*float(self.monto_presupuestado) < 500 * monedas['utm']:
+                saltar_etapas.append((14, 16))
             return saltar_etapas
         except (ValueError, TypeError):
             # Si no se puede convertir a número, no saltar la aprobación
             return saltar_etapas
+        return saltar_etapas
 
     def get_etapas_habilitadas(self):
         """
