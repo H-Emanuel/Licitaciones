@@ -279,7 +279,6 @@ class Licitacion(models.Model):
             
             for e_inicio, e_fin in saltar_etapas:
                 if rel.etapa.id in range(e_inicio, e_fin + 1):
-                    print(rel.etapa.id, e_inicio, e_fin)
                     etapa_info['inhabilitada'] = True
                 
             etapas_con_info.append(etapa_info)
