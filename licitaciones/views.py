@@ -744,7 +744,7 @@ def bitacora_licitacion(request, licitacion_id):
 
         fecha_disponibilidad_presupuestaria = request.POST.get('fecha_disponibilidad_presupuestaria', '').strip()
 
-        fecha_publicación_mercado_publico = request.POST.get('fecha_publicacion_mercado_publico', '').strip()
+        fecha_publicacion_mercado_publico = request.POST.get('fecha_publicacion_mercado_publico', '').strip()
         fecha_cierre_ofertas_mercado_publico = request.POST.get('fecha_cierre_ofertas_mercado_publico', '').strip()
 
         fecha_solicitud_regimen_interno = request.POST.get('fecha_solicitud_regimen_interno', '').strip()
@@ -880,9 +880,9 @@ def bitacora_licitacion(request, licitacion_id):
             licitacion.fecha_disponibilidad_presupuestaria = fecha_disponibilidad_presupuestaria
         
         if etapa_obj and 'publicación mercado público' in etapa_obj.nombre.lower().strip():
-            if fecha_publicación_mercado_publico and licitacion.fecha_publicación_mercado_publico != datetime.strptime(fecha_publicación_mercado_publico, '%Y-%m-%d').date():
-                valores['Fecha de publicación en mercado público'] = datetime.strptime(fecha_publicación_mercado_publico, '%Y-%m-%d').strftime('%d-%m-%Y')
-                licitacion.fecha_publicación_mercado_publico = fecha_publicación_mercado_publico
+            if fecha_publicacion_mercado_publico and licitacion.fecha_publicacion_mercado_publico != datetime.strptime(fecha_publicacion_mercado_publico, '%Y-%m-%d').date():
+                valores['Fecha de publicación en mercado público'] = datetime.strptime(fecha_publicacion_mercado_publico, '%Y-%m-%d').strftime('%d-%m-%Y')
+                licitacion.fecha_publicacion_mercado_publico = fecha_publicacion_mercado_publico
             if fecha_cierre_ofertas_mercado_publico and licitacion.fecha_cierre_ofertas_mercado_publico != datetime.strptime(fecha_cierre_ofertas_mercado_publico, '%Y-%m-%d').date():
                 valores['Fecha de cierre de ofertas en mercado público'] = datetime.strptime(fecha_cierre_ofertas_mercado_publico, '%Y-%m-%d').strftime('%d-%m-%Y')
                 licitacion.fecha_cierre_ofertas_mercado_publico = fecha_cierre_ofertas_mercado_publico

@@ -65,7 +65,7 @@ async function renderEtapasSelect(select, etapas, selectedId, moneda, monto_pres
             const [valor, utm] = await Promise.all([obtenerValor(currencyName), obtenerValor('UTM')]);
             const threshold = 500 * utm;
 
-            return etapas.filter(etapa => !([11,14,15,16].includes(etapa.id) && parseFloat(monto_presupuestado) * valor < threshold));
+            return etapas.filter(etapa => !([11,14,15,16].includes(etapa.id) && parseFloat(monto_presupuestado) * valor > threshold));
         } catch (error) {
             console.error('Error al obtener valores de divisas. Se mostrarán todas las etapas.', error);
             return etapas;
