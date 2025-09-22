@@ -229,7 +229,7 @@ class Licitacion(models.Model):
 
     def get_saltar_etapas(self):
         """
-        Determina si esta licitación debe saltar las etapas 'Solicitud de comisión de régimen interno', 'Recepción de documento de régimen interno' y 'Aprobación del concejo municipal'
+        Determina si esta licitación debe saltar las etapas 'Solicitud de comisión de régimen interno', 'Recepción de documento de régimen interno' y 'Aprobación del consejo'
         cuando el monto es menor a 500 utm
         """
         saltar_etapas = []
@@ -238,6 +238,7 @@ class Licitacion(models.Model):
         # saltar etapas solicitud de comision de regimen interno, recepcion de documento de regimen interno y aprobacion del concejo municipal segun monto presupuestado
         try:
             if monedas[self.moneda.nombre.lower()]*float(self.monto_presupuestado) < 500 * monedas['utm']:
+                saltar_etapas.append((11, 11))
                 saltar_etapas.append((14, 16))
             return saltar_etapas
         except (ValueError, TypeError):
@@ -248,7 +249,7 @@ class Licitacion(models.Model):
     def get_etapas_habilitadas(self):
         """
         Retorna las etapas habilitadas para esta licitación,
-        excluyendo la aprobación del consejo municipal si aplica
+        excluyendo las etapas saltadas si aplica
         """
         # Obtener todas las etapas del tipo de licitación a través de la tabla intermedia
         etapas_tipo = list(self.tipo_licitacion.etapas_rel.order_by('orden').all())
@@ -278,6 +279,7 @@ class Licitacion(models.Model):
             
             for e_inicio, e_fin in saltar_etapas:
                 if rel.etapa.id in range(e_inicio, e_fin + 1):
+                    print(rel.etapa.id, e_inicio, e_fin)
                     etapa_info['inhabilitada'] = True
                 
             etapas_con_info.append(etapa_info)
