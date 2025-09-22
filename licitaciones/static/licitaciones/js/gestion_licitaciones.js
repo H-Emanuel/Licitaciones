@@ -2359,9 +2359,8 @@ async function abrirModalCronologia(licitacionId) {
             // Buscar en todas las filas de la tabla por el ID de licitación
             const todasLasFilas = document.querySelectorAll('.tabla-proyectos tbody tr');
             for (const filaTabla of todasLasFilas) {
-                // Buscar si esta fila contiene algún botón con el ID de licitación
-                const botonEnFila = filaTabla.querySelector(`[data-id='${licitacionId}']`);
-                if (botonEnFila) {
+                // Verificar si el atributo data-id del <tr> coincide con el licitacionId
+                if (String(filaTabla.getAttribute('data-id')) === String(licitacionId)) {
                     const tipoCell = filaTabla.querySelector('[data-campo="tipo_licitacion"]');
                     if (tipoCell) {
                         tipoLicitacionNombre = tipoCell.innerText.trim();
@@ -2377,6 +2376,7 @@ async function abrirModalCronologia(licitacionId) {
                 const resLicitacion = await fetch(`/api/licitacion/${licitacionId}/`);
                 if (resLicitacion.ok) {
                     const dataLicitacion = await resLicitacion.json();
+                    console.log(dataLicitacion); // Debug
                     if (dataLicitacion.tipo_licitacion && dataLicitacion.tipo_licitacion.nombre) {
                         tipoLicitacionNombre = dataLicitacion.tipo_licitacion.nombre;
                     }

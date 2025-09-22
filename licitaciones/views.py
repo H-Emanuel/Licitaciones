@@ -756,6 +756,9 @@ def bitacora_licitacion(request, licitacion_id):
         accion_etapa = request.POST.get('accion_etapa')
         if request.POST.get('redestinar', '')=='true' and etapa_obj:
             valores['Redestinado'] = str(etapa_nombre)
+            print(licitacion.tipo_licitacion.nombre.lower().strip())
+            if licitacion.tipo_licitacion and 'trato directo' in licitacion.tipo_licitacion.nombre.lower().strip():
+                licitacion.fecha_disponibilidad_presupuestaria = None
             licitacion.fecha_evaluacion_cotizacion = None
             licitacion.monto_estimado_cotizacion = None
             licitacion.empresa_adjudicacion = None
