@@ -3,6 +3,7 @@ body {
     margin: 0;
     background: #F5F7FA;
     min-height: 100vh;
+    cursor: default;
 }
 
 @keyframes spin {
@@ -12,7 +13,6 @@ body {
 
 .titulo {
     text-align: center;
-    margin: 30px 0 20px 0;
     font-size: 2.5rem;
     color: #0275d8;
     letter-spacing: 2px;
@@ -132,15 +132,6 @@ body {
     100% {
         opacity: 1;
         transform: scale(1);
-    }
-}
-
-@keyframes rotate {
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
     }
 }
 
@@ -874,26 +865,22 @@ body {
 }
 
 .main-content {
-    padding: 1vh 1vw !important;
+    margin-left: 0;
+    padding: 2vh 2vw !important;
     background: #F5F7FA !important;
     transition: margin-left 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
-@media (max-width: 2000px) {
-    .main-content {
-        margin-left: 250px;
-        padding: 1vh 2vw !important;
+
+@media (max-width: 1200px) {
+    .m-sidebar {
+        margin-left: 150px !important;
     }
 }
 
-@media (max-width: 900px) {
-    .sidebar .sidebar-user,
-    .sidebar .sidebar-link span {
-        display: none !important;
-    }
-    .sidebar .sidebar-link {
-        justify-content: center;
-    }
+.m-sidebar {
+    margin-left: 250px;
 }
+
 @media (max-width: 700px) {
     .tabla-proyectos {
         font-size: 0.89em;
@@ -925,14 +912,14 @@ body {
     .tabla-proyectos {
         font-size: 0.93em;
     }
-    .tabla-proyectos th:nth-child(4),
-    .tabla-proyectos td:nth-child(4),
-    .tabla-proyectos th:nth-child(7),
-    .tabla-proyectos td:nth-child(7),
-    .tabla-proyectos th:nth-child(10),
-    .tabla-proyectos td:nth-child(10),
-    .tabla-proyectos th:nth-child(11),
-    .tabla-proyectos td:nth-child(11) {
+    .tabla-proyectos th:nth-child(6),
+    .tabla-proyectos td:nth-child(6),
+    .tabla-proyectos th:nth-child(9),
+    .tabla-proyectos td:nth-child(9),
+    .tabla-proyectos th:nth-child(12),
+    .tabla-proyectos td:nth-child(12),
+    .tabla-proyectos th:nth-child(13),
+    .tabla-proyectos td:nth-child(13) {
         display: none;
     }
 }
@@ -964,12 +951,12 @@ body {
     .tabla-proyectos th, .tabla-proyectos td {
         padding: 4px 1px;
     }
-    .tabla-proyectos th:nth-child(2),
-    .tabla-proyectos td:nth-child(2),
-    .tabla-proyectos th:nth-child(5),
-    .tabla-proyectos td:nth-child(5),
-    .tabla-proyectos th:nth-child(8),
-    .tabla-proyectos td:nth-child(8) {
+    .tabla-proyectos th:nth-child(3),
+    .tabla-proyectos td:nth-child(3),
+    .tabla-proyectos th:nth-child(7),
+    .tabla-proyectos td:nth-child(7),
+    .tabla-proyectos th:nth-child(10),
+    .tabla-proyectos td:nth-child(10) {
         display: none;
     }
     .max-width-700 {
@@ -988,21 +975,6 @@ body {
     display: flex;
     flex-direction: column;
     gap: 10px;
-}
-
-@media (max-width: 900px) {
-    .sidebar .sidebar-user,
-    .sidebar .sidebar-link span {
-        display: none !important;
-    }
-    .sidebar .sidebar-link {
-        justify-content: center;
-    }
-}
-@media (max-width: 600px) {
-    .sidebar .sidebar-link {
-        padding: 10px 0 !important;
-    }
 }
 
 
@@ -1029,11 +1001,7 @@ body {
     white-space: normal;
 }
 .tabla-proyectos th:first-child,
-.tabla-proyectos td:first-child, 
-.tabla-proyectos th:nth-child(4),
-.tabla-proyectos td:nth-child(4), 
-.tabla-proyectos th:last-child,
-.tabla-proyectos td:last-child 
+.tabla-proyectos td:first-child
 {
     white-space: nowrap;
 }
@@ -1805,7 +1773,7 @@ body {
 }
 
 .btn-close {
-    position: fixed;
+    position: absolute;
     top: 10px;
     right: 10px;
     cursor: pointer;
@@ -1815,7 +1783,6 @@ body {
     border-radius: 50%;
     width: 32px;
     height: 32px;
-    display: flex;
     text-align: center;
     justify-content: center;
     background: rgba(255, 255, 255, 0.2);
@@ -2650,7 +2617,7 @@ td[data-col="tipo_falla"] {
     background: #fff;
     border-radius: 12px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.12);
-    padding:30px;
+    padding: 3px;
     border-radius:12px;
     min-width:500px;
     max-width:95vw;
@@ -2814,13 +2781,18 @@ td[data-col="tipo_falla"] {
     overflow: hidden;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+}
+
+.btn-moderno:hover {
+    background: #e6e6e6;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }
 
 /* Botón de exportar Excel */
 .btn.exportar,
 .btn-moderno.btn-exportar {
-    background: linear-gradient(135deg, #217346 0%, #0f5132 100%);
+    background: linear-gradient(135deg, #217346 0%, #00ab5b 100%);
     color: white;
     border: none;
     box-shadow: 0 6px 20px rgba(33, 115, 70, 0.3);
@@ -2828,7 +2800,7 @@ td[data-col="tipo_falla"] {
 
 .btn.exportar:hover,
 .btn-moderno.btn-exportar:hover {
-    background: linear-gradient(135deg, #1e6b42 0%, #0d4529 100%);
+    background: linear-gradient(135deg, #1e6b42 0%, #00a256 100%);
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(33, 115, 70, 0.4);
 }
@@ -2952,7 +2924,6 @@ td[data-campo="iniciativa"] {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    cursor: help;
 }
 
 td[data-campo="iniciativa"]:hover {
@@ -2998,10 +2969,8 @@ td[data-campo="iniciativa"][title]:hover::before {
 td[data-campo="etapa"] {
     max-width: 180px;
     min-width: 100px;
-    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    cursor: help;
 }
 
 td[data-campo="etapa"]:hover {

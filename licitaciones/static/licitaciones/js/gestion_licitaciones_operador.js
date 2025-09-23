@@ -1,45 +1,55 @@
-// Funcionalidad del botón toggle para mostrar/ocultar acciones
+// FUNCIONALIDAD DE PRUEBA: ACCIONES DINAMICAS
+function initToggleAccionesDinamicas() {
+    const checkboxes = document.querySelectorAll('tbody input[type="checkbox"][class="licitacion-check"]');
+    const btnsAction = document.querySelectorAll('.btn-toggle-acciones');
+    const toggleAcciones = document.querySelector('.toggle-acciones');
+    const cerrarLicitacion = document.querySelector('.cerrar-licitacion-fila');
+    const modalCerrarLicitacion = document.getElementById('modalCerrarLicitacion');
 
-
-
-document.addEventListener('DOMContentLoaded', function() {
-    // Función para truncar texto y agregar tooltip
-    function applyTruncation(selector, maxLength) {
-        const cells = document.querySelectorAll(selector);
-        cells.forEach(cell => {
-            const originalText = cell.textContent.trim();
-            if (originalText.length > maxLength) {
-                const truncatedText = originalText.slice(0, maxLength) + '...';
-                cell.innerHTML = `<span class='truncated-text'>${truncatedText}</span>`;
-                cell.setAttribute('title', originalText);
-                cell.classList.add('cell-truncate');
-
-                // Mostrar tooltip al hacer clic
-                cell.addEventListener('click', function() {
-                    const tooltip = document.createElement('div');
-                    tooltip.className = 'tooltip';
-                    tooltip.textContent = originalText;
-                    document.body.appendChild(tooltip);
-
-                    const rect = cell.getBoundingClientRect();
-                    tooltip.style.left = `${rect.left}px`;
-                    tooltip.style.top = `${rect.bottom + 5}px`;
-
-                    // Eliminar tooltip al hacer clic fuera
-                    document.addEventListener('click', function removeTooltip(event) {
-                        if (!tooltip.contains(event.target)) {
-                            tooltip.remove();
-                            document.removeEventListener('click', removeTooltip);
-                        }
-                    });
-                });
+    function handleSingleSelection(e) {
+        if (e.target.checked) {
+            checkboxes.forEach(cb => {
+                if (cb !== e.target) {
+                    cb.checked = false;
+                }
+            });
+            toggleAcciones.style.display="flex";
+            setTimeout(() => {
+                toggleAcciones.style.transform = "translateX(0)";
+            }, 1);
+            btnsAction.forEach(btnAction => {btnAction.dataset.id=e.target.value;});
+            if (e.target.parentNode.parentNode !== null && e.target.parentNode.parentNode.classList.contains("lic-cerrada")){
+                cerrarLicitacion.title="Licitación ya cerrada";
+                cerrarLicitacion.display="none";
+                cerrarLicitacion.disabled=true;
+            } else {
+                cerrarLicitacion.title="Cerrar licitación";
+                cerrarLicitacion.querySelector('.icono-accion').innerHTML="🔒";
+                cerrarLicitacion.disabled=false;
+                // Mostrar modal
+                if (modalCerrarLicitacion) {
+                    cerrarLicitacion.addEventListener('click', () => {modalCerrarLicitacion.style.display = 'flex'});
+                }
             }
-        });
+        } else {
+            toggleAcciones.style.transform = "translateX(115%)";
+        }
     }
 
-    // Aplicar truncado inmediatamente después de que el DOM esté cargado/TRUNCADO
-    applyTruncation('td[data-col="etapa"]', 30);
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', handleSingleSelection);
+    });
+}
 
+// Inicializar cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, inicializando toggle...');
+    setTimeout(() => {
+        initToggleAccionesDinamicas();
+    }, 100);
+});
+
+document.addEventListener('DOMContentLoaded', function() {
     // Buscador - solo si existe (en operador no hay buscador)
     const buscador = document.querySelector('.buscador');
     if (buscador) {
@@ -197,11 +207,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (tipoFallidaContainer) {
                 tipoFallidaContainer.style.display = 'none';
             }
-            
-            // Mostrar modal
-            if (modalCerrarLicitacion) {
-                modalCerrarLicitacion.style.display = 'flex';
-            }
         });
     });
 
@@ -238,79 +243,79 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Enviar formulario de cerrar licitación
+    
+
+    // Enviar cierre de licitación vía AJAX
     if (formCerrarLicitacion) {
-        formCerrarLicitacion.addEventListener('submit', async function(e) {
+        formCerrarLicitacion.onsubmit = async function(e) {
             e.preventDefault();
             
             const licitacionId = document.getElementById('cerrarLicitacionId').value;
-            const texto = document.getElementById('cerrarLicitacionTexto').value.trim();
-            const licitacionFallida = licitacionFallidaCheckbox ? licitacionFallidaCheckbox.checked : false;
-            const tipoFallida = document.getElementById('tipoFallidaSelect').value;
+            const texto = document.getElementById('cerrarLicitacionTexto').value;
+            const licitacionFallida = document.getElementById('licitacionFallidaCheckbox')?.checked;
+            const tipoFallida = tipoFallidaSelect ? tipoFallidaSelect.value : false;
             
-            if (!texto) {
-                alert('Debe ingresar un motivo para cerrar la licitación');
+            if (!texto.trim()) {
+                alert('Debe especificar el motivo del cierre de la licitación.');
                 return;
             }
-            
+
+            // Validar que si está marcada como fallida, se haya seleccionado un tipo
             if (licitacionFallida && !tipoFallida) {
-                alert('Debe seleccionar un tipo de falla');
+                alert('Debe seleccionar el tipo de falla para una licitación fallida.');
                 return;
             }
+            
+            // Confirmación antes de cerrar
+            const confirmMessage = `¿Está seguro que desea cerrar esta licitación?\n\nEsta acción cambiará el estado a "${licitacionFallida ? tipoFallida ? tipoFallida.toUpperCase() : 'FALLIDA' : 'CERRADA'}" y se registrará en la bitácora.`;
+            if (!confirm(confirmMessage)) {
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('texto', texto);
+            
+            if (licitacionFallida) {
+                formData.append('licitacion_fallida', 'on');
+                if (tipoFallida) {
+                    formData.append('tipo_fallida', tipoFallida);
+                }
+            }
+            
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
             
             try {
-                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
-                const res = await fetch('/api/cerrar_licitacion/', {
+                const res = await fetch(`/api/licitacion/${licitacionId}/cerrar/`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrftoken
-                    },
-                    body: JSON.stringify({
-                        licitacion_id: licitacionId,
-                        texto: texto,
-                        licitacion_fallida: licitacionFallida,
-                        tipo_fallida: tipoFallida
-                    })
+                    headers: { 'X-CSRFToken': csrftoken },
+                    body: formData
                 });
-                
+                  
                 if (res.ok) {
-                    const data = await res.json();
-                    if (data.success) {
-                        // Actualizar la fila en la tabla
-                        const fila = document.querySelector(`button.cerrar-licitacion-fila[data-id='${licitacionId}']`)?.closest('tr');
-                        if (fila) {
-                            // Actualizar estado en la columna 4 (Status)
-                            const estadoCell = fila.querySelector('td:nth-child(4) .estado-badge');
-                            if (estadoCell) {
-                                estadoCell.textContent = 'CERRADA';
-                                estadoCell.className = 'estado-badge estado-cerrada';
-                            }
-                            
-                            // Deshabilitar botón de cerrar
-                            const btnCerrarLicitacion = fila.querySelector('button.cerrar-licitacion-fila');
-                            if (btnCerrarLicitacion) {
-                                btnCerrarLicitacion.disabled = true;
-                                btnCerrarLicitacion.title = 'Licitación ya cerrada';
-                                btnCerrarLicitacion.style.background = '#6c757d';
-                                btnCerrarLicitacion.style.color = '#dee2e6';
-                            }
+                    alert('Licitación cerrada correctamente.');
+                    modalCerrarLicitacion.style.display = 'none';
+                    gestionarOverflowBody();
+                    
+                    // Actualizar el estado en la tabla
+                    const fila = document.querySelector(`button.cerrar-licitacion-fila[data-id='${licitacionId}']`)?.closest('tr');
+                    if (fila) {
+                        const estadoCell = fila.querySelector('td .estado-badge');
+                        if (estadoCell) {
+                            estadoCell.textContent = 'CERRADA';
+                            estadoCell.className = 'estado-badge estado-cerrada';
                         }
-                        
-                        alert('Licitación cerrada exitosamente');
-                        modalCerrarLicitacion.style.display = 'none';
-                    } else {
-                        alert(data.message || 'Error al cerrar la licitación');
                     }
+                    location.reload();
                 } else {
-                    const data = await res.json();
-                    alert(data.message || 'Error al cerrar la licitación');
+                    const errorData = await res.json().catch(() => ({}));
+                    const errorMessage = errorData.error || 'Error al cerrar la licitación.';
+                    alert(errorMessage);
                 }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Error al cerrar la licitación');
+            } catch (err) {
+                console.error('Error al cerrar la licitación:', err);
+                alert('Error de red al cerrar la licitación.');
             }
-        });
+        };
     }
     
     // === SINCRONIZACIÓN DE HOVER ENTRE TABLA Y COLUMNA STICKY ===
@@ -350,87 +355,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // === FIN SINCRONIZACIÓN HOVER ===
-    
-    // toggle de acciones
-    console.log('DOM cargado - Inicializando toggle de acciones');
-    
-    const btnToggle = document.getElementById('btnToggleAcciones');
-    const accionesSticky = document.getElementById('accionesSticky');
-    
-    if (!btnToggle || !accionesSticky) {
-        console.error('No se encontraron los elementos del toggle');
-        return;
-    }
-    
-    console.log('Elementos encontrados - Configurando evento click');
-    let isVisible = false;
-    let isAnimating = false; // Prevenir clics durante animación
-    // Función para toggle
-    function toggleAcciones(e) {
-        // Prevenir clics múltiples durante animación
-        if (isAnimating) {
-            console.log('Animación en progreso, ignorando clic');
-            return;
-        }
-        
-        console.log('Toggle clicked! Estado actual:', isVisible);
-        
-        isVisible = !isVisible;
-        
-        // Obtener la referencia actual del botón después del replaceWith
-        const currentBtnToggle = document.getElementById('btnToggleAcciones');
-        
-        if (isVisible) {
-            isAnimating = true;
-            console.log('Mostrando columna de acciones...');
-            // Mostrar columna de acciones
-            accionesSticky.style.display = 'block';
-            setTimeout(() => {
-                accionesSticky.classList.add('show');
-                accionesSticky.classList.remove('hide');
-            }, 10);
-            
-            currentBtnToggle.classList.add('active');
-            currentBtnToggle.title = 'Ocultar Acciones';
-            currentBtnToggle.querySelector('.toggle-icon').textContent = '✕';
-            
-            // Permitir nuevos clics después de la animación
-            setTimeout(() => {
-                isAnimating = false;
-            }, 450);
-        } else {
-            isAnimating = true;
-            console.log('Ocultando columna de acciones...');
-            // Ocultar columna de acciones
-            accionesSticky.classList.add('hide');
-            accionesSticky.classList.remove('show');
-            
-            setTimeout(() => {
-                accionesSticky.style.display = 'none';
-                isAnimating = false; // Permitir nuevos clics
-            }, 400);
-            
-            currentBtnToggle.classList.remove('active');
-            currentBtnToggle.title = 'Mostrar Acciones';
-            currentBtnToggle.querySelector('.toggle-icon').textContent = '⚙️';
-        }
-    }
-        
-    // Limpiar eventos anteriores
-    btnToggle.replaceWith(btnToggle.cloneNode(true));
-    const newBtnToggle = document.getElementById('btnToggleAcciones');
-    newBtnToggle.addEventListener('click', toggleAcciones);
-    
-    console.log('Event listener configurado correctamente');
-    // Agregar evento al nuevo botón
-    newBtnToggle.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log('Click en botón toggle detectado');
-        toggleAcciones();
-    });
-    
-    console.log('Toggle de acciones inicializado correctamente');
 });
 window.etapasLicitacion = JSON.parse(document.getElementById('etapas-licitacion-data').textContent);
 window.tiposLicitacion = JSON.parse(document.getElementById('tipos-licitacion-data').textContent);

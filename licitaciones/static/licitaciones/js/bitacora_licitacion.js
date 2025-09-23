@@ -41,9 +41,6 @@ window.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-    
-    var textarea = document.querySelector('textarea[name="texto"]');
-    if (textarea) textarea.focus();
 
     // Botón para subir archivo
     const btnSubirArchivo = document.getElementById('btnSubirArchivo');
@@ -89,14 +86,16 @@ window.addEventListener('DOMContentLoaded', function() {
 
     // --- Observaciones Bitácora ---
     function showModalObservacion(bitacoraId, texto) {
-        const modal = document.getElementById('modalObservacion');
-        modal.style.display = 'flex';
+        const modalContainer = document.querySelector('.modal-container');
+        modalContainer.classList.add('active');
         document.getElementById('observacionBitacoraId').value = bitacoraId;
         document.getElementById('modalObservacionTexto').value = texto || '';
     }
     function closeModalObservacion() {
-        const modal = document.getElementById('modalObservacion');
-        modal.style.display = 'none';
+        const modalContainer = document.querySelector('.modal-container');
+        modalContainer.style.display = 'none';
+       
+        modalContainer.classList.remove('active');
         
         // Limpiar archivos del modal
         modalSelectedFiles = [];
@@ -147,23 +146,85 @@ window.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+
+    function showModalRedestinar(bitacoraId, texto) {
+        const modalContainer = document.querySelector('.modal-container');
+        modalContainer.classList.add('active');
+        document.getElementById('observacionBitacoraId').value = bitacoraId;
+        document.getElementById('modalObservacionTexto').value = texto || '';
+    }
+    function closeModalRedestinar() {
+        const modalContainer = document.querySelector('.modal-container');
+        modalContainer.style.display = 'none';
+       
+        modalContainer.classList.remove('active');
+        
+        // Limpiar archivos del modal
+        modalSelectedFiles = [];
+        if (modalArchivos) modalArchivos.value = '';
+        if (modalPreviewArchivos) modalPreviewArchivos.innerHTML = '';
+        
+        // Limpiar texto del modal
+        const modalTexto = document.getElementById('modalObservacionTexto');
+        if (modalTexto) modalTexto.value = '';
+    }
+
+    document.getElementById('btnModalRedestinar').onclick = showModalRedestinar;
+    document.getElementById('cerrarModalRedestinar').onclick = closeModalRedestinar;
+    document.getElementById('btnCancelarRedestinar').onclick = closeModalRedestinar;
+    const nombreEtapaActual = document.getElementById('nombreEtapaActual');
+    const formModalRedestinar = document.getElementById('formModalRedestinar');
+    if (formModalRedestinar) {
+        formModalRedestinar.onsubmit = function(e) {
+            e.preventDefault();
+            const form = formModalRedestinar;
+
+            let redestinar = document.createElement('input');
+            redestinar.type = 'hidden';
+            redestinar.name = 'redestinar';
+            redestinar.value = true;
+            form.appendChild(redestinar);
+            let accionEtapaInput = document.getElementById('accionEtapa');
+
+            accionEtapaInput = document.createElement('input');
+            accionEtapaInput.type = 'hidden';
+            accionEtapaInput.name = 'accion_etapa';
+            accionEtapaInput.id = 'accionEtapa';
+            accionEtapaInput.value = 'retreat';
+            form.appendChild(accionEtapaInput);
+            
+            // Agregar etapa actual si se está avanzando
+            if (nombreEtapaActual) {
+                let etapaInput = document.createElement('input');
+                etapaInput.type = 'hidden';
+                etapaInput.name = 'etapa_nombre';
+                etapaInput.value = 'Evaluación de ofertas';
+                form.appendChild(etapaInput);
+            }
+            form.submit();
+        };
+    }
+
     document.getElementById('cerrarModalObservacion').onclick = closeModalObservacion;
     document.getElementById('btnCancelarObservacion').onclick = closeModalObservacion;
-    document.getElementById('formObservacionBitacora').onsubmit = function(e) {
-        e.preventDefault();
-        const bitacoraId = document.getElementById('observacionBitacoraId').value;
-        const texto = document.getElementById('observacionTexto').value;
-        fetch(`/api/bitacora/${bitacoraId}/observacion/`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value },
-            body: JSON.stringify({ texto })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.ok) { closeModalObservacion(); location.reload(); }
-            else alert('Error al guardar observación');
-        });
-    };
+    const formObservacionBitacora = document.getElementById('formObservacionBitacora');
+    if (formObservacionBitacora){
+        formObservacionBitacora.onsubmit = function(e) {
+            e.preventDefault();
+            const bitacoraId = document.getElementById('observacionBitacoraId').value;
+            const texto = document.getElementById('observacionTexto').value;
+            fetch(`/api/bitacora/${bitacoraId}/observacion/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value },
+                body: JSON.stringify({ texto })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.ok) { closeModalObservacion(); location.reload(); }
+                else alert('Error al guardar observación');
+            });
+        };
+    }
 
     // Manejo del formulario del modal (separado)
     const formModalObservacion = document.getElementById('formModalObservacion');
@@ -183,7 +244,6 @@ window.addEventListener('DOMContentLoaded', function() {
                     formData.append('archivos', file);
                 });
             }
-            
             fetch(`/api/bitacora/${bitacoraId}/observacion/`, {
                 method: 'POST',
                 headers: { 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value },
@@ -261,7 +321,6 @@ window.addEventListener('DOMContentLoaded', function() {
     const panelObservacion = document.getElementById('panelObservacionOperador');
     const togglePanelBtn = document.getElementById('togglePanelObservacion');
     const contenidoPanel = document.getElementById('contenidoPanelObservacion');
-    const formObservacionBitacora = document.getElementById('formObservacionBitacora');
     
     // Toggle del panel - Inicialmente cerrado
     if (togglePanelBtn && contenidoPanel) {
@@ -314,8 +373,8 @@ window.addEventListener('DOMContentLoaded', function() {
     
     // Funcionalidad de avanzar etapa
     const btnAvanzarEtapa = document.getElementById('btnAvanzarEtapa');
-    const nombreEtapaActual = document.getElementById('nombreEtapaActual');
     const accionEtapa = document.getElementById('accionEtapa');
+    const btnRetrocederEtapa = document.getElementById('btnRetrocederEtapa');
     
     // Variable para guardar la etapa original (antes de hacer cambios)
     let etapaOriginal = null;
@@ -327,24 +386,209 @@ window.addEventListener('DOMContentLoaded', function() {
             nombre: nombreEtapaActual.textContent.trim()
         };
     }
-    
-    // Función para mostrar/ocultar campo ID Mercado Público
-    function toggleIdMercadoPublico() {
-        const idMercadoPublicoContainer = document.getElementById('idMercadoPublicoContainer');
-        const idMercadoPublicoInput = document.getElementById('idMercadoPublicoInput');
+
+    function checkRequired() {
+        const campos = document.querySelectorAll("input.campoEtapa");
+        for (const campo of campos) {
+            if (!campo.parentNode.classList.contains('hidden') && !campo.parentNode.parentNode.classList.contains('hidden')) {
+                if (campo.value === "") {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    const tipoSolicitud = document.getElementById('tipoSolicitudSelect');
+    tipoSolicitud.onchange = () => {
+        if (tipoSolicitud.value === '1') {
+            document.querySelector('.evaluacion-tecnica').classList.remove('hidden');
+            document.querySelector('.comision-evaluadora').classList.add('hidden');
+        } else if (tipoSolicitud.value === '2') {
+            document.querySelector('.evaluacion-tecnica').classList.add('hidden');
+            document.querySelector('.comision-evaluadora').classList.remove('hidden');
+        } else {
+            document.querySelector('.evaluacion-tecnica').classList.add('hidden');
+            document.querySelector('.comision-evaluadora').classList.add('hidden');
+        }
+    };
+
+    function toggleEvaluacionCotizacion() {
+        const evaluacionCotizacion = document.getElementById('evaluacionCotizacionContainer');
+        if (!evaluacionCotizacion || !nombreEtapaActual) return;
+        const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
+        // Mostrar campo si la etapa es "evaluación de la cotización"
+        if (etapaActualTexto === 'evaluacion de la cotizacion' || etapaActualTexto === 'evaluación de la cotización') {
+            evaluacionCotizacion.classList.remove('hidden');
+        } else {
+            evaluacionCotizacion.classList.add('hidden');
+        }
+    }
+
+    function toggleDecretoIntencionCompra() {
+        const decretoIntencionCompra = document.getElementById('decretoIntencionCompraContainer');
+        if (!decretoIntencionCompra || !nombreEtapaActual) return;
+        const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
+        // Mostrar campo si la etapa es "Decreto de intención de compra"
+        if (etapaActualTexto === 'decreto de intencion de compra' || etapaActualTexto === 'decreto de intención de compra') {
+            decretoIntencionCompra.classList.remove('hidden');
+        } else {
+            decretoIntencionCompra.classList.add('hidden');
+        }
+    }
+
+
+    function toggleComisionBase() {
+        const comisionBase = document.getElementById('comisionBaseContainer');
+        if (!comisionBase || !nombreEtapaActual) return;
+        const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
+        // Mostrar campo si la etapa es "Decreto de intención de compra"
+        if (etapaActualTexto === 'comision de base' || etapaActualTexto === 'comisión de base') {
+            comisionBase.classList.remove('hidden');
+        } else {
+            comisionBase.classList.add('hidden');
+        }
+    }
+
+    function togglePublicacionMercadoPublico() {
+        const publicacionMercadoPublico = document.getElementById('publicacionMercadoPublicoContainer');
+        if (!publicacionMercadoPublico || !nombreEtapaActual) return;
+        const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
+        // Mostrar campo si la etapa es "Decreto de intención de compra"
+        if (etapaActualTexto === 'publicacion mercado publico' || etapaActualTexto === 'publicación mercado público') {
+            publicacionMercadoPublico.classList.remove('hidden');
+        } else {
+            publicacionMercadoPublico.classList.add('hidden');
+        }
+    }
+
+    function toggleRecepcionDocumentosRegimenInterno() {
+        const disponibilidadPresupuestaria = document.getElementById('recepcionDocumentosRegimenInternoContainer');
+        if (!disponibilidadPresupuestaria || !nombreEtapaActual) return;
+        const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
+        // Mostrar campo si la etapa es "Solicitud de comisión de régimen interno"
+        if (etapaActualTexto === 'recepcion de documento de regimen interno' || etapaActualTexto === 'recepción de documento de régimen interno') {
+            disponibilidadPresupuestaria.classList.remove('hidden');
+        } else {
+            disponibilidadPresupuestaria.classList.add('hidden');
+        }
+    }
+
+    function toggleDisponibilidadPresupuestaria() {
+        const disponibilidadPresupuestaria = document.getElementById('disponibilidadPresupuestariaContainer');
+        if (!disponibilidadPresupuestaria || !nombreEtapaActual) return;
+        const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
+        // Mostrar campo si la etapa es "disponibilidad presupuestaria"
+        if (etapaActualTexto === 'disponibilidad presupuestaria') {
+            disponibilidadPresupuestaria.classList.remove('hidden');
+        } else {
+            disponibilidadPresupuestaria.classList.add('hidden');
+        }
+    }
+
+    function toggleTopeFirmaContrato() {
+        const topeFirmaContrato = document.getElementById('topeFirmaContratoContainer');
+        if (!topeFirmaContrato || !nombreEtapaActual) return;
+        const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
+        // Mostrar campo si la etapa es "firma de contrato"
+        if (etapaActualTexto === 'firma de contrato' || etapaActualTexto === 'firma de contrato y orden de compra') {
+            topeFirmaContrato.classList.remove('hidden');
+        } else {
+            topeFirmaContrato.classList.add('hidden');
+        }
+    }
+
+    function toggleAdjudicacion() {
+        const adjudicacion = document.getElementById('adjudicacionContainer');
         
-        if (!idMercadoPublicoContainer || !nombreEtapaActual) return;
+        if (!adjudicacion || !nombreEtapaActual) return;
+        
+        const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
+        
+        // Mostrar campo si la etapa es "solicitud de comision de regimen interno"
+        if (etapaActualTexto === 'adjudicacion' || etapaActualTexto === 'adjudicación') {
+            adjudicacion.classList.remove('hidden');
+        } else {
+            adjudicacion.classList.add('hidden');
+        }
+    }
+
+    function toggleSolicitudRegimenInterno() {
+        const solicitudRegimenInterno = document.getElementById('solicitudRegimenInternoContainer');
+        
+        if (!solicitudRegimenInterno || !nombreEtapaActual) return;
+        
+        const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
+        
+        // Mostrar campo si la etapa es "solicitud de comision de regimen interno"
+        if (etapaActualTexto === 'solicitud de comision de regimen interno' || etapaActualTexto === 'solicitud de comisión de régimen interno' || etapaActualTexto === 'solicitud de régimen interno') {
+            solicitudRegimenInterno.classList.remove('hidden');
+        } else {
+            solicitudRegimenInterno.classList.add('hidden');
+        }
+    }
+
+    function toggleEvaluacionOfertas() {
+        const evaluacionOferta = document.getElementById('evaluacionOfertaContainer');
+        
+        if (!evaluacionOferta || !nombreEtapaActual) return;
+        
+        const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
+        
+        // Mostrar campo si la etapa es "evaluacion oferta"
+        if (etapaActualTexto === 'evaluacion de ofertas' || etapaActualTexto === 'evaluación de ofertas') {
+            evaluacionOferta.classList.remove('hidden');
+        } else {
+            evaluacionOferta.classList.add('hidden');
+        }
+    }
+
+    function toggleRecepcionDocumentosRegimenInterno() {
+        const recepcionDocumentosRegimenInterno = document.getElementById('recepcionDocumentosRegimenInternoContainer');
+        
+        if (!recepcionDocumentosRegimenInterno || !nombreEtapaActual) return;
+        
+        const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
+        
+        // Mostrar campo si la etapa es "recepcion de documento regimen interno"
+        if (etapaActualTexto === 'recepcion de documento de regimen interno' || etapaActualTexto === 'recepción de documento de régimen interno') {
+            recepcionDocumentosRegimenInterno.classList.remove('hidden');
+        } else {
+            recepcionDocumentosRegimenInterno.classList.add('hidden');
+        }
+    }
+    
+    function toggleFechasImportantes() {
+        const fechasImportantes = document.getElementById('fechasImportantesContainer');
+        
+        if (!fechasImportantes || !nombreEtapaActual) return;
         
         const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
         
         // Mostrar campo si la etapa es "Publicacion en portal"
         if (etapaActualTexto === 'publicacion en portal' || etapaActualTexto === 'publicación en portal') {
-            idMercadoPublicoContainer.classList.remove('hidden');
-            if (idMercadoPublicoInput) {
-                idMercadoPublicoInput.focus();
-            }
+            fechasImportantes.classList.remove('hidden');
         } else {
-            idMercadoPublicoContainer.classList.add('hidden');
+            fechasImportantes.classList.add('hidden');
+        }
+    }
+
+    // Función para mostrar/ocultar campo ID Mercado Público
+    function toggleIdMercadoPublico() {
+        const idMercadoPublico = document.getElementById('idMercadoPublicoContainer');
+        
+        if (!idMercadoPublico || !nombreEtapaActual) return;
+        
+        const etapaActualTexto = nombreEtapaActual.textContent.trim().toLowerCase();
+        
+        // Mostrar campo si la etapa es "Publicacion en portal"
+        if (etapaActualTexto === 'publicacion en portal' || etapaActualTexto === 'publicación en portal') {
+            idMercadoPublico.classList.remove('hidden');
+            /*if (idMercadoPublicoInput) {
+                idMercadoPublicoInput.focus();
+            }*/
+        } else {
+            idMercadoPublico.classList.add('hidden');
         }
     }
     
@@ -370,21 +614,65 @@ window.addEventListener('DOMContentLoaded', function() {
             recepcionOfertasContainer.classList.add('hidden');
         }
     }
-    
+
+    // Función para verificar si puede avanzar
+    async function verificarPuedeAvanzar() {
+        try {
+            const licitacionId = window.location.pathname.match(/\/bitacora\/(\d+)\//)?.[1];
+            const response = await fetch(`/api/licitacion/${licitacionId}/puede_avanzar/`);
+            if (response.ok) {
+                const data = await response.json();
+                return {puede_avanzar: data.puede_avanzar, ultima_bitacora: data.ultima_bitacora};
+            }
+            return false;
+        } catch (error) {
+            return false;
+        }
+    }
+
+    function toggleEtapaButton() {
+        const etapaActualId = parseInt(nombreEtapaActual.dataset.etapaId);
+        const currentIndex = etapas.findIndex(e => parseInt(e.id) === etapaActualId);
+        verificarPuedeAvanzar()
+        .then( ({puede_avanzar, ultima_bitacora}) => {
+            if (etapaActualId === parseInt(etapaOriginal.id) || currentIndex === 0) {
+                btnRetrocederEtapa.classList.add('hidden');
+                if (puede_avanzar && checkRequired()) {
+                    btnAvanzarEtapa.classList.remove('hidden');
+                }
+            }
+            else if (currentIndex === etapas.findIndex(e => parseInt(e.id) === parseInt(etapaOriginal.id)) + 1) {
+                btnRetrocederEtapa.classList.remove('hidden');
+                btnAvanzarEtapa.classList.add('hidden');
+            }
+        });
+        
+    }
     // Verificar al cargar la página
+    toggleEtapaButton();
+    toggleEvaluacionCotizacion();
+    toggleDecretoIntencionCompra();
+    toggleComisionBase();
+    togglePublicacionMercadoPublico();
+    toggleDisponibilidadPresupuestaria();
+    toggleTopeFirmaContrato();
+    toggleAdjudicacion();
+    toggleSolicitudRegimenInterno();
+    toggleEvaluacionOfertas();
+    toggleRecepcionDocumentosRegimenInterno();
+    toggleFechasImportantes();
     toggleIdMercadoPublico();
     toggleRecepcionOfertas();
-    
+
     if (btnAvanzarEtapa && nombreEtapaActual && etapas.length) {
         btnAvanzarEtapa.addEventListener('click', function() {
             const etapaActualId = parseInt(nombreEtapaActual.dataset.etapaId);
             const currentIndex = etapas.findIndex(e => parseInt(e.id) === etapaActualId);
-            
             if (currentIndex < 0) {
                 alert('No se encontró la etapa actual en el catálogo.');
                 return;
             }
-            
+
             if (currentIndex >= etapas.length - 1) {
                 alert('Ya se encuentra en la última etapa.');
                 return;
@@ -415,13 +703,22 @@ window.addEventListener('DOMContentLoaded', function() {
             }
             
             // Llamar a las funciones para mostrar/ocultar campos específicos por etapa
+            toggleEtapaButton();
+            toggleEvaluacionCotizacion();
+            toggleDecretoIntencionCompra();
+            toggleComisionBase();
+            togglePublicacionMercadoPublico();
+            toggleDisponibilidadPresupuestaria();
+            toggleTopeFirmaContrato();
+            toggleAdjudicacion();
+            toggleSolicitudRegimenInterno();
+            toggleEvaluacionOfertas();
+            toggleRecepcionDocumentosRegimenInterno();
+            toggleFechasImportantes();
             toggleIdMercadoPublico();
             toggleRecepcionOfertas();
         });
     }
-    
-    // Funcionalidad de retroceder etapa
-    const btnRetrocederEtapa = document.getElementById('btnRetrocederEtapa');
     
     // Función para verificar si puede retroceder
     async function verificarPuedeRetroceder(licitacionId) {
@@ -442,11 +739,10 @@ window.addEventListener('DOMContentLoaded', function() {
     async function actualizarVisibilidadRetroceder() {
         if (!btnRetrocederEtapa) return;
         
-        const licitacionId = window.location.pathname.match(/\/bitacora\/(\d+)\//)?.[1];
+        //const licitacionId = window.location.pathname.match(/\/bitacora\/(\d+)\//)?.[1];
+        const licitacionId = false
         if (!licitacionId) return;
-        
         const puedeRetroceder = await verificarPuedeRetroceder(licitacionId);
-        
         if (puedeRetroceder) {
             btnRetrocederEtapa.classList.remove('hidden');
             btnRetrocederEtapa.style.display = 'inline-flex';
@@ -460,14 +756,8 @@ window.addEventListener('DOMContentLoaded', function() {
         btnRetrocederEtapa.addEventListener('click', function() {
             const etapaActualId = parseInt(nombreEtapaActual.dataset.etapaId);
             const currentIndex = etapas.findIndex(e => parseInt(e.id) === etapaActualId);
-            
             if (currentIndex < 0) {
                 alert('No se encontró la etapa actual en el catálogo.');
-                return;
-            }
-            
-            if (currentIndex <= 0) {
-                alert('Ya se encuentra en la primera etapa.');
                 return;
             }
             
@@ -496,6 +786,18 @@ window.addEventListener('DOMContentLoaded', function() {
             }
             
             // Llamar a las funciones para mostrar/ocultar campos específicos por etapa
+            toggleEtapaButton();
+            toggleEvaluacionCotizacion();
+            toggleDecretoIntencionCompra();
+            toggleComisionBase();
+            togglePublicacionMercadoPublico();
+            toggleRecepcionDocumentosRegimenInterno();
+            toggleDisponibilidadPresupuestaria();
+            toggleTopeFirmaContrato();
+            toggleAdjudicacion();
+            toggleSolicitudRegimenInterno();
+            toggleEvaluacionOfertas();
+            toggleFechasImportantes();
             toggleIdMercadoPublico();
             toggleRecepcionOfertas();
         });
@@ -691,26 +993,6 @@ window.addEventListener('DOMContentLoaded', function() {
                     idMercadoPublicoInput.value = '';
                 }
                 
-                // Limpiar campos de Recepción de Ofertas
-                const numeroOfertasInput = document.getElementById('numeroOfertasInput');
-                if (numeroOfertasInput) {
-                    numeroOfertasInput.value = '';
-                    numeroOfertasInput.style.borderColor = '';
-                    numeroOfertasInput.style.backgroundColor = '';
-                }
-                
-                const empresaNombreInput = document.getElementById('empresaNombreInput');
-                if (empresaNombreInput) {
-                    empresaNombreInput.value = '';
-                }
-                
-                const empresaRutInput = document.getElementById('empresaRutInput');
-                if (empresaRutInput) {
-                    empresaRutInput.value = '';
-                    empresaRutInput.style.borderColor = '';
-                    empresaRutInput.style.backgroundColor = '';
-                }
-                
                 if (accionEtapa) accionEtapa.value = 'none';
                 if (previewContainer) previewContainer.innerHTML = '';
                 
@@ -750,85 +1032,218 @@ window.addEventListener('DOMContentLoaded', function() {
     if (formObservacionBitacora) {
         formObservacionBitacora.addEventListener('submit', async function(e) {
             e.preventDefault();
+
+            const licitacionId = this.querySelector('input[name="licitacion_id"]').value;
+            const texto = document.getElementById('observacionTexto').value;
+            const etapaActualId = parseInt(nombreEtapaActual.dataset.etapaId);
+            // Solo obtener archivos si el campo existe (panel de operadores)
+            const archivosInput = document.getElementById('observacionArchivos');
+            const archivos = archivosInput ? archivosInput.files : [];
             
-            const licitacionId = this.querySelector('input[name="licitacion_id"]').value;        const texto = document.getElementById('observacionTexto').value;
-        
-        // Solo obtener archivos si el campo existe (panel de operadores)
-        const archivosInput = document.getElementById('observacionArchivos');
-        const archivos = archivosInput ? archivosInput.files : [];
-        
-        // Solo obtener elementos de marcado como fallida si existen (panel de operadores)
-        const marcarFallidaCheckbox = document.getElementById('marcarFallidaCheckbox');
-        const tipoFallidaSelect = document.getElementById('tipoFallidaSelect');
-        const marcarFallida = marcarFallidaCheckbox ? marcarFallidaCheckbox.checked : false;
-        const tipoFallida = tipoFallidaSelect ? tipoFallidaSelect.value : '';
-        
-        const accionEtapaValue = accionEtapa ? accionEtapa.value : 'none';
-        
-        // Solo obtener ID Mercado Público si el campo existe (panel de operadores)
-        const idMercadoPublicoInput = document.getElementById('idMercadoPublicoInput');
-        const idMercadoPublico = idMercadoPublicoInput ? idMercadoPublicoInput.value.trim() : '';
-        
-        if (!texto.trim()) {
-            alert('La observación no puede estar vacía.');
-            return;
-        }
-        
-        // Validar que si se marca como fallida, se seleccione un tipo
-        if (marcarFallida && !tipoFallida) {
-            alert('Debe seleccionar un tipo de falla.');
-            return;
-        }
-        
-        const formData = new FormData();
-        formData.append('texto', texto);
-        
-        // Agregar ID Mercado Público si está presente
-        if (idMercadoPublico) {
-            formData.append('id_mercado_publico', idMercadoPublico);
-        }
-        
-        for (let i = 0; i < archivos.length; i++) {
-            formData.append('archivos', archivos[i]);
-        }
-        
-        if (marcarFallida) {
-            formData.append('marcar_fallida', 'on');
-            if (tipoFallida) {
-                formData.append('tipo_fallida', tipoFallida);
+            // Solo obtener elementos de marcado como fallida si existen (panel de operadores)
+            const marcarFallidaCheckbox = document.getElementById('marcarFallidaCheckbox');
+            const tipoFallidaSelect = document.getElementById('tipoFallidaSelect');
+            const marcarFallida = marcarFallidaCheckbox ? marcarFallidaCheckbox.checked : false;
+            const tipoFallida = tipoFallidaSelect ? tipoFallidaSelect.value : '';
+            
+            const accionEtapaValue = accionEtapa ? accionEtapa.value : 'none';
+            
+            // Solo obtener ID Mercado Público si el campo existe (panel de operadores)
+            const idMercadoPublicoInput = document.getElementById('idMercadoPublicoInput');
+            const idMercadoPublico = idMercadoPublicoInput ? idMercadoPublicoInput.value.trim() : '';
+
+
+
+
+            // Campos para Evaluacion de cotizacion
+            const fechaEvaluacionCotizacionInput = document.getElementById('fechaEvaluacionCotizacionInput');
+            const fechaEvaluacionCotizacion = fechaEvaluacionCotizacionInput ? fechaEvaluacionCotizacionInput.value.trim() : '';
+            const montoEstimadoCotizacionInput = document.getElementById('montoEstimadoCotizacionInput');
+            const montoEstimadoCotizacion = montoEstimadoCotizacionInput ? montoEstimadoCotizacionInput.value.trim() : '';
+
+            // Campos para Intencion de compra
+            const fechaSolicitudIntencionCompraInput = document.getElementById('fechaSolicitudIntencionCompraInput');
+            const fechaSolicitudIntencionCompra = fechaSolicitudIntencionCompraInput ? fechaSolicitudIntencionCompraInput.value.trim() : '';
+
+            // Campos para Comision de base
+            const nombreIntegranteUnoComisionBaseInput = document.getElementById('nombreIntegranteUnoComisionBaseInput');
+            const nombreIntegranteUnoComisionBase = nombreIntegranteUnoComisionBaseInput ? nombreIntegranteUnoComisionBaseInput.value.trim() : '';
+            const nombreIntegranteDosComisionBaseInput = document.getElementById('nombreIntegranteDosComisionBaseInput');
+            const nombreIntegranteDosComisionBase = nombreIntegranteDosComisionBaseInput ? nombreIntegranteDosComisionBaseInput.value.trim() : '';
+            const nombreIntegranteTresComisionBaseInput = document.getElementById('nombreIntegranteTresComisionBaseInput');
+            const nombreIntegranteTresComisionBase = nombreIntegranteTresComisionBaseInput ? nombreIntegranteTresComisionBaseInput.value.trim() : '';
+
+            // Campos para Publicacion mercado publico
+            const fechaPublicacionMercadoPublicoInput = document.getElementById('fechaPublicacionMercadoPublicoInput');
+            const fechaPublicacionMercadoPublico = fechaPublicacionMercadoPublicoInput ? fechaPublicacionMercadoPublicoInput.value.trim() : '';
+            const fechaCierreOfertasMercadoPublicoInput = document.getElementById('fechaCierreOfertasMercadoPublicoInput');
+            const fechaCierreOfertasMercadoPublico = fechaCierreOfertasMercadoPublicoInput ? fechaCierreOfertasMercadoPublicoInput.value.trim() : '';
+
+
+
+
+
+
+            
+            // Campos para Publicación portal
+            const cierrePreguntasInput = document.getElementById('cierrePreguntasInput');
+            const cierrePreguntas = cierrePreguntasInput ? cierrePreguntasInput.value.trim() : '';
+            const respuestaInput = document.getElementById('respuestaInput');
+            const respuesta = respuestaInput ? respuestaInput.value.trim() : '';
+            const visitaTerrenoInput = document.getElementById('visitaTerrenoInput');
+            const visitaTerreno = visitaTerrenoInput ? visitaTerrenoInput.value.trim() : '';
+            const cierreOfertaInput = document.getElementById('cierreOfertaInput');
+            const cierreOferta = cierreOfertaInput ? cierreOfertaInput.value.trim() : '';
+            const AperturaTecnicaInput = document.getElementById('aperturaTecnicaInput');
+            const AperturaTecnica = AperturaTecnicaInput ? AperturaTecnicaInput.value.trim() : '';
+            const AperturaEconomicaInput = document.getElementById('aperturaEconomicaInput');
+            const AperturaEconomica = AperturaEconomicaInput ? AperturaEconomicaInput.value.trim() : '';
+            const fechaEstimadaAdjudicacionInput = document.getElementById('fechaEstimadaAdjudicacionInput');
+            const fechaEstimadaAdjudicacion = fechaEstimadaAdjudicacionInput ? fechaEstimadaAdjudicacionInput.value.trim() : '';
+
+            // Campo para Disponibilidad presupuestaria
+            const fechaDisponibilidadPresupuestariaInput = document.getElementById('fechaDisponibilidadPresupuestariaInput');
+            const fechaDisponibilidadPresupuestaria = fechaDisponibilidadPresupuestariaInput ? fechaDisponibilidadPresupuestariaInput.value.trim() : '';
+
+            // Campos para Adjudicación
+            const empresaRutInput = document.getElementById('empresaRutInput');
+            const empresaRut = empresaRutInput ? empresaRutInput.value.trim() : '';
+            const empresaNombreInput = document.getElementById('empresaNombreInput');
+            const empresaNombre = empresaNombreInput ? empresaNombreInput.value.trim() : '';
+            const montoAdjudicadoInput = document.getElementById('montoAdjudicadoInput');
+            const montoAdjudicado = montoAdjudicadoInput ? parseInt(montoAdjudicadoInput.value.trim()) : '';
+            const fechaDecretoInput = document.getElementById('fechaDecretoInput');
+            const fechaDecreto = fechaDecretoInput ? fechaDecretoInput.value.trim() : '';
+            const fechaSubidaMercadoPublicoInput = document.getElementById('fechaSubidaMercadoPublicoInput');
+            const fechaSubidaMercadoPublico = fechaSubidaMercadoPublicoInput ? fechaSubidaMercadoPublicoInput.value.trim() : '';
+            const numeroOrdenCompraInput = document.getElementById('numeroOrdenCompraInput');
+            const numeroOrdenCompra = numeroOrdenCompraInput ? parseInt(numeroOrdenCompraInput.value.trim()) : '';
+            
+            // Campos para Evaluación de oferta
+            const fechaEvaluacionTecnicaInput = document.getElementById('fechaEvaluacionTecnicaInput');
+            const fechaEvaluacionTecnica = fechaEvaluacionTecnicaInput ? fechaEvaluacionTecnicaInput.value.trim() : '';
+            const nombreIntegranteUnoEvaluacionInput = document.getElementById('nombreIntegranteUnoEvaluacionInput');
+            const nombreIntegranteUnoEvaluacion = nombreIntegranteUnoEvaluacionInput ? nombreIntegranteUnoEvaluacionInput.value.trim() : '';
+            const nombreIntegranteDosEvaluacionInput = document.getElementById('nombreIntegranteDosEvaluacionInput');
+            const nombreIntegranteDosEvaluacion = nombreIntegranteDosEvaluacionInput ? nombreIntegranteDosEvaluacionInput.value.trim() : '';
+            const nombreIntegranteTresEvaluacionInput = document.getElementById('nombreIntegranteTresEvaluacionInput');
+            const nombreIntegranteTresEvaluacion = nombreIntegranteTresEvaluacionInput ? nombreIntegranteTresEvaluacionInput.value.trim() : '';
+            const fechaComisionInput = document.getElementById('fechaComisionInput');
+            const fechaComision = fechaComisionInput ? fechaComisionInput.value.trim() : '';
+
+            // Campos para Solcitud de comisión de régimen Interno
+            const fechaSolicitudRegimenInterno = document.getElementById('fechaSolicitudRegimenInternoInput');
+            const fechaSolicitudRegimenInternoValue = fechaSolicitudRegimenInterno ? fechaSolicitudRegimenInterno.value.trim() : '';
+
+            // Campo para Recepción de documento de régimen interno
+            const fechaRecepcionDocumentoRegimenInterno = document.getElementById('fechaRecepcionDocumentoRegimenInternoInput');
+            const fechaRecepcionDocumentoRegimenInternoValue = fechaRecepcionDocumentoRegimenInterno ? fechaRecepcionDocumentoRegimenInterno.value.trim() : '';
+            
+            // Campo para firma de contrato
+            const fechaTopeFirmaContratoInput = document.getElementById('fechaTopeFirmaContratoInput');
+            const fechaTopeFirmaContratoValue = fechaTopeFirmaContratoInput ? fechaTopeFirmaContratoInput.value.trim() : '';
+
+            
+            if (!texto.trim()) {
+                alert('La observación no puede estar vacía.');
+                return;
             }
-        }
-        
-        if (accionEtapaValue === 'advance') {
-            formData.append('avanzar_etapa', 'on');
-        }
-                  // En lugar de enviar vía fetch, usar el formulario estándar
-        const form = document.getElementById('formObservacionBitacora');
-        
-        // Agregar los campos necesarios si no están presentes
-        if (accionEtapaValue !== 'none') {
-            let accionEtapaInput = document.getElementById('accionEtapa');
-            if (!accionEtapaInput) {
-                accionEtapaInput = document.createElement('input');
-                accionEtapaInput.type = 'hidden';
-                accionEtapaInput.name = 'accion_etapa';
-                accionEtapaInput.id = 'accionEtapa';
-                form.appendChild(accionEtapaInput);
+            
+            // Validar que si se marca como fallida, se seleccione un tipo
+            if (marcarFallida && !tipoFallida) {
+                alert('Debe seleccionar un tipo de falla.');
+                return;
             }
-            accionEtapaInput.value = accionEtapaValue;
-        }
-        
-        // Agregar etapa actual si se está avanzando
-        if (accionEtapaValue === 'advance' && nombreEtapaActual) {
-            let etapaInput = document.createElement('input');
-            etapaInput.type = 'hidden';
-            etapaInput.name = 'etapa';
-            etapaInput.value = nombreEtapaActual.dataset.etapaId;
-            form.appendChild(etapaInput);
-        }
-        
-        // Enviar el formulario de manera estándar
-        form.submit();
+            
+            const formData = new FormData();
+            formData.append('texto', texto);
+            
+            // Agregar ID Mercado Público si está presente
+            if (idMercadoPublico) {
+                formData.append('id_mercado_publico', idMercadoPublico);
+            }
+
+            // Agregar campos de Recepción de Ofertas
+            formData.append('etapa', etapaActualId);
+            if (fechaEvaluacionCotizacion) formData.append('fecha_evaluacion_cotizacion', fechaEvaluacionCotizacion);
+            if (montoEstimadoCotizacion) formData.append('monto_estimado_cotizacion', montoEstimadoCotizacion);
+            if (fechaSolicitudIntencionCompra) formData.append('fecha_solicitud_intencion_compra', fechaSolicitudIntencionCompra);
+            if (nombreIntegranteUnoComisionBase) formData.append('nombre_integrante_uno_comision_base', nombreIntegranteUnoComisionBase);
+            if (nombreIntegranteDosComisionBase) formData.append('nombre_integrante_dos_comision_base', nombreIntegranteDosComisionBase);
+            if (nombreIntegranteTresComisionBase) formData.append('nombre_integrante_tres_comision_base', nombreIntegranteTresComisionBase);
+            if (fechaPublicacionMercadoPublico) formData.append('fecha_publicacion_mercado_publico', fechaPublicacionMercadoPublico);
+            if (fechaCierreOfertasMercadoPublico) formData.append('fecha_cierre_ofertas_mercado_publico', fechaCierreOfertasMercadoPublico);
+
+            if (cierrePreguntas) formData.append('fecha_cierre_preguntas_publicacionportal', cierrePreguntas);
+            if (respuesta) formData.append('fecha_respuesta_publicacionportal', respuesta);
+            if (visitaTerreno) formData.append('fecha_visita_terreno_publicacionportal', visitaTerreno);
+            if (cierreOferta) formData.append('fecha_cierre_oferta_publicacionportal', cierreOferta);
+            if (AperturaTecnica) formData.append('fecha_apertura_tecnica_publicacionportal', AperturaTecnica);
+            if (AperturaEconomica) formData.append('fecha_apertura_economica_publicacionportal', AperturaEconomica);
+            if (fechaEstimadaAdjudicacion) formData.append('fecha_estimada_adjudicacion_publicacionportal', fechaEstimadaAdjudicacion);
+            // Agregar campos de Disponibilidad presupuestaria
+            if (fechaDisponibilidadPresupuestaria) formData.append('fecha_disponibilidad_presupuestaria', fechaDisponibilidadPresupuestaria);
+            // Agregar campos de Adjudicación
+            if (empresaRut) formData.append('rut_adjudicacion', empresaRut);
+            if (empresaNombre) formData.append('empresa_adjudicacion', empresaNombre);
+            if (montoAdjudicado) formData.append('monto_adjudicacion', montoAdjudicado);
+            if (fechaDecreto) formData.append('fecha_decreto_adjudicacion', fechaDecreto);
+            if (fechaSubidaMercadoPublico) formData.append('fecha_subida_mercado_publico_adjudicacion', fechaSubidaMercadoPublico);
+            if (numeroOrdenCompra) formData.append('orden_compra_adjudicacion', numeroOrdenCompra);
+            // Agregar campos de Evaluación
+            if (fechaEvaluacionTecnica) formData.append('fecha_evaluacion_tecnica_evaluacion', fechaEvaluacionTecnica);
+            if (nombreIntegranteUnoEvaluacion) formData.append('nombre_integrante_uno_evaluacion', nombreIntegranteUnoEvaluacion);
+            if (nombreIntegranteDosEvaluacion) formData.append('nombre_integrante_dos_evaluacion', nombreIntegranteDosEvaluacion);
+            if (nombreIntegranteTresEvaluacion) formData.append('nombre_integrante_tres_evaluacion', nombreIntegranteTresEvaluacion);
+            if (fechaComision) formData.append('fecha_comision_evaluacion', fechaComision);
+            // Agregar campo de Solicitud de comisión de régimen interno
+            if (fechaSolicitudRegimenInternoValue) formData.append('fecha_solicitud_regimen_interno', fechaSolicitudRegimenInternoValue);
+            // Agregar campo de Recepción de documento de régimen interno
+            if (fechaRecepcionDocumentoRegimenInternoValue) formData.append('fecha_recepcion_documento_regimen_interno', fechaRecepcionDocumentoRegimenInternoValue);
+            // Agregar campo de Firma de contrato
+            if (fechaTopeFirmaContratoValue) formData.append('fecha_tope_firma_contrato', fechaTopeFirmaContratoValue);
+            
+            for (let i = 0; i < archivos.length; i++) {
+                formData.append('archivos', archivos[i]);
+            }
+            
+            if (marcarFallida) {
+                formData.append('marcar_fallida', 'on');
+                if (tipoFallida) {
+                    formData.append('tipo_fallida', tipoFallida);
+                }
+            }
+            
+            if (accionEtapaValue === 'advance') {
+                formData.append('avanzar_etapa', 'on');
+            }
+                    // En lugar de enviar vía fetch, usar el formulario estándar
+            const form = document.getElementById('formObservacionBitacora');
+
+            // Agregar los campos necesarios si no están presentes
+            if (accionEtapaValue !== 'none') {
+                let accionEtapaInput = document.getElementById('accionEtapa');
+                if (!accionEtapaInput) {
+                    accionEtapaInput = document.createElement('input');
+                    accionEtapaInput.type = 'hidden';
+                    accionEtapaInput.name = 'accion_etapa';
+                    accionEtapaInput.id = 'accionEtapa';
+                    form.appendChild(accionEtapaInput);
+                }
+                accionEtapaInput.value = accionEtapaValue;
+            }
+            
+            // Agregar etapa actual si se está avanzando
+            if (nombreEtapaActual) {
+                let etapaInput = document.createElement('input');
+                etapaInput.type = 'hidden';
+                etapaInput.name = 'etapa';
+                etapaInput.value = nombreEtapaActual.dataset.etapaId;
+                form.appendChild(etapaInput);
+            }
+
+            // Enviar el formulario de manera estándar
+            form.submit();
         });
     }
     
@@ -1208,9 +1623,10 @@ window.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        empresaRutInput.addEventListener('blur', function() {
+        empresaRutInput.addEventListener('change', function() {
             if (this.value && !validarRUT(this.value)) {
                 alert('El RUT ingresado no es válido. Por favor verifique.');
+                empresaRutInput.ariaDisabled=true;
                 this.focus();
             }
         });

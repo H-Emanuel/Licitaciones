@@ -17,16 +17,6 @@
     box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
 }
 
-.mostrar-todas:before {
-    content: "✕";
-    position: absolute;
-    left: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 0.9em;
-    opacity: 0.8;
-}
-
 .mostrar-todas {
     padding-left: 28px !important;
 }

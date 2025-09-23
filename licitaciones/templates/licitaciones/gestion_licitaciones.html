@@ -5,6 +5,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Licitaciones</title>
     <link rel="stylesheet" href="{% static 'licitaciones/css/gestion_licitaciones.css' %}?v=2.7">
     <link rel="stylesheet" href="{% static 'licitaciones/css/gestion_licitaciones_operador.css' %}?v=2.1">
@@ -54,52 +55,12 @@
         .acciones-row .icono-accion {
             font-size: 12px;
         }
-
-        /* Header de acciones sincronizado */
-        .acciones-header {
-            height: 65px !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            font-weight: bold !important;
-        }
-
-        /* Asegurar que las filas de la tabla tengan altura consistente */
-        .tabla-proyectos tbody td {
-            vertical-align: middle !important;
-            padding: 8px !important;
-        }
-
-        .toggle-icon {
-            transition: transform 0.3s ease;
-            pointer-events: none;
-            font-size: 18px;
-            line-height: 1;
-        }
-
-        .btn-toggle-acciones.active .toggle-icon {
-            transform: rotate(180deg);
-        }
-
-        /* Animaciones para la columna de acciones */
-        .acciones-sticky {
-            position: sticky;
-            top: 0;
-            right: 0;
-            background-color: #f8f9fa;
-            z-index: 100;
-            box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
-            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            transform: translateX(100%);
-            min-width: 200px;
-            max-width: 250px;
-        }
     </style>
 </head>
 <body>
     {% include 'licitaciones/sidebar.html' %}
     
-    <div class="main-content">
+    <div class="main-content m-sidebar">
         <!-- Sección vacía para posibles elementos futuros -->
         <div style="display:flex; justify-content:flex-end; align-items:center; margin-bottom:10px;">
             <!-- Reservado para elementos adicionales -->
@@ -130,7 +91,7 @@
         
         <!-- Botones de acción principales -->
         <div class="botones-accion-principales">
-            <button id="btnAgregarLicitacion" class="btn-moderno btn-agregar" {% if not es_admin %}style="display:none;"{% endif %}>
+            <button id="btnAgregarLicitacion" class="btn-moderno btn-agregar" title="Agregar licitación" {% if not es_admin %}style="display:none;"{% endif %}>
                 <span class="btn-icon">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
@@ -138,11 +99,11 @@
                 </span>
                 
             </button>
-
-            <input style="border-radius: 26px; border: none; height: 3vh; width: auto; padding: 1vh 0.5vw;" class="" type="search" placeholder="Nº de pedido" aria-label="Nº de pedido" id="numeroPedido">
+            <div style="margin: 0 auto;">
+            <input style="border-radius: 26px; border: none; height: 3vh; width: auto; padding: 1vh 0.5vw;" class="" type="search" placeholder="Nº de pedido o iniciativa" aria-label="Nº de pedido" id="numeroPedido">
             <button class="btn-moderno" id="btnFiltrarPedido" type="submit">Buscar</button>
-
-            <button id="btnExportarTodasLicitaciones" class="btn-moderno btn-exportar">
+            </div>
+            <button id="btnExportarTodasLicitaciones" class="btn-moderno btn-exportar" title="Exportar todas las licitaciones">
                 <span class="btn-icon">
                     <svg xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Livello_1" x="0px" y="0px" viewBox="0 0 2289.75 2130" enable-background="new 0 0 2289.75 2130" xml:space="preserve">
                         <metadata>
@@ -177,10 +138,10 @@
                 <table class="tabla-proyectos">
                     <thead>
                         <tr>
-                            <th data-col="seleccionar" class="seleccionar-header">
-                                <input type="checkbox" id="select-all-licitaciones" />
+                            <th data-col="seleccionar" class="seleccionar-header"></th>
                             <th data-col="numero_pedido">N° de pedido</th>
                             <th data-col="id_mercado_publico">ID Mercado Público</th>
+                            <th data-col="fecha_tentativa_termino">Fecha tentativa de término</th>
                             <th data-col="operadores">Profesionales a Cargo</th>
                             <th data-col="etapa">Etapa</th>
                             <th data-col="estado">Status</th>
@@ -195,6 +156,7 @@
                             <th data-col="institucion">Institución</th>
                             <th data-col="departamento">Depto.</th>
                             <th data-col="monto_presupuestado">Monto Presupuestado general</th>
+                            <th data-col="tipo_presupuesto">Tipo por presupuesto</th>
                             <th data-col="llamado_cotizacion">Llamado Cotización</th>
                             <th data-col="fecha_creacion">Fecha de Asignación</th>
                             <th data-col="licitacion_fallida_linkeada">Licitación Fallida Linkeada</th>
@@ -202,13 +164,14 @@
                     </thead>
                     <tbody>
                     {% for licitacion in proyectos %}
-                    <tr data-id="{{ licitacion.id }}">
-                        <td data-campo="seleccionar" data-col="seleccionar" data-label="Seleccionar"><input type="checkbox" value="{{ licitacion.id }}" id="licitacion" /></td>
+                    <tr data-id="{{ licitacion.id }}" class="{% if not licitacion.estado_fk or licitacion.estado_fk.id == 1 %} lic-abierta {% else %} lic-cerrada {% endif %}" onclick="document.getElementById('check-{{ licitacion.id }}').click();">
+                        <td data-campo="seleccionar" data-col="seleccionar" data-label="Seleccionar"><input type="checkbox" class="licitacion-check" value="{{ licitacion.id }}" id="check-{{ licitacion.id }}" onclick="event.stopPropagation();"/></td>
                         <td data-campo="numero_pedido" data-col="numero_pedido" data-label="N° de pedido">{{ licitacion.numero_pedido }}</td>
                         <td data-campo="id_mercado_publico" data-col="id_mercado_publico" data-label="ID Mercado Público">{{ licitacion.id_mercado_publico|default:"-" }}</td>
+                        <td data-campo="fecha_tentativa_termino" data-col="fecha_tentativa_termino" data-label="Fecha tentativa de término">{{ licitacion.fecha_tentativa_termino|date:"d/m/Y" }}</td>
                         <td data-campo="operadores" data-col="operadores" data-label="Profesionales a Cargo">
                             <div class="operadores-container">
-                                <span class="operador-badge operador-1 {% if licitacion.get_numero_operador_activo == 1 %}activo{% endif %}" title="Operador 1: Gestiona hasta Evaluación de Ofertas">
+                                <span class="operador-badge operador-1 {% if licitacion.get_numero_operador_activo == 1 %}activo{% endif %}" title="Operador 1: Gestiona hasta Evaluación de Ofertas" data-id="{{ licitaciones. }}">
                                     OP1: {{ licitacion.operador_user.get_full_name|default:licitacion.operador_user.username|default:"No asignado" }}
                                 </span>
                                 {% if licitacion.operador_2 %}
@@ -222,7 +185,7 @@
                                 {% endif %}
                             </div>
                         </td>
-                        <td data-campo="etapa" data-col="etapa" data-label="Etapa" title="{{ licitacion.etapa_fk.nombre|default:'' }}">
+                        <td data-campo="etapa" data-col="etapa" data-label="Etapa">
                             {{ licitacion.etapa_fk.nombre|default:'' }}
                         </td>
                         <td data-campo="estado" data-col="estado" data-label="Estado">
@@ -257,6 +220,7 @@
                         <td data-campo="institucion" data-col="institucion" data-label="Institución">{{ licitacion.institucion|default:"-" }}</td>
                         <td data-campo="departamento" data-col="departamento" data-label="Departamento">{{ licitacion.departamento.nombre|default:licitacion.departamento }}</td>
                         <td data-campo="monto_presupuestado" data-col="monto_presupuestado" data-label="Monto Presupuestado">${{ licitacion.monto_presupuestado|floatformat:"0"|chilean_thousands }}</td>
+                        <td data-campo="tipo_presupuesto" data-col="tipo_presupuesto" data-label="Tipo de presupuesto">{{ licitacion.get_tipo_presupuesto_display }}</td>
                         <td data-campo="llamado_cotizacion" data-col="llamado_cotizacion" data-label="Llamado Cotización">{{ licitacion.get_llamado_cotizacion_display|default:"-" }}</td>
                         <td data-campo="fecha_creacion" data-col="fecha_creacion" data-label="Fecha de creación">{{ licitacion.fecha_creacion|date:"d/m/Y H:i" }}</td>
                         <td data-campo="licitacion_fallida_linkeada" data-col="licitacion_fallida_linkeada" data-label="Licitación Fallida Linkeada">
@@ -267,6 +231,36 @@
                             {% endif %}
                         </td>
                     </tr>
+                    <script>
+                        (function() {
+                            const fila = document.querySelector(`tr[data-id='{{ licitacion.id }}']`);
+                            const fechaCreacionStr = "{{ licitacion.fecha_creacion|date:'Y-m-d' }}";
+                            const fechaCreacion = new Date(fechaCreacionStr);
+                            const celda = fila.querySelector("td[data-campo='fecha_tentativa_termino']");
+                            if (celda.textContent.trim()!=="") {
+                                return;
+                            }
+                            switch (fila.querySelector("td[data-campo='tipo_presupuesto']").innerHTML){
+                                case 'LP':
+                                    fechaCreacion.setDate(fechaCreacion.getDate() + 130);
+                                    break;
+                                case 'LR':
+                                    fechaCreacion.setDate(fechaCreacion.getDate() + 150);
+                                    break;
+                                default:
+                                    fechaCreacion.setDate(fechaCreacion.getDate() + 80);
+                            }
+                            const dia = String(fechaCreacion.getDate()).padStart(2, '0');
+                            const mes = String(fechaCreacion.getMonth() + 1).padStart(2, '0'); // Mes empieza en 0
+                            const anio = fechaCreacion.getFullYear();
+                            const fechaFormateada = `${dia}/${mes}/${anio}`;
+                            if (fila) {
+                                if (celda) {
+                                    celda.textContent = fechaFormateada;
+                                }
+                            }
+                        })();
+                    </script>
                     {% endfor %}
                 </tbody>
             </table>
@@ -274,13 +268,44 @@
             
             <!-- Botón sticky para mostrar/ocultar acciones (solo admin) -->
             {% if es_admin %}
-            <button id="btnToggleAcciones" class="btn-toggle-acciones" title="Mostrar/Ocultar Acciones">
-                <span class="toggle-icon">⚙️</span>
+            <div class="toggle-acciones" style="gap: 10px;">
+            <button class="btn-toggle-acciones editar-fila" data-id="" title="Editar" {% if not es_admin %}style="visibility: hidden;"{% endif %}>
+                <span class="icono-accion">✏️</span>
             </button>
+
+            <!-- Botón Eliminar (solo admin) -->
+            <button class="btn-toggle-acciones eliminar-fila" data-id="" title="Eliminar" {% if not es_admin %}style="visibility: hidden;"{% endif %}>
+                <span class="icono-accion">🗑️</span>
+            </button>
+            
+            <!-- Botón Ver última observación (siempre visible) -->
+            <button class="btn-toggle-acciones ultima-obs-fila" data-id="" title="Ver última observación">
+                <span class="icono-accion">📝</span>
+            </button>
+            
+            <!-- Botón Cerrar licitación (siempre visible) -->
+            <button class="btn-toggle-acciones cerrar-licitacion-fila" data-id="" title="Cerrar licitación">
+                <span class="icono-accion">🔒</span>
+            </button>
+
+            <!-- Botón Bitácora (siempre visible) -->
+            <a class="btn-toggle-acciones" title="Ver bitácora" href="" data-id="" style="text-decoration-line: none;" onclick="(this.getAttribute('data-id') !== '') ? this.href='/bitacora/'+this.getAttribute('data-id') : this.querySelector('icono-accion').style='color:#bbb;'; this.querySelector('icono-accion').title='Sin bitácora'; this.querySelector('icono-accion').textContent='X';">
+                <span class="icono-accion">📒</span>
+            </a>
+            <!-- Botón Cronología (solo admin) -->
+            <button class="btn-toggle-acciones cronologia-fila" data-id="" title="Ver cronología" {% if not es_admin %}style="visibility: hidden;"{% endif %}>
+                <span class="icono-accion">📅</span>
+            </button>
+            
+            <!-- Botón Documentos (solo admin) -->
+            <button class="btn-toggle-acciones documentos-fila" data-id="" title="Ver documentos" {% if not es_admin %}style="visibility: hidden;"{% endif %}>
+                <span class="icono-accion">📎</span>
+            </button>
+            </div>
             {% endif %}
             
             <!-- Columna sticky separada para acciones -->
-            <div class="acciones-sticky" id="accionesSticky" style="display: none;">
+            <div class="acciones-sticky hide" id="accionesSticky">
                 <div class="acciones-header">
                     <div class="acciones-header-cell">Acciones</div>
                 </div>
@@ -302,22 +327,14 @@
                             <span class="icono-accion">📝</span>
                         </button>
                         
-                        <!-- Botón Cerrar licitación (siempre visible) -->
-                        {% if not licitacion.estado_fk or licitacion.estado_fk.id != 3 %}
-                            <button class="btn btn-accion cerrar-licitacion-fila icon-btn" data-id="{{ licitacion.id }}" title="Cerrar licitación">
-                                <span class="icono-accion">🔒</span>
-                            </button>
-                        {% else %}
-                            <button class="btn btn-accion cerrar-licitacion-fila icon-btn" data-id="{{ licitacion.id }}" title="Licitación ya cerrada" disabled>
-                                <span class="icono-accion">🔒</span>
-                            </button>
-                        {% endif %}
-                        
                         <!-- Botón Bitácora (siempre visible) -->
+                         {% if licitacion.id %}
                         <a href="{% url 'bitacora_licitacion' licitacion.id %}" class="btn icon-btn" title="Ver bitácora">
                             <span class="icono-accion">📒</span>
                         </a>
-                        
+                        {% else %}
+                        <span class="icono-accion" style="color:#bbb;" title="Sin bitácora">📒</span>
+                        {% endif %}
                         <!-- Botón Cronología (solo admin) -->
                         <button class="btn btn-accion cronologia-fila icon-btn" data-id="{{ licitacion.id }}" title="Ver cronología" {% if not es_admin %}style="visibility: hidden;"{% endif %}>
                             <span class="icono-accion">📅</span>
@@ -362,7 +379,7 @@
                 </div>
 
                 <!-- Formulario de licitación -->
-                <form id="formProyecto" method="post" enctype="multipart/form-data" class="modern-form">
+                <form id="formProyecto" method="post" enctype="multipart/form-data" class="modern-form"> 
                     {% csrf_token %}
                     <input type="hidden" name="id" id="proyectoId">
                     <input type="hidden" name="tipo_licitacion" id="tipoLicitacionSelect">
@@ -514,6 +531,15 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div class="form-field">
+                                    <label for="tipo_presupuesto">
+                                        <span class="field-icon">💵</span>
+                                        Tipo por presupuesto
+                                    </label>
+                                    <div style="display:flex; align-items:center; gap:15px; margin-top:8px;">
+                                        <input type="text" name="tipo_presupuesto" id="tipoPresupuesto" style="flex:1; min-width:200px;" readonly>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -592,7 +618,7 @@
                                         <span>Arrastra archivos aquí o haz clic para seleccionar</span>
                                     </div>
                                 </div>
-                                <small class="field-help">📋 Formatos soportados: PDF, imágenes, Excel, Word, etc.</small>
+                                <small class="field-help docs-text">📋 Formatos soportados: PDF, imágenes, Excel, Word, etc.</small>
                             </div>
                         </div>
 
@@ -631,7 +657,7 @@
                         <div class="additional-actions">
                             <button type="button" id="btnVerLicitacionesFallidas" class="btn btn-outline-warning">
                                 <span class="btn-icon">📊</span>
-                                <span>Historial de Licitaciones Fallidas</span>
+                                <span id="licitacion-fallida">Historial de Licitaciones Fallidas</span>
                                 <span class="btn-arrow">▶</span>
                             </button>
                         </div>
@@ -817,7 +843,7 @@
                         <span style="color:#d32f2f; font-size:28px;">🔒</span>
                         Cerrar Licitación
                     </h2>
-                    <span id="cerrarModalCerrarLicitacion" class="btn-close" style="cursor:pointer; font-size:24px; color:#6c757d; background:none; border:none; padding:5px; border-radius:50%; transition:all 0.2s;" title="Cerrar">&times;</span>
+                    <span id="cerrarModalCerrarLicitacion" class="btn-close" style="" title="Cerrar">&times;</span>
                 </div>
                 
                 <form id="formCerrarLicitacion" method="post">
@@ -916,10 +942,22 @@
             window.etapasLicitacion = JSON.parse(document.getElementById('etapas-licitacion-data').textContent);
             window.estadosLicitacion = JSON.parse(document.getElementById('estados-licitacion-data').textContent);
             window.tiposLicitacionEtapaRaw = buildTiposLicitacionEtapaRaw(JSON.parse(document.getElementById('tipos-licitacion-etapa-raw-data').textContent));
-        </script>
+        
+            // Datos de operadores para JavaScript
+            window.operadoresLicitacion = [
+                {% for op in operadores %}
+                {
+                    id: {{ op.id }},
+                    username: "{{ op.username|escapejs }}",
+                    full_name: "{{ op.get_full_name|default:op.username|escapejs }}"
+                }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ];
 
-        <!-- Archivo principal de JavaScript -->
-        <script src="{% static 'licitaciones/js/gestion_licitaciones.js' %}?v=2.4"></script>
+            window.etapasLicitacion = JSON.parse(document.getElementById('etapas-licitacion-data').textContent);
+            window.tiposLicitacion = JSON.parse(document.getElementById('tipos-licitacion-data').textContent);
+
+        </script>
     </div>
         
     <!-- Modal Historial de Licitaciones Fallidas -->
@@ -963,33 +1001,6 @@
             </div>
         </div>
     </div>
-    </div>
-
-    <!-- Modal flotante de notificaciones -->
-    <div id="modalNotificaciones" class="modal-notificaciones">
-        <div class="modal-notificaciones-content">
-            <div class="modal-notificaciones-header">
-                <h3 class="modal-notificaciones-title">
-                    <span class="modal-notificaciones-icon">🔔</span>
-                    Notificaciones
-                </h3>
-                <button id="cerrarModalNotificaciones" class="btn-close">&times;</button>
-            </div>
-            <div class="modal-notificaciones-body">
-                <div class="notificaciones-vacia" id="notificacionesVacia">
-                    <div class="notificaciones-vacia-icono">🔕</div>
-                    <div class="notificaciones-vacia-texto">No hay notificaciones</div>
-                </div>
-                <div id="notificacionesLista" class="notificaciones-lista">
-                </div>
-            </div>
-            <div class="modal-notificaciones-footer" id="notificacionesAcciones" style="display: none;">
-                <button class="notificaciones-btn-accion" id="btnMarcarTodasLeidas">
-                    <span class="btn-icono">✅</span>
-                    Marcar todas como leídas
-                </button>
-            </div>
-        </div>
     </div>
 
     <!-- Modal de Cronología -->
@@ -1039,22 +1050,11 @@
 {{ etapas|json_script:"etapas-licitacion-data" }}
 {{ tipos_licitacion|json_script:"tipos-licitacion-data" }}
 {{ tipos_licitacion_etapa_raw|json_script:"tipos-licitacion-etapa-raw-data" }}
-<
-<!-- Incluir el JavaScript del operador para la funcionalidad de la tabla -->
-<script src="{% static 'licitaciones/js/gestion_licitaciones_operador.js' %}">
-    // Datos de operadores para JavaScript
-    window.operadoresLicitacion = [
-        {% for op in operadores %}
-        {
-            id: {{ op.id }},
-            username: "{{ op.username|escapejs }}",
-            full_name: "{{ op.get_full_name|default:op.username|escapejs }}"
-        }{% if not forloop.last %},{% endif %}
-        {% endfor %}
-    ];
 
-    window.etapasLicitacion = JSON.parse(document.getElementById('etapas-licitacion-data').textContent);
-    window.tiposLicitacion = JSON.parse(document.getElementById('tipos-licitacion-data').textContent);
-</script>
+
+<!-- Incluir el JavaScript del operador para la funcionalidad de la tabla -->
+<script src="{% static 'licitaciones/js/gestion_licitaciones_operador.js' %}"></script>
+<!-- Archivo principal de JavaScript -->
+<script src="{% static 'licitaciones/js/gestion_licitaciones.js' %}?v=2.4"></script>
 </body>
 </html>

@@ -9,7 +9,7 @@
 </head>
 <body>
     {% include 'licitaciones/sidebar.html' %}
-    <div class="main-content">
+    <div class="main-content m-sidebar">
         <h1 class="titulo">Estadísticas Generales</h1>
         <div class="estadisticas-container">
             <div class="estadisticas-cards">
@@ -63,37 +63,10 @@
             <div class="estadisticas-chart">
                 <canvas id="chartLicitaciones"></canvas>
             </div>
-            <div class="estadisticas-volver">
-                <a href="{% url 'gestion_licitaciones' %}" class="btn volver-btn">Volver</a>
-            </div>
+            
         </div>
-    </div>
-    
-    <!-- Modal flotante de notificaciones -->
-    <div id="modalNotificaciones" class="modal-notificaciones">
-        <div class="modal-notificaciones-content">
-            <div class="modal-notificaciones-header">
-                <h3 class="modal-notificaciones-title">
-                    <span class="modal-notificaciones-icon">🔔</span>
-                    Notificaciones
-                </h3>
-                <button id="cerrarModalNotificaciones" class="btn-close">&times;</button>
-            </div>
-            <div class="modal-notificaciones-body">
-                <div class="notificaciones-vacia" id="notificacionesVacia">
-                    <div class="notificaciones-vacia-icono">🔕</div>
-                    <div class="notificaciones-vacia-texto">No hay notificaciones</div>
-                </div>
-                <div id="notificacionesLista" class="notificaciones-lista">
-                    <!-- Aquí se cargarán las notificaciones -->
-                </div>
-            </div>
-            <div class="modal-notificaciones-footer" id="notificacionesAcciones" style="display: none;">
-                <button class="notificaciones-btn-accion" id="btnMarcarTodasLeidas">
-                    <span class="btn-icono">✅</span>
-                    Marcar todas como leídas
-                </button>
-            </div>
+        <div class="estadisticas-volver">
+            <a href="{% url 'gestion_licitaciones' %}" class="btn volver-btn">Volver</a>
         </div>
     </div>
     
@@ -102,7 +75,6 @@
         window.estadisticasLabels = [{% for op in licitaciones_por_operador %}'{{ op.nombre|escapejs }}'{% if not forloop.last %}, {% endif %}{% endfor %}];
         window.estadisticasData = [{% for op in licitaciones_por_operador %}{{ op.num_licitaciones }}{% if not forloop.last %}, {% endif %}{% endfor %}];
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="{% static 'licitaciones/js/sidebar.js' %}"></script>
     <script src="{% static 'licitaciones/js/estadisticas.js' %}"></script>
 </body>

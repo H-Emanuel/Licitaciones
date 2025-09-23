@@ -310,7 +310,7 @@ function initToggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.querySelector('.main-content');
     
-    if (btnToggle && sidebar) {
+    if (btnToggle && sidebar && mainContent) {
         console.log('Inicializando toggle de sidebar...');
         console.log('btnToggle:', btnToggle);
         console.log('sidebar:', sidebar);
@@ -340,10 +340,10 @@ function initToggleSidebar() {
                 }, 10);
                 
                 currentBtnToggle.classList.add('active');
-                mainContent.style = '';
+                
                 currentBtnToggle.title = 'Ocultar sidebar';
                 currentBtnToggle.querySelector('.toggle-sidebar-icon').textContent = '✕';
-                
+                mainContent.classList.add('m-sidebar'); // Ajustar margen del contenido principal
                 // Permitir nuevos clics después de la animación
                 setTimeout(() => {
                     isAnimating = false;
@@ -353,8 +353,7 @@ function initToggleSidebar() {
                 // Ocultar sidebar
                 sidebar.classList.add('hide');
                 sidebar.classList.remove('show');
-                mainContent.style.marginLeft = '0'; // Ajustar margen del contenido principal
-
+                mainContent.classList.remove('m-sidebar');
                 setTimeout(() => {
                     isAnimating = false; // Permitir nuevos clics
                 }, 400);
@@ -387,3 +386,24 @@ window.addEventListener('load', function() {
         initToggleSidebar();
     }, 200);
 });
+
+// Animaciones para las notificaciones
+const notificationStyles = `
+    @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes slideOutRight {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+`;
+
+// Agregar estilos de animación al head
+if (!document.getElementById('notification-styles')) {
+    const styleElement = document.createElement('style');
+    styleElement.id = 'notification-styles';
+    styleElement.textContent = notificationStyles;
+    document.head.appendChild(styleElement);
+}

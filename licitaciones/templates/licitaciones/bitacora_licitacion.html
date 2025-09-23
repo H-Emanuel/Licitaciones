@@ -8,7 +8,8 @@
     <link rel="stylesheet" href="{% static 'licitaciones/css/bitacora_licitacion.css' %}?v=1.1">
 </head>
 <body>
-    {% include 'licitaciones/sidebar.html' %}    <div class="main-content">
+    {% include 'licitaciones/sidebar.html' %}
+    <div class="main-content m-sidebar">
         <div class="bitacora-container">
             <div class="bitacora-header">
                 <h1 class="bitacora-titulo">📋 BITÁCORA DE LICITACIÓN</h1>                <div class="bitacora-info">
@@ -35,6 +36,7 @@
 
             <!-- Panel integrado para agregar observación (solo operadores) -->
             {% if es_operador or es_operador_manual %}
+            {% if licitacion.estado_fk.nombre|lower == 'en curso' %}
             <div class="bitacora-panel-operador" id="panelObservacionOperador">
                 <div class="panel-header">
                     <h3 class="panel-titulo">
@@ -62,7 +64,7 @@
                                     <span class="btn-flecha">←</span>
                                     <span class="btn-texto">Retroceder</span>
                                 </button>
-                                <button type="button" id="btnAvanzarEtapa" class="btn-avanzar-etapa" title="Avanzar a siguiente etapa">
+                                <button type="button" id="btnAvanzarEtapa" class="btn-avanzar-etapa hidden" title="Avanzar a siguiente etapa">
                                     <span class="btn-texto">Avanzar</span>
                                     <span class="btn-flecha">→</span>
                                 </button>
@@ -70,50 +72,124 @@
                         </div>
                         
                         <input type="hidden" id="accionEtapa" name="accion_etapa" value="none">
-                        
-                        <!-- Campo ID Mercado Público - se muestra solo en etapa "Publicacion en portal" -->
-                        <div id="idMercadoPublicoContainer" class="id-mercado-publico-container hidden">
-                            <label for="idMercadoPublicoInput" class="campo-label">
-                                <span class="label-icono">🏛️</span>
-                                ID Mercado Público:
+
+                        <div id="fechasImportantesContainer" class="fechas-importantes-container hidden" style="margin-bottom: 50px;">
+                            <h3 class="section-title" style="cursor: pointer;">
+                                <span class="section-icon">📅</span>
+                                Fechas importantes
+                            </h3>
+                            <label for="cierrePreguntasInput" class="campo-label">
+                                <span class="field-icon"></span>
+                                Cierre de preguntas
                             </label>
-                            <input 
-                                type="text" 
-                                id="idMercadoPublicoInput" 
-                                name="id_mercado_publico" 
-                                class="id-mercado-publico-input"
-                                placeholder="Ingresa el ID del mercado público (ej: 1234-56-LQ21)"
-                                maxlength="50"
-                                value="{{ licitacion.id_mercado_publico|default:'' }}"
-                            >
-                            <div class="campo-ayuda">
-                                <span class="ayuda-icono">💡</span>
-                                <span class="ayuda-texto">ID único asignado por el portal de mercado público</span>
+                            <input type="date" name="fecha_cierre_preguntas_publicacionportal" id="cierrePreguntasInput" class="campoEtapa" value="{{ licitacion.fecha_cierre_preguntas_publicacionportal|date:"Y-m-d"|default:'' }}">
+                            </input>
+                            <label for="respuestaInput" class="campo-label">
+                                <span class="field-icon"></span>
+                                Respuesta
+                            </label>
+                            <input type="date" name="fecha_respuesta_publicacionportal" id="respuestaInput" class="campoEtapa" value="{{ licitacion.fecha_respuesta_publicacionportal|date:"Y-m-d"|default:'' }}">
+                            </input>
+                            <label for="visitaTerrenoInput" class="campo-label">
+                                <span class="field-icon"></span>
+                                Visita a terreno
+                            </label>
+                            <input type="date" name="fecha_visita_terreno_publicacionportal" id="visitaTerrenoInput" class="campoEtapa"  value="{{ licitacion.fecha_visita_terreno_publicacionportal|date:"Y-m-d"|default:'' }}">
+                            </input>
+                            <label for="cierreOfertaInput" class="campo-label">
+                                <span class="field-icon"></span>
+                                Cierre de oferta
+                            </label>
+                            <input type="date" name="fecha_cierre_oferta_publicacionportal" id="cierreOfertaInput" class="campoEtapa"  value="{{ licitacion.fecha_cierre_oferta_publicacionportal|date:"Y-m-d"|default:'' }}">
+                            </input>
+                            <label for="aperturaTecnicaInput" class="campo-label">
+                                <span class="field-icon"></span>
+                                Apertura técnica
+                            </label>
+                            <input type="date" name="fecha_apertura_tecnica_publicacionportal" id="aperturaTecnicaInput" class="campoEtapa"  value="{{ licitacion.fecha_apertura_tecnica_publicacionportal|date:"Y-m-d"|default:'' }}">
+                            </input>
+                            <label for="aperturaEconomicaInput" class="campo-label">
+                                <span class="field-icon"></span>
+                                Apertura económica
+                            </label>
+                            <input type="date" name="fecha_apertura_economica_publicacionportal" id="aperturaEconomicaInput" class="campoEtapa"  value="{{ licitacion.fecha_apertura_economica_publicacionportal|date:"Y-m-d"|default:'' }}">
+                            </input>
+                            <label for="fechaEstimadaAdjudicacionInput" class="campo-label">
+                                <span class="field-icon"></span>
+                                Fecha estimada de adjudicación
+                            </label>
+                            <input type="date" name="fecha_estimada_adjudicacion_publicacionportal" id="fechaEstimadaAdjudicacionInput" class="campoEtapa"  value="{{ licitacion.fecha_estimada_adjudicacion_publicacionportal|date:"Y-m-d"|default:'' }}">
+                            </input>
+                        </div>
+
+                        <div id="evaluacionOfertaContainer" class="evaluacion-oferta-container hidden" style="margin-bottom: 50px;">
+                            <h3 class="section-title" style="cursor: pointer;">
+                                <span class="section-icon"></span>
+                                Tipo de solicitud:
+                            </h3>
+                            <select id="tipoSolicitudSelect" name="tipo_solicitud" class="campoEtapa" style="margin-bottom: 2vh;">
+                                <option value="">Observación corriente</option>
+                                <option value="1">Fecha que se envía evaluación técnica</option>
+                                <option value="2">Comisión evaluadora</option>
+                            </select>
+                            <div class="evaluacion-tecnica campo-group hidden">
+                                <h3 class="section-title" style="cursor: pointer;">
+                                    <span class="section-icon">📅</span>
+                                    Fecha que se envía evaluación técnica
+                                </h3>
+                                <input type="date" name="fecha_evaluacion_tecnica_evaluacion" id="fechaEvaluacionTecnicaInput" class="campoEtapa" value="{{ licitacion.fecha_evaluacion_tecnica_evaluacion|date:"Y-m-d"|default:'' }}">
+                                </input>
+                            </div>
+                            <div class="comision-evaluadora campo-group hidden">
+                                <h3 class="section-title" style="cursor: pointer;">
+                                    <span class="section-icon">📅</span>
+                                    Comisión evaluadora
+                                </h3>
+                                <label for="nombreIntegranteUnoEvaluacionInput" class="campo-label">
+                                    <span class="field-icono"></span>
+                                    Integrante N° 1
+                                </label>
+                                <input type="text" name="nombre_integrante_uno_evaluacion" id="nombreIntegranteUnoEvaluacionInput" placeholder="Integrante N° 1" class="campoEtapa" value="{{ licitacion.nombre_integrante_uno_evaluacion|default:'' }}">
+                                </input>
+                                <label for="nombreIntegranteDosEvaluacionInput" class="campo-label">
+                                    <span class="field-icono"></span>
+                                    Integrante N° 2
+                                </label>
+                                <input type="text" name="nombre_integrante_dos_evaluacion" id="nombreIntegranteDosEvaluacionInput" placeholder="Integrante N° 2" class="campoEtapa" value="{{ licitacion.nombre_integrante_dos_evaluacion|default:'' }}">
+                                </input>
+                                <label for="nombreIntegranteTresEvaluacionInput" class="campo-label">
+                                    <span class="field-icono"></span>
+                                    Integrante N° 3
+                                </label>
+                                <input type="text" name="nombre_integrante_tres_evaluacion" id="nombreIntegranteTresEvaluacionInput" placeholder="Integrante N° 3" class="campoEtapa" value="{{ licitacion.nombre_integrante_tres_evaluacion|default:'' }}">
+                                </input>
+                                <label for="fechaComisionInput" class="campo-label">
+                                    <span class="field-icon"></span>
+                                    Fecha de comisión evaluadora
+                                </label>
+                                <input type="date" name="fecha_comision_evaluacion" id="fechaComisionInput" class="campoEtapa" value="{{ licitacion.fecha_comision_evaluacion|date:"Y-m-d"|default:'' }}">
                             </div>
                         </div>
-                        
-                        <!-- Campos específicos para "Recepción de Ofertas" -->
-                        <div id="recepcionOfertasContainer" class="recepcion-ofertas-container hidden">
-                            <div class="campo-grupo">
-                                <label for="numeroOfertasInput" class="campo-label">
-                                    <span class="label-icono">📊</span>
-                                    N° de Ofertas Recibidas:
-                                </label>
-                                <input 
-                                    type="number" 
-                                    id="numeroOfertasInput" 
-                                    name="numero_ofertas" 
-                                    class="numero-ofertas-input"
-                                    placeholder="Ej: 5"
-                                    min="0"
-                                    max="999"
-                                >
-                                <div class="campo-ayuda">
-                                    <span class="ayuda-icono">💡</span>
-                                    <span class="ayuda-texto">Cantidad total de ofertas recibidas para esta licitación</span>
-                                </div>
-                            </div>
-                            
+
+                        <div id="solicitudRegimenInternoContainer" class="solicitud-regimen-interno-container hidden" style="margin-bottom: 50px;">
+                            <h3 class="section-title" style="cursor: pointer;">
+                                <span class="section-icon">📅</span>
+                                Fecha de solicitud de comisión de régimen interno
+                            </h3>
+                            <input type="date" name="fecha_solicitud_regimen_interno" id="fechaSolicitudRegimenInternoInput" class="campoEtapa" value="{{ licitacion.fecha_solicitud_regimen_interno|date:"Y-m-d"|default:'' }}">
+                            </input>
+                        </div>
+
+                        <div id="recepcionDocumentosRegimenInternoContainer" class="recepcion-documentos-regimen-interno-container hidden" style="margin-bottom: 50px;">
+                            <h3 class="section-title" style="cursor: pointer;">
+                                <span class="section-icon">📅</span>
+                                Fecha de recepción de documento de régimen interno
+                            </h3>
+                            <input type="date" name="fecha_recepcion_documento_regimen_interno" id="fechaRecepcionDocumentoRegimenInternoInput" class="campoEtapa" value="{{ licitacion.fecha_recepcion_documento_regimen_interno|date:"Y-m-d"|default:'' }}">
+                            </input>
+                        </div>
+
+                        <div id="adjudicacionContainer" class="adjudicacion-container hidden" style="margin-bottom: 50px;">
                             <div class="campo-grupo">
                                 <label for="empresaNombreInput" class="campo-label">
                                     <span class="label-icono">🏢</span>
@@ -122,10 +198,11 @@
                                 <input 
                                     type="text" 
                                     id="empresaNombreInput" 
-                                    name="empresa_nombre" 
-                                    class="empresa-nombre-input"
+                                    name="empresa_adjudicacion" 
+                                    class="campoEtapa"
                                     placeholder="Ej: Constructora ABC Ltda."
                                     maxlength="200"
+                                    value="{{ licitacion.empresa_adjudicacion|default:'' }}"
                                 >
                             </div>
                             
@@ -137,15 +214,228 @@
                                 <input 
                                     type="text" 
                                     id="empresaRutInput" 
-                                    name="empresa_rut" 
-                                    class="empresa-rut-input"
+                                    name="rut_adjudicacion" 
+                                    class="campoEtapa"
                                     placeholder="Ej: 12.345.678-9"
                                     maxlength="12"
+                                    value="{{ licitacion.rut_adjudicacion|default:'' }}"
                                 >
                                 <div class="campo-ayuda">
                                     <span class="ayuda-icono">💡</span>
                                     <span class="ayuda-texto">RUT de la empresa adjudicataria o principal participante</span>
                                 </div>
+                            </div>
+                            <div class="campo-grupo">
+                                <label for="montoAdjudicadoInput" class="campo-label">
+                                    <span class="label-icono">💰</span>
+                                    Monto adjudicado:
+                                </label>
+                                <input 
+                                    type="number" 
+                                    step="0.01"
+                                    id="montoAdjudicadoInput" 
+                                    name="monto_adjudicacion" 
+                                    class="campoEtapa"
+                                    placeholder="Ej: 1500000.00"
+                                    min="0"
+                                    value="{{ licitacion.monto_adjudicacion|default:'' }}">
+                                <div class="campo-ayuda">
+                                    <span class="ayuda-icono">💡</span>
+                                    <span class="ayuda-texto">En pesos</span>
+                                </div>
+                            </div>
+                            <div class="campo-grupo">
+                                <label for="fechaDecretoInput" class="campo-label">
+                                    <span class="label-icono">📅</span>
+                                    Fecha de decreto:
+                                </label>
+                                <input 
+                                    type="date" 
+                                    id="fechaDecretoInput" 
+                                    name="fecha_decreto_adjudicacion" 
+                                    class="campoEtapa"
+                                    value="{{ licitacion.fecha_decreto_adjudicacion|date:"Y-m-d"|default:'' }}">
+                            </div>
+                            <div class="campo-grupo">
+                                <label for="fechaSubidaMercadoPublicoInput" class="campo-label">
+                                    <span class="label-icono">📅</span>
+                                    Fecha de subida a Mercado Público:
+                                </label>
+                                <input 
+                                    type="date" 
+                                    id="fechaSubidaMercadoPublicoInput" 
+                                    name="fecha_subida_mercado_publico_adjudicacion" 
+                                    class="campoEtapa"
+                                    value="{{ licitacion.fecha_subida_mercado_publico_adjudicacion|date:"Y-m-d"|default:'' }}">
+                            </div>
+                            <div class="campo-grupo">
+                                <label for="numeroOrdenCompraInput" class="campo-label">
+                                    <span class="label-icono">🛒</span>
+                                    Número de orden de compra:
+                                </label>
+                                <input 
+                                    type="number" 
+                                    id="numeroOrdenCompraInput" 
+                                    name="orden_compra_adjudicacion" 
+                                    class="campoEtapa"
+                                    placeholder="Ej: 12345"
+                                    max=999999999
+                                    value="{{ licitacion.orden_compra_adjudicacion|default:'' }}">
+                            </div>
+                        </div>
+
+                        <div id="disponibilidadPresupuestariaContainer" class="disponibilidad-presupuestaria-container hidden" style="margin-bottom: 50px;">
+                            <h3 class="section-title" style="cursor: pointer;">
+                                <span class="section-icon">📅</span>
+                                Fecha de disponibilidad presupuestaria
+                            </h3>
+                            <input type="date" name="fecha_disponibilidad_presupuestaria" id="fechaDisponibilidadPresupuestariaInput" class="campoEtapa" value="{{ licitacion.fecha_disponibilidad_presupuestaria|date:"Y-m-d"|default:'' }}">
+                            </input>
+                        </div>
+
+                        <div id="topeFirmaContratoContainer" class="firma-contrato-container hidden" style="margin-bottom: 50px;">
+                            <div class="campo-group" style="margin-bottom: 20px">
+                                <h3 class="section-title" style="cursor: pointer;">
+                                    <span class="section-icon">📅</span>
+                                    Fecha tope de firma de contrato
+                                </h3>
+                                <input type="date" name="fecha_tope_firma_contrato" id="fechaTopeFirmaContratoInput" class="campoEtapa" value="{{ licitacion.fecha_tope_firma_contrato|date:"Y-m-d"|default:'' }}">
+                                </input>
+                            </div>
+                            <div class="campo-group">
+                                <button type="button" id="btnModalRedestinar" class="btn-accion btn-primario">
+                                    <span class="btn-icono">🔄</span>
+                                    Redestinar
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="evaluacionCotizacionContainer" class="evaluacion-cotizacion-container hidden" style="margin-bottom: 50px;">
+                            <h3 class="section-title" style="cursor: pointer;">
+                                <span class="section-icon"></span>
+                                Evaluación de la cotización:
+                            </h3>
+                            <div class="campo-grupo">
+                                <label for="fechaEvaluacionCotizacionInput" class="campo-label">
+                                    <span class="label-icono">📅</span>
+                                    Fecha de evaluación:
+                                </label>
+                                <input 
+                                    type="date" 
+                                    id="fechaEvaluacionCotizacionInput" 
+                                    name="fecha_evaluacion_cotizacion" 
+                                    class="campoEtapa"
+                                    value="{{ licitacion.fecha_evaluacion_cotizacion|date:"Y-m-d"|default:'' }}">
+                            </div>
+                            <div class="campo-grupo">
+                                <label for="montoEstimadoCotizacionInput" class="campo-label">
+                                    <span class="label-icono">💰</span>
+                                    Monto estimado:
+                                </label>
+                                <input 
+                                    type="number" 
+                                    step="0.01"
+                                    id="montoEstimadoCotizacionInput" 
+                                    name="monto_estimado_cotizacion" 
+                                    class="campoEtapa"
+                                    placeholder="Ej: 1500000.00"
+                                    min="0"
+                                    value="{{ licitacion.monto_estimado_cotizacion|default:'' }}">
+                                <div class="campo-ayuda">
+                                    <span class="ayuda-icono">💡</span>
+                                    <span class="ayuda-texto">En pesos</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="decretoIntencionCompraContainer" class="decreto-intencion-compra-container hidden" style="margin-bottom: 50px;">
+                            <div class="campo-grupo">
+                                <label for="fechaSolicitudIntencionCompraInput" class="campo-label">
+                                    <span class="label-icono">📅</span>
+                                    Fecha de decreto:
+                                </label>
+                                <input 
+                                    type="date" 
+                                    id="fechaSolicitudIntencionCompraInput" 
+                                    name="fecha_solicitud_intencion_compra" 
+                                    class="campoEtapa"
+                                    value="{{ licitacion.fecha_solicitud_intencion_compra|date:"Y-m-d"|default:'' }}">
+                            </div>
+                        </div>
+
+                        <div id="comisionBaseContainer" class="comision-base-container hidden" style="margin-bottom: 50px;">
+                            <h3 class="section-title" style="cursor: pointer;">
+                                <span class="section-icon"></span>
+                                Comision de base:
+                            </h3>
+                            <label for="nombreIntegranteUnoComisionBaseInput" class="campo-label">
+                                <span class="field-icono"></span>
+                                Integrante N° 1
+                            </label>
+                            <input type="text" name="nombre_integrante_uno_comision_base" id="nombreIntegranteUnoComisionBaseInput" placeholder="Integrante N° 1" class="campoEtapa" value="{{ licitacion.nombre_integrante_uno_comision_base|default:'' }}">
+                            </input>
+                            <label for="nombreIntegranteDosComisionBaseInput" class="campo-label">
+                                <span class="field-icono"></span>
+                                Integrante N° 2
+                            </label>
+                            <input type="text" name="nombre_integrante_dos_comision_base" id="nombreIntegranteDosComisionBaseInput" placeholder="Integrante N° 2" class="campoEtapa" value="{{ licitacion.nombre_integrante_dos_comision_base|default:'' }}">
+                            </input>
+                            <label for="nombreIntegranteTresComisionBaseInput" class="campo-label">
+                                <span class="field-icono"></span>
+                                Integrante N° 3
+                            </label>
+                            <input type="text" name="nombre_integrante_tres_comision_base" id="nombreIntegranteTresComisionBaseInput" placeholder="Integrante N° 3" class="campoEtapa" value="{{ licitacion.nombre_integrante_tres_comision_base|default:'' }}">
+                            </input>
+                        </div>
+
+                        <div id="publicacionMercadoPublicoContainer" class="publicacion-mercado-publico-container hidden" style="margin-bottom: 50px;">
+                            <h3 class="section-title" style="cursor: pointer;">
+                                <span class="section-icon"></span>
+                                Fechas de mercado público:
+                            </h3>
+                            <div class="campo-grupo">
+                                <label for="fechaPublicacionMercadoPublicoInput" class="campo-label">
+                                    <span class="label-icono">📅</span>
+                                    Fecha de publicación:
+                                </label>
+                                <input 
+                                    type="date" 
+                                    id="fechaPublicacionMercadoPublicoInput" 
+                                    name="fecha_publicacion_mercado_publico" 
+                                    class="campoEtapa"
+                                    value="{{ licitacion.fecha_publicacion_mercado_publico|date:"Y-m-d"|default:'' }}">
+                            </div>
+                            <div class="campo-grupo">
+                                <label for="fechaCierreOfertasMercadoPublicoInput" class="campo-label">
+                                    <span class="label-icono">📅</span>
+                                    Fecha de cierre de ofertas:
+                                </label>
+                                <input 
+                                    type="date" 
+                                    id="fechaCierreOfertasMercadoPublicoInput" 
+                                    name="fecha_cierre_ofertas_mercado_publico" 
+                                    class="campoEtapa"
+                                    value="{{ licitacion.fecha_cierre_ofertas_mercado_publico|date:"Y-m-d"|default:'' }}">
+                            </div>
+                        </div>
+                        <!-- Campo ID Mercado Público - se muestra solo en etapa "Publicacion en portal" -->
+                        <div id="idMercadoPublicoContainer" class="id-mercado-publico-container hidden">
+                            <label for="idMercadoPublicoInput" class="campo-label">
+                                <span class="label-icono">🏛️</span>
+                                ID Mercado Público:
+                            </label>
+                            <input 
+                                type="text" 
+                                id="idMercadoPublicoInput" 
+                                name="id_mercado_publico" 
+                                class="campoEtapa"
+                                placeholder="(ej: 1234-56-LQ21)"
+                                maxlength="50"
+                                value="{{ licitacion.id_mercado_publico|default:'' }}"
+                            >
+                            <div class="campo-ayuda">
+                                <span class="ayuda-icono">💡</span>
+                                <span class="ayuda-texto">ID único asignado por el portal de mercado público</span>
                             </div>
                         </div>
                         
@@ -220,6 +510,7 @@
                 </div>
             </div>
             {% endif %}
+            {% endif %}
 
             <div class="bitacora-entradas">
                 {% for b in bitacoras %}
@@ -290,7 +581,7 @@
                                 {% endif %}
                             </div>
                             {% else %}
-                                {% if es_admin %}
+                                {% if es_admin and licitacion.estado_fk.nombre == 'En Curso' %}
                                 <button class="btn-agregar-observacion-bitacora" data-id="{{ b.id }}">
                                     💭 Agregar observación
                                 </button>
@@ -365,9 +656,38 @@
             window.etapasLicitacion = JSON.parse(document.getElementById('etapas-licitacion-data').textContent);
         </script>
         <script src="{% static 'licitaciones/js/bitacora_licitacion.js' %}"></script>
-    </div>    <!-- Modal para agregar/editar observación -->
-    <div id="modalObservacion">
-        <div class="modal-container">
+    </div>
+
+    <div class="modal-container" id="modalRedestinar">
+        <div class="modal-content" style="padding: 20px 20px;">
+            <span id="cerrarModalRedestinar" class="btn-close">&times;</span>
+            <h2 id="tituloModalRedestinar">Redestinación</h2>
+            <form id="formModalRedestinar" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="licitacion_id" value="{{ licitacion.id }}">
+                <div class="modal-field-container">
+                    <label for="modalRedestinarTexto" class="modal-field-label">Razón:</label>
+                    <textarea id="modalRedestinarTexto" name="texto" rows="4" class="modal-textarea" required {% if es_admin %}readonly{% endif %} placeholder="Escribe la razón de redestinación..."></textarea>
+                </div>
+                <!-- Información de ayuda -->
+                <div class="modal-file-help">
+                    <span class="help-icon">💡</span>
+                    <span class="help-text">Se redestinará la licitacion a "Evaluación de ofertas" y se registrará en la bitácora</span>
+                </div>
+
+                <div class="modal-buttons">
+                    <button type="button" id="btnCancelarRedestinar">Cancelar</button>
+                    {% if es_operador %}
+                    <button type="submit" id="btnRedestinar">🔄 Redestinar</button>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para agregar/editar observación -->
+    <div class="modal-container">
+        <div class="modal-content" style="padding: 20px 20px;">
             <span id="cerrarModalObservacion" class="btn-close">&times;</span>
             <h2 id="tituloModalObservacion">💭 Observación</h2>
             <form id="formModalObservacion" method="post" enctype="multipart/form-data">
@@ -395,10 +715,10 @@
                                 <div class="modal-dropzone-main">Arrastra archivos aquí</div>
                                 <div class="modal-dropzone-sub">o haz clic para seleccionar</div>
                             </div>
-                            <div class="modal-dropzone-button">
+                            <label class="modal-dropzone-button" for="modalArchivos">
                                 <span class="modal-btn-icon">📎</span>
                                 Seleccionar archivos
-                            </div>
+                            </label>
                         </div>
                         <input type="file" id="modalArchivos" name="archivos" multiple class="file-input-hidden" accept="*/*">
                     </div>
