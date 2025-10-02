@@ -6,9 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('licitaciones', '0007_migrar_datos_operador_a_user'),
-        ('licitaciones', '0007_remover_modelo_operador'),
-        ('licitaciones', '0008_remover_modelo_operador'),
+        ('licitaciones', '0008_remover_modelo_operador')
     ]
 
     operations = [
