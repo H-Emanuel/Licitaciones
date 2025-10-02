@@ -25,9 +25,11 @@ SECRET_KEY = 'django-insecure-ikn@!u*avi#gostkb^3@m_&93bc3&rly_!f#_f)&tbg&%2fjah
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['192.168.12.80','departamentosig.munivalpo.cl','localhost',"*",'7d2542fcf372.ngrok-free.app','www.departamentosig.munivalpo.cl']
 
-
+CORS_ALLOWED_ORIGINS = [
+    "7d2542fcf372.ngrok-free.app",
+]
 # Application definition
 
 INSTALLED_APPS = [
@@ -80,8 +82,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'licitaciones',  
-        'USER': 'postgres', 
-        'PASSWORD': '1234',  
+        'USER': 'licitacione_user', 
+        'PASSWORD': 'licitacione2025',  
         'HOST': 'localhost', 
         'PORT': '5432',
     }
