@@ -13,7 +13,7 @@
 </head>
 <body>
     {% include 'licitaciones/sidebar.html' %}
-    <div class="main-content">
+    <div class="main-content m-sidebar">
         <h1 class="titulo">SEGUIMIENTO DE LICITACIONES (Operador)</h1>
         <!-- Botones de filtro superiores -->
         <div class="botones-superiores">
@@ -34,8 +34,8 @@
             </button>
             {% endif %}
         </div>
-        <div class="botones-accion-principales">
-            <input style="border-radius: 26px; border: none; height: 3vh; width: auto; padding: 1vh 0.5vw;" class="" type="search" placeholder="Nº de pedido" aria-label="Nº de pedido" id="numeroPedido">
+        <div class="botones-accion-principales" style="width: fit-content;">
+            <input style="border-radius: 26px; border: none; height: 3vh; width: auto; padding: 1vh 0.5vw;" class="" type="search" placeholder="Nº de pedido o iniciativa" aria-label="Nº de pedido" id="numeroPedido">
             <button class="btn-moderno" id="btnFiltrarPedido" type="submit">Buscar</button>
         </div>
         <div class="tabla-wrapper">
@@ -43,8 +43,11 @@
                 <table class="tabla-proyectos">
                     <thead>
                         <tr>
+                            <th data-col="seleccionar" class="seleccionar-header"></th>
                             <th data-col="numero_pedido">N° de pedido</th>
                             <th data-col="id_mercado_publico">ID Mercado Público</th>
+                            <th data-col="orden_compra">Orden de compra</th>
+                            <th data-col="fecha_estimada_adjudicacion">Fecha estimada de adjudicación</th>
                             <th data-col="operadores">Profesionales a Cargo</th>
                             <th data-col="etapa">Etapa</th>
                             <th data-col="estado">Status</th>
@@ -59,6 +62,7 @@
                             <th data-col="institucion">Institución</th>
                             <th data-col="departamento">Depto.</th>
                             <th data-col="monto_presupuestado">Monto Presupuestado general</th>
+                            <th data-col="tipo_presupuesto">Tipo por presupuesto</th>
                             <th data-col="llamado_cotizacion">Llamado Cotización</th>
                             <th data-col="fecha_creacion">Fecha de Asignación</th>
                             <th data-col="licitacion_fallida_linkeada">Licitación Fallida Linkeada</th>
@@ -66,9 +70,12 @@
                     </thead>
                     <tbody>
                 {% for licitacion in proyectos %}
-                <tr>
+                <tr data-id="{{ licitacion.id }}" class="{% if not licitacion.estado_fk or licitacion.estado_fk.id == 1 %} lic-abierta {% else %} lic-cerrada {% endif %}" onclick="document.getElementById('check-{{ licitacion.id }}').click();">
+                    <td data-campo="seleccionar" data-col="seleccionar" data-label="Seleccionar"><input type="checkbox" class="licitacion-check" value="{{ licitacion.id }}" id="check-{{ licitacion.id }}" onclick="event.stopPropagation();"/></td>
                     <td data-campo="numero_pedido" data-col="numero_pedido" data-label="N° de pedido">{{ licitacion.numero_pedido }}</td>
                     <td data-campo="id_mercado_publico" data-col="id_mercado_publico" data-label="ID Mercado Público">{{ licitacion.id_mercado_publico|default:"-" }}</td>
+                    <td data-campo="orden_compra" data-col="orden_compra" data-label="Orden de compra">{{ licitacion.orden_compra_adjudicacion|default:"-" }}</td>
+                    <td data-campo="fecha_estimada_adjudicacion" data-col="fecha_estimada_adjudicacion" data-label="Fecha estimada de adjudicación" >{{ licitacion.fecha_estimada_adjudicacion_publicacionportal|date:"d/m/Y"|default:"-" }}</td>
                     <td data-campo="operadores" data-col="operadores" data-label="Profesionales a Cargo">
                         <div class="operadores-container">
                             <span class="operador-badge operador-1 {% if licitacion.get_numero_operador_activo == 1 %}activo{% endif %}" title="Operador 1: Gestiona hasta Evaluación de Ofertas">
@@ -120,6 +127,7 @@
                     <td data-campo="institucion" data-col="institucion" data-label="Institución">{{ licitacion.institucion|default:"-" }}</td>
                     <td data-campo="departamento" data-col="departamento" data-label="Departamento">{{ licitacion.departamento.nombre|default:licitacion.departamento }}</td>
                     <td data-campo="monto_presupuestado" data-col="monto_presupuestado" data-label="Monto Presupuestado">${{ licitacion.monto_presupuestado|floatformat:"0"|chilean_thousands }}</td>
+                    <td data-campo="tipo_presupuesto" data-col="tipo_presupuesto" data-label="Tipo de presupuesto">{{ licitacion.get_tipo_presupuesto_display }}</td>
                     <td data-campo="llamado_cotizacion" data-col="llamado_cotizacion" data-label="Llamado Cotización">{{ licitacion.get_llamado_cotizacion_display|default:"-" }}</td>
                     <td data-campo="fecha_creacion" data-col="fecha_creacion" data-label="Fecha de creación">{{ licitacion.fecha_creacion|date:"d/m/Y H:i" }}</td>
                     <td data-campo="licitacion_fallida_linkeada" data-col="licitacion_fallida_linkeada" data-label="Licitación Fallida Linkeada">
@@ -134,192 +142,170 @@
             </tbody>
         </table>
         </div>
-        
-        <!-- Botón sticky para mostrar/ocultar acciones -->
-        <button id="btnToggleAcciones" class="btn-toggle-acciones" title="Mostrar/Ocultar Acciones">
-            <span class="toggle-icon">⚙️</span>
+    </div>
+    <div class="toggle-acciones" style="gap: 10px;">
+        <!-- Botón Ver última observación (siempre visible) -->
+        <button class="btn-toggle-acciones ultima-obs-fila" data-id="" title="Ver última observación">
+            <span class="icono-accion">📝</span>
         </button>
-        
-        <!-- Columna sticky separada para acciones -->
-        <div class="acciones-sticky" id="accionesSticky">
-            <div class="acciones-header">
-                <div class="acciones-header-cell">Acciones</div>
-            </div>
-            <div class="acciones-body">
-                {% for licitacion in proyectos %}
-                <div class="acciones-row">
-                    <button class="btn btn-accion ultima-obs-fila icon-btn" data-id="{{ licitacion.id }}" title="Ver última observación">
-                        <span class="icono-accion">📝</span>
-                    </button>
-                    
-                    {% if not licitacion.estado_fk or licitacion.estado_fk.id != 3 %}
-                        <button class="btn btn-accion cerrar-licitacion-fila icon-btn" data-id="{{ licitacion.id }}" title="Cerrar licitación">
-                            <span class="icono-accion">🔒</span>
-                        </button>
-                    {% else %}
-                        <button class="btn btn-accion cerrar-licitacion-fila icon-btn" data-id="{{ licitacion.id }}" title="Licitación ya cerrada" disabled>
-                            <span class="icono-accion">🔒</span>
-                        </button>
-                    {% endif %}
-                    
-                    <a href="{% url 'bitacora_licitacion' licitacion.id %}?from=operador" class="btn icon-btn" title="Ver bitácora">
-                        <span class="icono-accion">📒</span>
-                    </a>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-        </div>
-        <div class="paginator">
-            {% if proyectos.has_previous %}
-                <a href="?page={{ proyectos.previous_page_number }}{% if request.GET.solo_anuales %}&solo_anuales={{ request.GET.solo_anuales }}{% endif %}{% if request.GET.solo_fallidas %}&solo_fallidas={{ request.GET.solo_fallidas }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="btn">Anterior</a>
+        <!-- Botón Bitácora (siempre visible) -->
+        <a class="btn-toggle-acciones" title="Ver bitácora" href="" data-id="" style="text-decoration-line: none;" onclick="(this.getAttribute('data-id') !== '') ? this.href='/bitacora/'+this.getAttribute('data-id') : this.querySelector('icono-accion').style='color:#bbb;'; this.querySelector('icono-accion').title='Sin bitácora'; this.querySelector('icono-accion').textContent='X';">
+            <span class="icono-accion">📒</span>
+        </a>
+        <!-- Botón Cerrar licitación (siempre visible) -->
+        <button class="btn-toggle-acciones cerrar-licitacion-fila" data-id="" title="Cerrar licitación">
+            <span class="icono-accion">🔒</span>
+        </button>
+    </div>
+    <div class="paginator">
+        {% if proyectos.has_previous %}
+            <a href="?page={{ proyectos.previous_page_number }}{% if request.GET.solo_anuales %}&solo_anuales={{ request.GET.solo_anuales }}{% endif %}{% if request.GET.solo_fallidas %}&solo_fallidas={{ request.GET.solo_fallidas }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="btn">Anterior</a>
+        {% endif %}
+        {% for num in proyectos.paginator.page_range %}
+            {% if proyectos.number == num %}
+                <span class="btn active">{{ num }}</span>
+            {% else %}
+                <a href="?page={{ num }}{% if request.GET.solo_anuales %}&solo_anuales={{ request.GET.solo_anuales }}{% endif %}{% if request.GET.solo_fallidas %}&solo_fallidas={{ request.GET.solo_fallidas }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="btn">{{ num }}</a>
             {% endif %}
-            {% for num in proyectos.paginator.page_range %}
-                {% if proyectos.number == num %}
-                    <span class="btn active">{{ num }}</span>
-                {% else %}
-                    <a href="?page={{ num }}{% if request.GET.solo_anuales %}&solo_anuales={{ request.GET.solo_anuales }}{% endif %}{% if request.GET.solo_fallidas %}&solo_fallidas={{ request.GET.solo_fallidas }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="btn">{{ num }}</a>
-                {% endif %}
-            {% endfor %}
-            {% if proyectos.has_next %}
-                <a href="?page={{ proyectos.next_page_number }}{% if request.GET.solo_anuales %}&solo_anuales={{ request.GET.solo_anuales }}{% endif %}{% if request.GET.solo_fallidas %}&solo_fallidas={{ request.GET.solo_fallidas }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="btn">Siguiente</a>
-            {% endif %}
+        {% endfor %}
+        {% if proyectos.has_next %}
+            <a href="?page={{ proyectos.next_page_number }}{% if request.GET.solo_anuales %}&solo_anuales={{ request.GET.solo_anuales }}{% endif %}{% if request.GET.solo_fallidas %}&solo_fallidas={{ request.GET.solo_fallidas }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="btn">Siguiente</a>
+        {% endif %}
+    </div>
+    <!-- Modal Añadir Observación -->
+    <div id="modalObservacion" class="modal">
+        <div style="background:#fff; padding:30px; border-radius:12px; min-width:340px; max-width:95vw; position:relative; min-height:120px;">
+            <span id="cerrarModalObservacion" class="btn-close" style="position:absolute; top:10px; right:15px; cursor:pointer; font-size:22px;">&times;</span>                <h2 style="color:#28a745; text-align:center; margin-bottom:18px;">Añadir Observación</h2>
+            <form id="formObservacion" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" id="observacionLicitacionId" name="licitacion_id">                    <div id="etapaActualContainer">
+                    <label style="font-weight:600; display:block; text-align:center; margin-bottom:8px;">Etapa actual:</label>                        <span id="nombreEtapaActual" style="display:block; text-align:center; margin-bottom:15px;"></span>
+                        <!-- Contenedor centrado para los botones usando la clase btn-container -->
+                    <div class="btn-container">
+                        <button type="button" id="btnRetrocederEtapa" class="btn-etapa btn-retroceder" title="Retroceder etapa" style="display:none;">
+                            <span class="arrow">&#8592;</span>
+                            <span class="btn-text">Retroceder</span>
+                        </button>
+                        <button type="button" id="btnAvanzarEtapa" class="btn-etapa" title="Avanzar etapa">
+                            <span class="btn-text">Avanzar</span>
+                            <span class="arrow">&#8594;</span>
+                        </button>
+                    </div>
+                </div>
+                <input type="hidden" id="accionEtapa" name="accion_etapa" value="none">
+                <div style="margin-bottom:12px;">
+                    <label for="observacionTexto">Observación:</label>
+                    <textarea id="observacionTexto" name="texto" rows="4" style="width:100%;"></textarea>
+                </div>
+                <div style="margin-bottom:12px;">
+                    <label for="observacionArchivos">Archivos adjuntos:</label>
+                    <div class="drop-zone" id="dropZoneObservacion">
+                        <div class="drop-zone-prompt">
+                            <span class="drop-zone-prompt-icon" style="font-size:3.5em; color:#0275d8;">📁</span>
+                            <span>Arrastra archivos aquí o haz clic para seleccionar</span>
+                        </div>
+                        <input type="file" id="observacionArchivos" name="archivos" multiple style="display:none;">
+                    </div>
+                    <div id="filePreviewObservacion" class="file-preview-container"></div>
+                </div>
+                <div style="margin-bottom:18px; display:flex; align-items:center; gap:10px;">
+                    <input type="checkbox" id="marcarFallidaCheckbox" name="marcar_fallida" style="width:20px; height:20px;">
+                    <label for="marcarFallidaCheckbox" style="font-weight:600; color:#d32f2f; margin-bottom:0; cursor:pointer;">Marcar licitación como <span style='color:#d32f2f;'>FALLIDA</span></label>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:10px;">
+                    <button type="button" id="btnCancelarObservacion" class="modal-action-btn">Cancelar</button>
+                    <button type="submit" id="btnEnviarObservacion" class="modal-action-btn" style="background:#16c96a; color:#fff;">Enviar</button>
+                </div>
+            </form>
         </div>
-        <!-- Modal Añadir Observación -->
-        <div id="modalObservacion" class="modal">
-            <div style="background:#fff; padding:30px; border-radius:12px; min-width:340px; max-width:95vw; position:relative; min-height:120px;">
-                <span id="cerrarModalObservacion" class="btn-close" style="position:absolute; top:10px; right:15px; cursor:pointer; font-size:22px;">&times;</span>                <h2 style="color:#28a745; text-align:center; margin-bottom:18px;">Añadir Observación</h2>
-                <form id="formObservacion" method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <input type="hidden" id="observacionLicitacionId" name="licitacion_id">                    <div id="etapaActualContainer">
-                        <label style="font-weight:600; display:block; text-align:center; margin-bottom:8px;">Etapa actual:</label>                        <span id="nombreEtapaActual" style="display:block; text-align:center; margin-bottom:15px;"></span>
-                          <!-- Contenedor centrado para los botones usando la clase btn-container -->
-                        <div class="btn-container">
-                            <button type="button" id="btnRetrocederEtapa" class="btn-etapa btn-retroceder" title="Retroceder etapa" style="display:none;">
-                                <span class="arrow">&#8592;</span>
-                                <span class="btn-text">Retroceder</span>
-                            </button>
-                            <button type="button" id="btnAvanzarEtapa" class="btn-etapa" title="Avanzar etapa">
-                                <span class="btn-text">Avanzar</span>
-                                <span class="arrow">&#8594;</span>
-                            </button>
-                        </div>
-                    </div>
-                    <input type="hidden" id="accionEtapa" name="accion_etapa" value="none">
-                    <div style="margin-bottom:12px;">
-                        <label for="observacionTexto">Observación:</label>
-                        <textarea id="observacionTexto" name="texto" rows="4" style="width:100%;"></textarea>
-                    </div>
-                    <div style="margin-bottom:12px;">
-                        <label for="observacionArchivos">Archivos adjuntos:</label>
-                        <div class="drop-zone" id="dropZoneObservacion">
-                            <div class="drop-zone-prompt">
-                                <span class="drop-zone-prompt-icon" style="font-size:3.5em; color:#0275d8;">📁</span>
-                                <span>Arrastra archivos aquí o haz clic para seleccionar</span>
-                            </div>
-                            <input type="file" id="observacionArchivos" name="archivos" multiple style="display:none;">
-                        </div>
-                        <div id="filePreviewObservacion" class="file-preview-container"></div>
-                    </div>
-                    <div style="margin-bottom:18px; display:flex; align-items:center; gap:10px;">
-                        <input type="checkbox" id="marcarFallidaCheckbox" name="marcar_fallida" style="width:20px; height:20px;">
-                        <label for="marcarFallidaCheckbox" style="font-weight:600; color:#d32f2f; margin-bottom:0; cursor:pointer;">Marcar licitación como <span style='color:#d32f2f;'>FALLIDA</span></label>
-                    </div>
-                    <div style="display:flex; justify-content:flex-end; gap:10px;">
-                        <button type="button" id="btnCancelarObservacion" class="modal-action-btn">Cancelar</button>
-                        <button type="submit" id="btnEnviarObservacion" class="modal-action-btn" style="background:#16c96a; color:#fff;">Enviar</button>
-                    </div>
-                </form>
+    </div>
+    <!-- Modal Última Observación -->
+    <div id="modalUltimaObs" class="modal">
+        <div style="background:#fff; padding:30px; border-radius:12px; min-width:340px; max-width:95vw; position:relative; min-height:120px;">
+            <span id="cerrarModalUltimaObs" class="btn-close" style="position:absolute; top:10px; right:15px; cursor:pointer; font-size:22px;">&times;</span>
+            <h2 style="color:#28a745; text-align:center; margin-bottom:18px;">Última observación</h2>
+            <div>
+                <h3 style="color:#0275d8;">Del Operador:</h3>
+                <div id="contenidoUltimaObsOperador" style="min-height:60px; color:#222; font-size:1.08em; text-align:left; margin-bottom:10px;"></div>
+                <div id="fechaUltimaObsOperador" style="color:#888; font-size:0.98em; text-align:right;"></div>
+            </div>
+            <div>
+                <h3 style="color:#d9534f;">Del Administrador:</h3>
+                <div id="contenidoUltimaObsAdmin" style="min-height:60px; color:#222; font-size:1.08em; text-align:left; margin-bottom:10px;"></div>
+                <div id="fechaUltimaObsAdmin" style="color:#888; font-size:0.98em; text-align:right;"></div>
             </div>
         </div>
-        <!-- Modal Última Observación -->
-        <div id="modalUltimaObs" class="modal">
-            <div style="background:#fff; padding:30px; border-radius:12px; min-width:340px; max-width:95vw; position:relative; min-height:120px;">
-                <span id="cerrarModalUltimaObs" class="btn-close" style="position:absolute; top:10px; right:15px; cursor:pointer; font-size:22px;">&times;</span>
-                <h2 style="color:#28a745; text-align:center; margin-bottom:18px;">Última observación</h2>
-                <div>
-                    <h3 style="color:#0275d8;">Del Operador:</h3>
-                    <div id="contenidoUltimaObsOperador" style="min-height:60px; color:#222; font-size:1.08em; text-align:left; margin-bottom:10px;"></div>
-                    <div id="fechaUltimaObsOperador" style="color:#888; font-size:0.98em; text-align:right;"></div>
-                </div>
-                <div>
-                    <h3 style="color:#d9534f;">Del Administrador:</h3>
-                    <div id="contenidoUltimaObsAdmin" style="min-height:60px; color:#222; font-size:1.08em; text-align:left; margin-bottom:10px;"></div>
-                    <div id="fechaUltimaObsAdmin" style="color:#888; font-size:0.98em; text-align:right;"></div>
-                </div>
+    </div>
+    
+    <!-- Modal Cerrar Licitación -->
+    <div id="modalCerrarLicitacion" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>
+                    <span>🔒</span>
+                    Cerrar Licitación
+                </h2>
+                <span id="cerrarModalCerrarLicitacion" class="btn-close" title="Cerrar">&times;</span>
             </div>
-        </div>
-        
-        <!-- Modal Cerrar Licitación -->
-        <div id="modalCerrarLicitacion" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>
-                        <span>🔒</span>
-                        Cerrar Licitación
-                    </h2>
-                    <span id="cerrarModalCerrarLicitacion" class="btn-close" title="Cerrar">&times;</span>
+            
+            <form id="formCerrarLicitacion" method="post">
+                {% csrf_token %}
+                <input type="hidden" id="cerrarLicitacionId" name="licitacion_id">
+                
+                <div style="margin-bottom:20px;">
+                    <label for="cerrarLicitacionTexto" style="font-weight:600; display:block; margin-bottom:8px; color:#495057;">
+                        <span style="color:#d32f2f;">✍️</span> Motivo del cierre:
+                    </label>
+                    <textarea id="cerrarLicitacionTexto" name="texto" rows="4" style="width:100%; border:2px solid #dee2e6; border-radius:8px; padding:12px; font-size:14px; resize:vertical; transition:border-color 0.2s;" placeholder="Describe el motivo del cierre de la licitación..."></textarea>
                 </div>
                 
-                <form id="formCerrarLicitacion" method="post">
-                    {% csrf_token %}
-                    <input type="hidden" id="cerrarLicitacionId" name="licitacion_id">
+                <div style="margin-bottom:20px; padding:20px; background:#f8f9fa; border-radius:12px; border-left:4px solid #6c757d;">
+                    <h4 style="margin:0 0 15px 0; color:#495057; font-size:16px; font-weight:600; display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:18px;">⚙️</span> Estado de la licitación:
+                    </h4>
                     
-                    <div style="margin-bottom:20px;">
-                        <label for="cerrarLicitacionTexto" style="font-weight:600; display:block; margin-bottom:8px; color:#495057;">
-                            <span style="color:#d32f2f;">✍️</span> Motivo del cierre:
+                    <div style="margin-bottom:8px; display:flex; align-items:center; gap:12px;">
+                        <input type="checkbox" id="licitacionFallidaCheckbox" name="licitacion_fallida" style="width:20px; height:20px; cursor:pointer;">
+                        <label for="licitacionFallidaCheckbox" style="font-weight:500; color:#d32f2f; margin-bottom:0; cursor:pointer; font-size:15px;">
+                            ❌ Licitación fue <span style='color:#d32f2f; font-weight:700;'>FALLIDA</span>
                         </label>
-                        <textarea id="cerrarLicitacionTexto" name="texto" rows="4" style="width:100%; border:2px solid #dee2e6; border-radius:8px; padding:12px; font-size:14px; resize:vertical; transition:border-color 0.2s;" placeholder="Describe el motivo del cierre de la licitación..."></textarea>
                     </div>
                     
-                    <div style="margin-bottom:20px; padding:20px; background:#f8f9fa; border-radius:12px; border-left:4px solid #6c757d;">
-                        <h4 style="margin:0 0 15px 0; color:#495057; font-size:16px; font-weight:600; display:flex; align-items:center; gap:8px;">
-                            <span style="font-size:18px;">⚙️</span> Estado de la licitación:
-                        </h4>
-                        
-                        <div style="margin-bottom:8px; display:flex; align-items:center; gap:12px;">
-                            <input type="checkbox" id="licitacionFallidaCheckbox" name="licitacion_fallida" style="width:20px; height:20px; cursor:pointer;">
-                            <label for="licitacionFallidaCheckbox" style="font-weight:500; color:#d32f2f; margin-bottom:0; cursor:pointer; font-size:15px;">
-                                ❌ Licitación fue <span style='color:#d32f2f; font-weight:700;'>FALLIDA</span>
-                            </label>
-                        </div>
-                        
-                        <!-- Tipo de falla - se muestra solo si está marcado como fallida -->
-                        <div id="tipoFallidaContainer" style="display:none; margin-top:15px; padding-left:32px;">
-                            <label for="tipoFallidaSelect" style="font-weight:500; display:block; margin-bottom:8px; color:#495057; font-size:14px;">
-                                <span style="margin-right:5px;">🔍</span> Tipo de falla:
-                            </label>
-                            <select id="tipoFallidaSelect" name="tipo_fallida" style="width:100%; padding:10px; border:2px solid #dee2e6; border-radius:6px; background:#fff; font-size:14px;">
-                                <option value="">Selecciona un tipo de falla</option>
-                                <option value="revocada">🚫 Revocada</option>
-                                <option value="anulada">❌ Anulada</option>
-                                <option value="desierta">📋 Desierta</option>
-                            </select>
-                        </div>
+                    <!-- Tipo de falla - se muestra solo si está marcado como fallida -->
+                    <div id="tipoFallidaContainer" style="display:none; margin-top:15px; padding-left:32px;">
+                        <label for="tipoFallidaSelect" style="font-weight:500; display:block; margin-bottom:8px; color:#495057; font-size:14px;">
+                            <span style="margin-right:5px;">🔍</span> Tipo de falla:
+                        </label>
+                        <select id="tipoFallidaSelect" name="tipo_fallida" style="width:100%; padding:10px; border:2px solid #dee2e6; border-radius:6px; background:#fff; font-size:14px;">
+                            <option value="">Selecciona un tipo de falla</option>
+                            <option value="revocada">🚫 Revocada</option>
+                            <option value="anulada">❌ Anulada</option>
+                            <option value="desierta">📋 Desierta</option>
+                        </select>
                     </div>
-                    
-                    <div style="background:#fff3cd; border:2px solid #ffeaa7; border-radius:8px; padding:15px; margin-bottom:25px;">
-                        <p style="margin:0; color:#856404; font-size:14px; line-height:1.5;">
-                            <strong style="color:#856404;">⚠️ Atención:</strong> Al cerrar la licitación, su estado cambiará a "CERRADA" y se registrará en la bitácora. Esta acción no se puede deshacer fácilmente.
-                        </p>
-                    </div>
-                    
-                    <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:12px; margin-top:25px;">
-                        <button type="button" id="btnCancelarCerrarLicitacion" class="btn" style="background:#6c757d; color:#fff; padding:10px 20px; border:none; border-radius:6px; font-weight:500; cursor:pointer; transition:all 0.2s;">
-                            <span style="margin-right:5px;">❌</span> Cancelar
-                        </button>
-                        <button type="submit" id="btnConfirmarCerrarLicitacion" class="btn" style="background:#d32f2f; color:#fff; padding:10px 20px; border:none; border-radius:6px; font-weight:500; cursor:pointer; transition:all 0.2s;">
-                            <span style="margin-right:5px;">🔒</span> Cerrar Licitación
-                        </button>
-                    </div>
-                </form>
-            </div>
+                </div>
+                
+                <div style="background:#fff3cd; border:2px solid #ffeaa7; border-radius:8px; padding:15px; margin-bottom:25px;">
+                    <p style="margin:0; color:#856404; font-size:14px; line-height:1.5;">
+                        <strong style="color:#856404;">⚠️ Atención:</strong> Al cerrar la licitación, su estado cambiará a "CERRADA" y se registrará en la bitácora. Esta acción no se puede deshacer fácilmente.
+                    </p>
+                </div>
+                
+                <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:12px; margin-top:25px;">
+                    <button type="button" id="btnCancelarCerrarLicitacion" class="btn" style="background:#6c757d; color:#fff; padding:10px 20px; border:none; border-radius:6px; font-weight:500; cursor:pointer; transition:all 0.2s;">
+                        <span style="margin-right:5px;">❌</span> Cancelar
+                    </button>
+                    <button type="submit" id="btnConfirmarCerrarLicitacion" class="btn" style="background:#d32f2f; color:#fff; padding:10px 20px; border:none; border-radius:6px; font-weight:500; cursor:pointer; transition:all 0.2s;">
+                        <span style="margin-right:5px;">🔒</span> Cerrar Licitación
+                    </button>
+                </div>
+            </form>
         </div>
-        <!-- Exportar etapas y tipos al JS -->
-        {{ etapas|json_script:"etapas-licitacion-data" }}
-        {{ tipos_licitacion|json_script:"tipos-licitacion-data" }}
-        {{ tipos_licitacion_etapa_raw|json_script:"tipos-licitacion-etapa-raw-data" }}
-        <script src="{% static 'licitaciones/js/gestion_licitaciones_operador.js' %}"></script>
     </div>
+    <!-- Exportar etapas y tipos al JS -->
+    {{ etapas|json_script:"etapas-licitacion-data" }}
+    {{ tipos_licitacion|json_script:"tipos-licitacion-data" }}
+    {{ tipos_licitacion_etapa_raw|json_script:"tipos-licitacion-etapa-raw-data" }}
+    <script src="{% static 'licitaciones/js/gestion_licitaciones_operador.js' %}"></script>
 </body>
 </html>

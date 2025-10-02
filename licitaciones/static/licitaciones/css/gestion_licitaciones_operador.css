@@ -222,7 +222,6 @@
     background: #fff;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    margin-bottom: 20px;
     overflow: hidden;
 }
 
@@ -230,7 +229,7 @@
 .tabla-scroll {
     flex: 1;
     overflow-x: auto;
-    background: #fff;
+    background: #F5F7FA;
 }
 
 /* Tabla principal sin columna de acciones */
@@ -257,11 +256,11 @@
 .acciones-header {
     background: #f1f3f5;
     border-bottom: 2px solid #dee2e6;
-    height: 60px; /* Ajustar según altura del header de la tabla */
+    height: 65px; /* Ajustar según altura del header de la tabla */
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 700;
+    font-weight: bold;
     color: #495057;
     font-size: 14px;
 }
@@ -323,13 +322,19 @@
 
 /* Asegurar que el contenedor principal no interfiera */
 .main-content {
-    background: #fff;
+    background: #F5F7FA;
     overflow: visible;
 }
 
 /* Sincronizar hover entre tabla y acciones con JavaScript */
 .tabla-proyectos tbody tr:hover {
     background: #f8f9fa;
+}
+
+/* Asegurar que las filas de la tabla tengan altura consistente */
+.tabla-proyectos tbody td {
+    vertical-align: middle !important;
+    padding: 8px !important;
 }
 
 /* Eliminar estilos anteriores que ya no se usan */
@@ -367,7 +372,6 @@ td[data-campo="financiamiento"] .badge-info:hover {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    cursor: pointer;
     position: relative;
 }
 
@@ -386,9 +390,6 @@ td[data-campo="financiamiento"] .badge-info:hover {
 
 /* Botón sticky para toggle de acciones */
 .btn-toggle-acciones {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
     background: linear-gradient(135deg, #0275d8 0%, #025aa5 100%);
     color: white;
     border: none;
@@ -398,8 +399,8 @@ td[data-campo="financiamiento"] .badge-info:hover {
     font-size: 18px;
     cursor: pointer !important;
     z-index: 1000;
+    transition-duration: 400ms;
     box-shadow: 0 4px 12px rgba(2, 117, 216, 0.3);
-    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -433,6 +434,16 @@ td[data-campo="financiamiento"] .badge-info:hover {
     line-height: 1;
 }
 
+.toggle-acciones {
+    position: fixed;
+    display: none;
+    column-gap: 2%;
+    bottom: 20px;
+    right: 20px;
+    transition: transform 0.4s ease;
+    transform: translateX(120%);
+}
+
 .btn-toggle-acciones.active .toggle-icon {
     transform: rotate(180deg);
 }
@@ -440,31 +451,25 @@ td[data-campo="financiamiento"] .badge-info:hover {
 /* Animaciones para la columna de acciones - optimizadas para operador */
 .acciones-sticky {
     width: 220px;
-    /*min-width: 220px;*/
     background: #f8f9fa;
     border-left: 3px solid #0275d8;
-    display: block;
-    /*flex-direction: column;*/
-    /*box-shadow: -4px 0 10px rgba(0,0,0,0.15);*/
-    /*transition: transform 0.3s ease;*/
-    transform: translateX(0);
+    display: none;
+    transform: translateX(100%);
     will-change: transform;
-
-    position: fixed;
+    position: sticky;
     top: 0;
     right: 0;
     z-index: 100;
     box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
     transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    /*ransform: translateX(100%);*/
     min-width: 200px;
     max-width: 250px;
 }
 
-.acciones-sticky.show {
+.toggle-acciones.show {
     transform: translateX(0);
 }
 
-.acciones-sticky.hide {
+.toggle-acciones.hide {
     transform: translateX(100%);
 }

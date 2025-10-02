@@ -38,11 +38,13 @@ from django.contrib import messages
 import json
 import io
 import pandas as pd
+from .utils import *
 from datetime import datetime
-from .models import Licitacion, Etapa, BitacoraLicitacion, Estado, DocumentoLicitacion, TipoLicitacion, Moneda, Categoria, Financiamiento, ObservacionBitacora, Departamento, DocumentoBitacora, Notificacion
+from .models import Licitacion, Etapa, BitacoraLicitacion, Estado, DocumentoLicitacion, TipoLicitacion, Moneda, Categoria, Financiamiento, ObservacionBitacora, Departamento, DocumentoObservacion, Notificacion
 from .models import TipoLicitacionEtapa
 from django.db import models
 from django.http import JsonResponse
+
 
 @login_required
 def gestion_licitaciones(request):
@@ -52,7 +54,6 @@ def gestion_licitaciones(request):
         return redirect('vista_operador')
     return redirect('vista_admin')
 
-@login_required
 @csrf_exempt
 def modificar_licitacion(request, licitacion_id):
     if request.method == 'POST':
@@ -62,6 +63,7 @@ def modificar_licitacion(request, licitacion_id):
         campos_modificados = []
         valores_antes = {}
         valores_despues = {}
+        texto_bitacora = ""
         # Solo actualizar el operador si solo viene ese campo
         if ('operador' in data or 'operador_id' in data) and len(data) == 1:
             operador_id = data.get('operador') or data.get('operador_id')
@@ -90,6 +92,12 @@ def modificar_licitacion(request, licitacion_id):
             estado_obj = Estado.objects.get(id=estado_id) if estado_id else None
             if licitacion.estado_fk != estado_obj:
                 cambios.append(f"Estado: '{licitacion.estado_fk}' → '{estado_obj}'")
+                # Si el nuevo estado es "En curso" y la licitación estaba cerrada, reabrirla
+                if estado_obj.nombre.strip().lower() == 'en curso':
+                    texto_bitacora = "🔓 LICITACIÓN REABIERTA\n\n"
+                    if licitacion.tipo_fallida is not None:
+                        texto_bitacora += f"Se elimina el estado de licitación fallida '{licitacion.tipo_fallida}'.\n\n"
+                        licitacion.tipo_fallida = None
                 campos_modificados.append('Estado')
                 valores_antes['Estado'] = str(licitacion.estado_fk)
                 valores_despues['Estado'] = str(estado_obj)
@@ -306,11 +314,37 @@ def modificar_licitacion(request, licitacion_id):
                 valores_antes['Institución'] = str(licitacion.institucion or '')
                 valores_despues['Institución'] = str(institucion)
                 licitacion.institucion = institucion
+            # Tipo por presupuesto
+            #tipo_presupuesto = get_tipo_presupuesto(moneda_obj.nombre, monto_presupuestado)
+            tipo_presupuesto = data.get('tipo_presupuesto', '')
+            if licitacion.tipo_presupuesto != tipo_presupuesto:
+                cambios.append(f"Tipo por presupuesto: '{licitacion.tipo_presupuesto}' → '{tipo_presupuesto}'")
+                campos_modificados.append('N° de cuenta')
+                valores_antes['N° de cuenta'] = str(licitacion.tipo_presupuesto)
+                valores_despues['N° de cuenta'] = str(tipo_presupuesto)
+                licitacion.tipo_presupuesto = tipo_presupuesto
+            fecha_tentativa_termino = get_fecha_tentativa_termino(data.get('tipo_presupuesto', ''), licitacion.fecha_creacion.date())
+            if licitacion.fecha_tentativa_termino != fecha_tentativa_termino:
+                if (licitacion.fecha_tentativa_termino):
+                    cambios.append(f"Fecha tentativa de término: '{str(licitacion.fecha_tentativa_termino.strftime('%d-%m-%Y'))}' → '{str(fecha_tentativa_termino)}'")
+                    valores_antes['Fecha tentativa de término'] = str(licitacion.fecha_tentativa_termino.strftime('%d-%m-%Y'))
+                campos_modificados.append('Fecha tentativa de término')
+                valores_despues['Fecha tentativa de término'] = str(fecha_tentativa_termino)
+                licitacion.fecha_tentativa_termino = fecha_tentativa_termino
+            # Licitacion fallida linkeada
+            licitacion_fallida_linkeada_id = data.get('licitacion_fallida_linkeada')
+            licitacion_fallida_linkeada_obj = Licitacion.objects.get(id=licitacion_fallida_linkeada_id) if licitacion_fallida_linkeada_id else None
+            if licitacion.licitacion_fallida_linkeada != licitacion_fallida_linkeada_obj and licitacion_fallida_linkeada_obj:
+                cambios.append(f"Licitación fallida linkeada: '{licitacion.licitacion_fallida_linkeada.numero_pedido}' → '{licitacion_fallida_linkeada_obj.numero_pedido}'")
+                campos_modificados.append('Licitación fallida linkeada')
+                valores_antes['Licitación fallida linkeada'] = str(licitacion.licitacion_fallida_linkeada.numero_pedido)
+                valores_despues['Licitación fallida linkeada'] = str(licitacion_fallida_linkeada_obj.numero_pedido)
+            licitacion.licitacion_fallida_linkeada = licitacion_fallida_linkeada_obj
             # GUARDAR CAMBIOS EN LA BASE DE DATOS
             licitacion.save()
         # Registrar en bitácora si hubo cambios
         if cambios:
-            texto_bitacora = "Campos modificados:" + ''.join([
+            texto_bitacora += "Campos modificados:" + ''.join([
                 f"\n- {campo}: '{valores_antes[campo]}' → '{valores_despues[campo]}'"
                 for campo in campos_modificados
             ])
@@ -332,6 +366,7 @@ def modificar_licitacion(request, licitacion_id):
         return JsonResponse({'ok': True, 'monto_presupuestado': str(licitacion.monto_presupuestado)})
     return JsonResponse({'ok': False}, status=400)
 
+@login_required
 @csrf_exempt
 def eliminar_licitacion(request, licitacion_id):
     if request.method == 'POST':
@@ -348,7 +383,6 @@ def fecha_creacion_api(request, licitacion_id):
 
 @login_required
 def vista_admin(request):
-    from .utils import get_filtered_projects_list, get_paginated_projects, get_catalog_data
     # Verificar que el usuario es un administrador
     perfil = getattr(request.user, 'perfil', None)
     if not perfil or (perfil.rol or '').strip().lower() != 'admin':
@@ -393,6 +427,7 @@ def vista_operador(request):
     
     return render(request, 'licitaciones/gestion_licitaciones_operador.html', context)
 
+@login_required
 def vista_operador_manual(request):
     from .utils import get_operator_view_context
     
@@ -646,6 +681,7 @@ def bitacora_licitacion(request, licitacion_id):
     page_number = request.GET.get('page')
     paginator = Paginator(bitacora_qs, 10)
     bitacoras = paginator.get_page(page_number)
+    
     if request.method == 'POST' and (es_admin or es_operador or es_operador_manual):
         # Verificar permisos para operadores
         if (es_operador or es_operador_manual) and not licitacion.puede_operar_usuario(request.user):
@@ -653,37 +689,220 @@ def bitacora_licitacion(request, licitacion_id):
                 'ok': False, 
                 'error': f'Solo el operador activo puede agregar entradas. Operador activo actual: {licitacion.get_operador_activo()}'
             }, status=403)
-        
+        valores = {}
         texto = request.POST.get('texto', '').strip()
         archivo = request.FILES.get('archivo')
         etapa_id = request.POST.get('etapa')
-        id_mercado_publico = request.POST.get('id_mercado_publico', '').strip()
-        
-        # Campos específicos para Recepción de Ofertas
-        numero_ofertas = request.POST.get('numero_ofertas', '').strip()
-        empresa_nombre = request.POST.get('empresa_nombre', '').strip()
-        empresa_rut = request.POST.get('empresa_rut', '').strip()
-        
+        etapa_nombre = request.POST.get('etapa_nombre')
         etapa_obj = None
         if etapa_id:
             try:
                 etapa_obj = Etapa.objects.get(id=etapa_id)
             except Etapa.DoesNotExist:
                 etapa_obj = None
+        if etapa_nombre:
+            if 'evaluación de ofertas' in etapa_nombre.strip().lower() and 'trato directo' in licitacion.tipo_licitacion.nombre.strip().lower():
+                etapa_nombre = 'Evaluación de la cotización'
+            try:
+                etapa_obj = Etapa.objects.get(nombre = etapa_nombre)
+            except Etapa.DoesNotExist:
+                etapa_obj = None
         
+
+        id_mercado_publico = request.POST.get('id_mercado_publico', '').strip()
+        
+        # Campos específicos
+        fecha_solicitud_intencion_compra = request.POST.get('fecha_solicitud_intencion_compra', '').strip()
+
+        nombre_integrante_uno_comision_base = request.POST.get('nombre_integrante_uno_comision_base', '').strip()
+        nombre_integrante_dos_comision_base = request.POST.get('nombre_integrante_dos_comision_base', '').strip()
+        nombre_integrante_tres_comision_base = request.POST.get('nombre_integrante_tres_comision_base', '').strip()
+
+        fecha_evaluacion_cotizacion = request.POST.get('fecha_evaluacion_cotizacion', '').strip()
+        monto_estimado_cotizacion = request.POST.get('monto_estimado_cotizacion', '').strip()
+
+        empresa_adjudicacion = request.POST.get('empresa_adjudicacion', '').strip()
+        rut_adjudicacion = request.POST.get('rut_adjudicacion', '').strip()
+        monto_adjudicacion = request.POST.get('monto_adjudicacion', '').strip()
+        fecha_decreto_adjudicacion = request.POST.get('fecha_decreto_adjudicacion', '').strip()
+        fecha_subida_mercado_publico_adjudicacion = request.POST.get('fecha_subida_mercado_publico_adjudicacion', '').strip()
+        orden_compra_adjudicacion = request.POST.get('orden_compra_adjudicacion', '').strip()
+
+        fecha_evaluacion_tecnica_evaluacion = request.POST.get('fecha_evaluacion_tecnica_evaluacion', '').strip()
+        nombre_integrante_uno_evaluacion = request.POST.get('nombre_integrante_uno_evaluacion', '').strip()
+        nombre_integrante_dos_evaluacion =request.POST.get('nombre_integrante_dos_evaluacion', '').strip()
+        nombre_integrante_tres_evaluacion = request.POST.get('nombre_integrante_tres_evaluacion', '').strip()
+        fecha_comision_evaluacion = request.POST.get('fecha_comision_evaluacion', '').strip()
+
+        fecha_cierre_preguntas_publicacionportal = request.POST.get('fecha_cierre_preguntas_publicacionportal', '').strip()
+        fecha_respuesta_publicacionportal = request.POST.get('fecha_respuesta_publicacionportal', '').strip()
+        fecha_visita_terreno_publicacionportal = request.POST.get('fecha_visita_terreno_publicacionportal', '').strip()
+        fecha_cierre_oferta_publicacionportal = request.POST.get('fecha_cierre_oferta_publicacionportal', '').strip()
+        fecha_apertura_tecnica_publicacionportal = request.POST.get('fecha_apertura_tecnica_publicacionportal', '').strip()
+        fecha_apertura_economica_publicacionportal = request.POST.get('fecha_apertura_economica_publicacionportal', '').strip()
+        fecha_estimada_adjudicacion_publicacionportal = request.POST.get('fecha_estimada_adjudicacion_publicacionportal', '').strip()
+
+        fecha_disponibilidad_presupuestaria = request.POST.get('fecha_disponibilidad_presupuestaria', '').strip()
+
+        fecha_publicacion_mercado_publico = request.POST.get('fecha_publicacion_mercado_publico', '').strip()
+        fecha_cierre_ofertas_mercado_publico = request.POST.get('fecha_cierre_ofertas_mercado_publico', '').strip()
+
+        fecha_solicitud_regimen_interno = request.POST.get('fecha_solicitud_regimen_interno', '').strip()
+
+        fecha_recepcion_documento_regimen_interno = request.POST.get('fecha_recepcion_documento_regimen_interno', '').strip()
+
+        fecha_tope_firma_contrato = request.POST.get('fecha_tope_firma_contrato', '').strip()
         # Manejar avance/retroceso de etapa
         accion_etapa = request.POST.get('accion_etapa')
+        if request.POST.get('redestinar', '')=='true' and etapa_obj:
+            valores['Redestinado'] = str(etapa_nombre)
+            if licitacion.tipo_licitacion and 'trato directo' in licitacion.tipo_licitacion.nombre.lower().strip():
+                licitacion.fecha_disponibilidad_presupuestaria = None
+            licitacion.fecha_evaluacion_cotizacion = None
+            licitacion.monto_estimado_cotizacion = None
+            licitacion.empresa_adjudicacion = None
+            licitacion.rut_adjudicacion = None
+            licitacion.monto_adjudicacion = None
+            licitacion.fecha_decreto_adjudicacion = None
+            licitacion.fecha_subida_mercado_publico_adjudicacion = None
+            licitacion.orden_compra_adjudicacion = None
+            licitacion.fecha_evaluacion_tecnica_evaluacion = None
+            licitacion.nombre_integrante_uno_evaluacion = None
+            licitacion.nombre_integrante_dos_evaluacion = None
+            licitacion.nombre_integrante_tres_evaluacion = None
+            licitacion.fecha_comision_evaluacion = None
+            licitacion.fecha_solicitud_regimen_interno = None
+            licitacion.fecha_recepcion_documento_regimen_interno = None
+            licitacion.fecha_tope_firma_contrato = None
+            fecha_tope_firma_contrato = None
+            licitacion.save()
         if accion_etapa == 'advance' and etapa_obj:
             licitacion.etapa_fk = etapa_obj
             licitacion.save()
         elif accion_etapa == 'retreat' and etapa_obj:
             licitacion.etapa_fk = etapa_obj
             licitacion.save()
-        
-        # Actualizar ID Mercado Público si se proporciona
+
+        # Actualizar información adicional para ciertas etapas
         if id_mercado_publico:
             licitacion.id_mercado_publico = id_mercado_publico
-            licitacion.save()
+        
+        
+        
+        if etapa_obj and 'decreto de intención de compra' in etapa_obj.nombre.lower().strip():
+            if fecha_solicitud_intencion_compra and licitacion.fecha_solicitud_intencion_compra != datetime.strptime(fecha_solicitud_intencion_compra, '%Y-%m-%d').date():
+                valores['Fecha de la evaluación de cotización'] = datetime.strptime(fecha_solicitud_intencion_compra, '%Y-%m-%d').strftime('%d-%m-%Y')
+                licitacion.fecha_solicitud_intencion_compra = fecha_solicitud_intencion_compra
+        
+        if etapa_obj and 'comisión de base' in etapa_obj.nombre.lower().strip():
+            if nombre_integrante_uno_comision_base and licitacion.nombre_integrante_uno_comision_base != nombre_integrante_uno_comision_base:
+                valores['Nombre integrante uno comisión de base'] = str(nombre_integrante_uno_comision_base)
+                licitacion.nombre_integrante_uno_comision_base = nombre_integrante_uno_comision_base
+            if nombre_integrante_dos_comision_base and licitacion.nombre_integrante_dos_comision_base != nombre_integrante_dos_comision_base:
+                valores['Nombre integrante dos comisión de base'] = str(nombre_integrante_dos_comision_base)
+                licitacion.nombre_integrante_dos_comision_base = nombre_integrante_dos_comision_base
+            if nombre_integrante_tres_comision_base and licitacion.nombre_integrante_tres_comision_base != nombre_integrante_tres_comision_base:
+                valores['Nombre integrante tres comisión de base'] = str(nombre_integrante_tres_comision_base)
+                licitacion.nombre_integrante_tres_comision_base = nombre_integrante_tres_comision_base
+
+        if etapa_obj and 'evaluación de la cotización' in etapa_obj.nombre.lower().strip():
+            if fecha_evaluacion_cotizacion and licitacion.fecha_evaluacion_cotizacion != datetime.strptime(fecha_evaluacion_cotizacion, '%Y-%m-%d').date():
+                valores['Fecha de la evaluación de cotización'] = datetime.strptime(fecha_evaluacion_cotizacion, '%Y-%m-%d').strftime('%d-%m-%Y')
+                licitacion.fecha_evaluacion_cotizacion = fecha_evaluacion_cotizacion
+            if monto_estimado_cotizacion and licitacion.monto_estimado_cotizacion != monto_estimado_cotizacion:
+                valores['Monto estimado de la cotización'] = str(monto_estimado_cotizacion)
+                licitacion.monto_estimado_cotizacion = monto_estimado_cotizacion
+
+        if etapa_obj and 'adjudicación' in etapa_obj.nombre.lower().strip():
+            if empresa_adjudicacion and licitacion.empresa_adjudicacion != empresa_adjudicacion:
+                valores['Empresa adjudicada'] = str(empresa_adjudicacion)
+                licitacion.empresa_adjudicacion = empresa_adjudicacion
+            if rut_adjudicacion and licitacion.rut_adjudicacion != rut_adjudicacion:
+                valores['Rut de la empresa adjudicada'] = str(rut_adjudicacion)
+                licitacion.rut_adjudicacion = rut_adjudicacion
+            if monto_adjudicacion and licitacion.monto_adjudicacion != monto_adjudicacion:
+                valores['Monto adjudicado'] = str(monto_adjudicacion)
+                try:
+                    licitacion.monto_adjudicacion = float(monto_adjudicacion)
+                except ValueError:
+                    pass
+            if fecha_decreto_adjudicacion and licitacion.fecha_decreto_adjudicacion != datetime.strptime(fecha_decreto_adjudicacion, '%Y-%m-%d').date():
+                valores['Fecha de decreto de adjudicación'] = datetime.strptime(fecha_decreto_adjudicacion, '%Y-%m-%d').strftime('%d-%m-%Y')
+                licitacion.fecha_decreto_adjudicacion = fecha_decreto_adjudicacion
+            if fecha_subida_mercado_publico_adjudicacion and licitacion.fecha_subida_mercado_publico_adjudicacion != datetime.strptime(fecha_subida_mercado_publico_adjudicacion, '%Y-%m-%d').date():
+                valores['Fecha de subida a Mercado Público'] = datetime.strptime(fecha_subida_mercado_publico_adjudicacion, '%Y-%m-%d').strftime('%d-%m-%Y')
+                licitacion.fecha_subida_mercado_publico_adjudicacion = fecha_subida_mercado_publico_adjudicacion
+            if orden_compra_adjudicacion and licitacion.orden_compra_adjudicacion != orden_compra_adjudicacion:
+                valores['Orden de compra'] = str(orden_compra_adjudicacion)
+                licitacion.orden_compra_adjudicacion = orden_compra_adjudicacion
+        if etapa_obj and 'evaluación de ofertas' in etapa_obj.nombre.lower().strip():
+            if fecha_evaluacion_tecnica_evaluacion and licitacion.fecha_evaluacion_tecnica_evaluacion != datetime.strptime(fecha_evaluacion_tecnica_evaluacion, '%Y-%m-%d').date():
+                valores['Fecha de evaluación técnica'] = datetime.strptime(fecha_evaluacion_tecnica_evaluacion, '%Y-%m-%d').strftime('%d-%m-%Y')
+                licitacion.fecha_evaluacion_tecnica_evaluacion = fecha_evaluacion_tecnica_evaluacion
+            if nombre_integrante_uno_evaluacion and licitacion.nombre_integrante_uno_evaluacion != nombre_integrante_uno_evaluacion:
+                valores['Nombre integrante uno comisión evaluadora'] = str(nombre_integrante_uno_evaluacion)
+                licitacion.nombre_integrante_uno_evaluacion = nombre_integrante_uno_evaluacion
+            if nombre_integrante_dos_evaluacion and licitacion.nombre_integrante_dos_evaluacion != nombre_integrante_dos_evaluacion:
+                valores['Nombre integrante dos comisión evaluadora'] = str(nombre_integrante_dos_evaluacion)
+                licitacion.nombre_integrante_dos_evaluacion = nombre_integrante_dos_evaluacion
+            if nombre_integrante_tres_evaluacion and licitacion.nombre_integrante_tres_evaluacion != nombre_integrante_tres_evaluacion:
+                valores['Nombre integrante tres comisión evaluadora'] = str(nombre_integrante_tres_evaluacion)
+                licitacion.nombre_integrante_tres_evaluacion = nombre_integrante_tres_evaluacion
+            if fecha_comision_evaluacion and licitacion.fecha_comision_evaluacion != datetime.strptime(fecha_comision_evaluacion, '%Y-%m-%d').date():
+                valores['Fecha de comisión evaluación'] = datetime.strptime(fecha_comision_evaluacion, '%Y-%m-%d').strftime('%d-%m-%Y')
+                licitacion.fecha_comision_evaluacion = fecha_comision_evaluacion
+        if etapa_obj and 'publicación en portal' in etapa_obj.nombre.lower().strip():
+            if fecha_cierre_preguntas_publicacionportal and licitacion.fecha_cierre_preguntas_publicacionportal != datetime.strptime(fecha_cierre_preguntas_publicacionportal, '%Y-%m-%d').date():
+                valores['Fecha de cierre de preguntas'] = datetime.strptime(fecha_cierre_preguntas_publicacionportal, '%Y-%m-%d').strftime('%d-%m-%Y')
+                licitacion.fecha_cierre_preguntas_publicacionportal = fecha_cierre_preguntas_publicacionportal
+            if fecha_respuesta_publicacionportal and licitacion.fecha_respuesta_publicacionportal != datetime.strptime(fecha_respuesta_publicacionportal, '%Y-%m-%d').date():
+                valores['Fecha de respuesta'] = datetime.strptime(fecha_respuesta_publicacionportal, '%Y-%m-%d').strftime('%d-%m-%Y')
+                licitacion.fecha_respuesta_publicacionportal = fecha_respuesta_publicacionportal
+            if fecha_visita_terreno_publicacionportal and licitacion.fecha_visita_terreno_publicacionportal != datetime.strptime(fecha_visita_terreno_publicacionportal, '%Y-%m-%d').date():
+                valores['Fecha de visita a terreno'] = datetime.strptime(fecha_visita_terreno_publicacionportal, '%Y-%m-%d').strftime('%d-%m-%Y')
+                licitacion.fecha_visita_terreno_publicacionportal = fecha_visita_terreno_publicacionportal
+            if fecha_cierre_oferta_publicacionportal and licitacion.fecha_cierre_oferta_publicacionportal != datetime.strptime(fecha_cierre_oferta_publicacionportal, '%Y-%m-%d').date():
+                valores['Fecha de cierre de oferta'] = datetime.strptime(fecha_cierre_oferta_publicacionportal, '%Y-%m-%d').strftime('%d-%m-%Y')
+                licitacion.fecha_cierre_oferta_publicacionportal = fecha_cierre_oferta_publicacionportal
+            if fecha_apertura_tecnica_publicacionportal and licitacion.fecha_apertura_tecnica_publicacionportal != datetime.strptime(fecha_apertura_tecnica_publicacionportal, '%Y-%m-%d').date():
+                valores['Fecha de apertura técnica'] = datetime.strptime(fecha_apertura_tecnica_publicacionportal, '%Y-%m-%d').strftime('%d-%m-%Y')
+                licitacion.fecha_apertura_tecnica_publicacionportal = fecha_apertura_tecnica_publicacionportal
+            if fecha_apertura_economica_publicacionportal and licitacion.fecha_apertura_economica_publicacionportal != datetime.strptime(fecha_apertura_economica_publicacionportal, '%Y-%m-%d').date():
+                valores['Fecha de apertura económica'] = datetime.strptime(fecha_apertura_economica_publicacionportal, '%Y-%m-%d').strftime('%d-%m-%Y')
+                licitacion.fecha_apertura_economica_publicacionportal = fecha_apertura_economica_publicacionportal
+            if fecha_estimada_adjudicacion_publicacionportal and licitacion.fecha_estimada_adjudicacion_publicacionportal != datetime.strptime(fecha_estimada_adjudicacion_publicacionportal, '%Y-%m-%d').date():
+                valores['Fecha estimada de adjudicación'] = datetime.strptime(fecha_estimada_adjudicacion_publicacionportal, '%Y-%m-%d').strftime('%d-%m-%Y')
+                licitacion.fecha_estimada_adjudicacion_publicacionportal = fecha_estimada_adjudicacion_publicacionportal
+
+        
+        if fecha_disponibilidad_presupuestaria and licitacion.fecha_disponibilidad_presupuestaria != datetime.strptime(fecha_disponibilidad_presupuestaria, '%Y-%m-%d').date() and etapa_obj and 'disponibilidad presupuestaria' in etapa_obj.nombre.lower().strip():
+            valores['Fecha de disponibilidad presupuestaria'] = datetime.strptime(fecha_disponibilidad_presupuestaria, '%Y-%m-%d').strftime('%d-%m-%Y')
+            licitacion.fecha_disponibilidad_presupuestaria = fecha_disponibilidad_presupuestaria
+        
+        if etapa_obj and 'publicación mercado público' in etapa_obj.nombre.lower().strip():
+            if fecha_publicacion_mercado_publico and licitacion.fecha_publicacion_mercado_publico != datetime.strptime(fecha_publicacion_mercado_publico, '%Y-%m-%d').date():
+                valores['Fecha de publicación en mercado público'] = datetime.strptime(fecha_publicacion_mercado_publico, '%Y-%m-%d').strftime('%d-%m-%Y')
+                licitacion.fecha_publicacion_mercado_publico = fecha_publicacion_mercado_publico
+            if fecha_cierre_ofertas_mercado_publico and licitacion.fecha_cierre_ofertas_mercado_publico != datetime.strptime(fecha_cierre_ofertas_mercado_publico, '%Y-%m-%d').date():
+                valores['Fecha de cierre de ofertas en mercado público'] = datetime.strptime(fecha_cierre_ofertas_mercado_publico, '%Y-%m-%d').strftime('%d-%m-%Y')
+                licitacion.fecha_cierre_ofertas_mercado_publico = fecha_cierre_ofertas_mercado_publico
+
+        if fecha_solicitud_regimen_interno and licitacion.fecha_solicitud_regimen_interno != datetime.strptime(fecha_solicitud_regimen_interno, '%Y-%m-%d').date() and etapa_obj and ('solicitud de comisión de régimen interno' in etapa_obj.nombre.lower().strip() or 'solicitud de régimen interno' in etapa_obj.nombre.lower().strip()):
+            valores['Fecha de solicitud de régimen interno'] = datetime.strptime(fecha_solicitud_regimen_interno, '%Y-%m-%d').strftime('%d-%m-%Y')
+            licitacion.fecha_solicitud_regimen_interno = fecha_solicitud_regimen_interno
+        if fecha_recepcion_documento_regimen_interno and licitacion.fecha_recepcion_documento_regimen_interno != datetime.strptime(fecha_recepcion_documento_regimen_interno, '%Y-%m-%d').date() and etapa_obj and 'recepción de documento de régimen interno' in etapa_obj.nombre.lower().strip():
+            valores['Fecha de recepción de documento régimen interno'] = datetime.strptime(fecha_recepcion_documento_regimen_interno, '%Y-%m-%d').strftime('%d-%m-%Y')
+            licitacion.fecha_recepcion_documento_regimen_interno = fecha_recepcion_documento_regimen_interno
+        if fecha_tope_firma_contrato and licitacion.fecha_tope_firma_contrato != datetime.strptime(fecha_tope_firma_contrato, '%Y-%m-%d').date() and etapa_obj and 'firma de contrato' in etapa_obj.nombre.lower().strip():
+            valores['Fecha tope de firma de contrato'] = datetime.strptime(fecha_tope_firma_contrato, '%Y-%m-%d').strftime('%d-%m-%Y')
+            licitacion.fecha_tope_firma_contrato = fecha_tope_firma_contrato
+        licitacion.save()
+        # Construir el texto de la bitácora con los campos modificados
+        if valores:
+            texto += "\n"
+            texto += "\nCampos modificados:" + ''.join([
+                f"\n- {campo}: '{valores[campo]}'"
+                for campo in valores])
         
         operador_user = None
         if es_admin:
@@ -694,25 +913,6 @@ def bitacora_licitacion(request, licitacion_id):
         if texto or archivo:
             # Agregar información específica de etapa al texto
             texto_completo = texto
-            
-            # Si es la etapa de Recepción de Ofertas y se proporcionaron datos específicos
-            if etapa_obj and 'recepcion' in etapa_obj.nombre.lower() and 'ofertas' in etapa_obj.nombre.lower():
-                info_adicional = []
-                
-                if numero_ofertas:
-                    info_adicional.append(f"📊 Ofertas recibidas: {numero_ofertas}")
-                
-                if empresa_nombre:
-                    info_adicional.append(f"🏢 Empresa: {empresa_nombre}")
-                
-                if empresa_rut:
-                    info_adicional.append(f"🆔 RUT: {empresa_rut}")
-                
-                if info_adicional:
-                    if texto_completo:
-                        texto_completo += "\n\n" + "\n".join(info_adicional)
-                    else:
-                        texto_completo = "\n".join(info_adicional)
             
             bitacora = BitacoraLicitacion.objects.create(
                 licitacion=licitacion,
@@ -748,6 +948,8 @@ def bitacora_licitacion(request, licitacion_id):
         etapas = list(etapas_qs.values('id', 'nombre'))
     else:
         etapas = list(Etapa.objects.order_by('id').values('id', 'nombre'))
+    for e_inicio, e_fin in licitacion.get_saltar_etapas():
+        etapas = [etapa for etapa in etapas if etapa['id'] not in range(e_inicio, e_fin+1)]
     return render(request, 'licitaciones/bitacora_licitacion.html', {
         'licitacion': licitacion,
         'bitacoras': bitacoras,
@@ -903,10 +1105,11 @@ def etapas_licitacion_api(request, licitacion_id):
     
     return JsonResponse({
         'etapas': etapas_data,
-        'debe_saltar_consejo': licitacion.debe_saltar_aprobacion_consejo(),
+        'debe_saltar_etapas': len(licitacion.get_saltar_etapas()) > 0,
         'moneda': licitacion.moneda.nombre if licitacion.moneda else None,
         'monto': float(licitacion.monto_presupuestado) if licitacion.monto_presupuestado else None
     })
+
 @csrf_exempt
 def eliminar_documento_licitacion(request, licitacion_id, doc_id):
     licitacion = get_object_or_404(Licitacion, id=licitacion_id)
@@ -986,7 +1189,7 @@ def guardar_observacion_operador(request, licitacion_id):
             nombre=archivo.name
         )
     nueva_etapa = None
-    # Usar las etapas habilitadas (excluyendo aprobación del consejo si aplica)
+    # Usar las etapas habilitadas (excluyendo etapas saltadas si aplica)
     etapas_habilitadas = licitacion.get_etapas_habilitadas()
     etapas_tipo = [rel.etapa for rel in etapas_habilitadas]
     
@@ -1085,6 +1288,7 @@ def cerrar_licitacion_operador(request, licitacion_id):
         
         if licitacion_fallida:
             texto_bitacora += f"\n\nEstado adicional:\n- Licitación fue FALLIDA ({tipo_fallida.upper()})"
+            estado_cerrada = Estado.objects.filter(nombre__icontains='fallid').first()
         
         # Actualizar el campo tipo_fallida si es necesario
         if licitacion_fallida and tipo_fallida:
@@ -1111,6 +1315,7 @@ def cerrar_licitacion_operador(request, licitacion_id):
     except Exception as e:
         return JsonResponse({'ok': False, 'error': f'Error al cerrar la licitación: {str(e)}'}, status=500)
 
+@login_required
 @require_http_methods(["GET", "POST", "DELETE"])
 @csrf_exempt
 def observacion_bitacora_api(request, bitacora_id):
@@ -1127,6 +1332,13 @@ def observacion_bitacora_api(request, bitacora_id):
         if not texto:
             return JsonResponse({'ok': False, 'error': 'Texto vacío'})
         obs, created = ObservacionBitacora.objects.get_or_create(bitacora=bitacora)
+        archivos = request.FILES.getlist('archivos')
+        for archivo in archivos:
+            DocumentoObservacion.objects.create(
+                observacion=obs,
+                archivo=archivo,
+                nombre=archivo.name
+            )
         obs.texto = texto
         obs.save()
         return JsonResponse({'ok': True})
@@ -1152,6 +1364,8 @@ def agregar_proyecto(request):
             monto_presupuestado = float(data.get('monto_presupuestado') or 0)
         except (ValueError, TypeError):
             monto_presupuestado = 0
+        #tipo_presupuesto = get_tipo_presupuesto(Moneda.objects.get(id=data.get('moneda')) if data.get('moneda') else None, monto_presupuestado)
+        tipo_presupuesto = data.get('tipo_presupuesto')
         
         # Crear la licitación
         licitacion = Licitacion(
@@ -1171,10 +1385,21 @@ def agregar_proyecto(request):
             departamento=Departamento.objects.get(id=data.get('departamento')) if data.get('departamento') else None,
             monto_presupuestado=monto_presupuestado,
             llamado_cotizacion=data.get('llamado_cotizacion', ''),
+            tipo_presupuesto=tipo_presupuesto,
             estado_fk=estado_en_curso,
             pedido_devuelto=data.get('pedido_devuelto', False),            # Agregar la licitación fallida si se proporcionó un ID
-            licitacion_fallida_linkeada=Licitacion.objects.get(id=data.get('licitacion_fallida_linkeada')) if data.get('licitacion_fallida_linkeada') else None
+            licitacion_fallida_linkeada=Licitacion.objects.get(id=data.get('licitacion_fallida_linkeada')) if data.get('licitacion_fallida_linkeada') else None,
         )
+        licitacion.save()
+
+        fecha_tentativa_termino = get_fecha_tentativa_termino(data.get('tipo_presupuesto', ''), licitacion.fecha_creacion.date())
+        if fecha_tentativa_termino:
+            try:
+                licitacion.fecha_tentativa_termino = fecha_tentativa_termino
+            except ValueError:
+                fecha_tentativa_termino = None
+        else:
+            fecha_tentativa_termino = None
         licitacion.save()
           # Asignar financiamiento (ManyToMany)
         financiamiento_ids = data.get('financiamiento')
@@ -1204,7 +1429,6 @@ def eliminar_bitacora(request, bitacora_id):
     bitacora = get_object_or_404(BitacoraLicitacion, id=bitacora_id)
     bitacora.delete()
     return JsonResponse({'ok': True})
-
 
 @require_GET
 @login_required
@@ -1345,6 +1569,7 @@ def exportar_todas_licitaciones_excel(request):
                 'ID': licitacion.id,
                 'N° Pedido': licitacion.numero_pedido,
                 'ID Mercado Público': licitacion.id_mercado_publico or '-',
+                'Fecha tentativa de término': licitacion.fecha_tentativa_termino.strftime('%d/%m/%Y') if licitacion.fecha_tentativa_termino else '',
                 'N° Cuenta': licitacion.numero_cuenta,
                 'Profesional a Cargo': licitacion.operador_user.get_full_name() if licitacion.operador_user else licitacion.operador_user.username if licitacion.operador_user else '',
                 'Tipo Licitación': str(licitacion.tipo_licitacion) if licitacion.tipo_licitacion else '',
@@ -1360,6 +1585,7 @@ def exportar_todas_licitaciones_excel(request):
                 'Estado': str(licitacion.estado_fk) if licitacion.estado_fk else '',
                 'Departamento': str(licitacion.departamento) if licitacion.departamento else '',
                 'Monto Presupuestado': licitacion.monto_presupuestado,
+                'Tipo por presupuesto': str(licitacion.tipo_presupuesto) if licitacion.tipo_presupuesto else '',
                 'Llamado Cotización': licitacion.get_llamado_cotizacion_display() or '',
                 'Fecha de creación': licitacion.fecha_creacion.strftime('%d/%m/%Y %H:%M') if licitacion.fecha_creacion else '',
             })
@@ -1974,4 +2200,46 @@ def api_puede_retroceder_etapa(request, licitacion_id):
         'ok': True, 
         'puede_retroceder': puede_retroceder,
         'razon': 'La última observación avanzó etapa' if not puede_retroceder else 'Puede retroceder'
+    })
+
+@csrf_exempt
+@require_GET
+def api_puede_avanzar_etapa(request, licitacion_id):
+    """
+    API para verificar si el operador puede avanzar etapa.
+    Solo puede avanzar hay al menos una observación en etapa anterior.
+    """
+    # Solo operadores pueden acceder
+    if not (request.user.is_authenticated or 'operador_manual_id' in request.session or 'operador_id' in request.session):
+        return JsonResponse({'ok': False, 'error': 'No autorizado'}, status=403)
+    
+    licitacion = Licitacion.objects.filter(id=licitacion_id).first()
+    if not licitacion:
+        return JsonResponse({'ok': False, 'error': 'Licitación no encontrada'}, status=404)
+    
+    # Obtener el operador actual
+    operador_user = None
+    if hasattr(request.user, 'perfil') and getattr(request.user.perfil, 'rol', None) == 'operador':
+        operador_user = request.user
+    elif 'operador_manual_id' in request.session:
+        operador_user = User.objects.filter(id=request.session['operador_manual_id']).first()
+    
+    if not operador_user:
+        return JsonResponse({'ok': False, 'puede_avanzar': False})
+    
+    # Buscar la etapa de última observación del operador para esta licitación
+    ultima_bitacora = BitacoraLicitacion.objects.filter(
+        licitacion=licitacion, 
+        operador_user=operador_user
+    ).order_by('-etapa').values_list('etapa', flat=True).first()
+    
+    puede_avanzar = False
+    if ultima_bitacora and ultima_bitacora >= licitacion.etapa_fk.id:
+        puede_avanzar = True
+
+    
+    return JsonResponse({
+        'ok': True, 
+        'puede_avanzar': puede_avanzar,
+        'ultima_bitacora': ultima_bitacora,
     })
