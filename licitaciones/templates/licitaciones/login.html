@@ -5,19 +5,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Licitaciones - Acceso</title>
-    <link rel="stylesheet" href="{% static 'licitaciones/css/login.css' %}">
+    <link rel="stylesheet" href="{% static 'licitaciones/css/login_v1.css' %}">
 </head>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+<div class="logo-container">
+    <img src="https://departamentosig.munivalpo.cl/media/assets/imagen_sig/None/adjunto_LDrT6z1.png" alt="logo SECPLA" class="logo2" />
+    <img src="https://departamentosig.munivalpo.cl/media/assets/imagen_sig/None/adjunto_U8p5946.png" alt="logo Valparaiso" class="logo"/>
+  </div>
 <body>
     <div class="login-container">
         <div class="login-header">
             <div class="login-icon">🏛️</div>
             <h1 class="login-title">Sistema de Licitaciones</h1>
             <p class="login-subtitle">Acceso al sistema de gestión</p>
-        </div>
-        
-        <div class="login-tabs">
-            <button type="button" class="login-tab {% if not login_type or login_type == 'admin' %}active{% endif %}" onclick="switchTab('admin')">👨‍💼 Administrador</button>
-            <button type="button" class="login-tab {% if login_type == 'operador' %}active{% endif %}" onclick="switchTab('operador')">👤 Operador</button>
         </div>
         
         <!-- Formulario unificado -->
@@ -39,7 +40,7 @@
                        placeholder="Ingrese su contraseña" required autocomplete="current-password" required>
             </div>
             <button type="submit" class="btn-login" id="loginButton">
-                {% if login_type == 'operador' %}👤 Acceder como Operador{% else %}🔐 Acceder como Administrador{% endif %}
+                {% if login_type == 'operador' %}👤 Acceder{% else %}👤 Acceder {% endif %}
             </button>
         </form>
         
@@ -53,6 +54,16 @@
             </div>
         {% endif %}
     </div>
+
+    <div class="container-footer">
+    <footer>
+        <p>
+          <span class="material-icons" style="font-size: 20px; vertical-align:text-bottom; margin-right: 2px; color: rgba(255, 255, 255, 0.733);">verified</span> <!-- Aquí usamos un ícono de Google Material Icons -->
+          Desarrollado y diseñado por el Departameto SIG. 
+        </p>
+  </footer>
+  </div>
+
     
     <script>
         function switchTab(type) {
@@ -71,11 +82,11 @@
             if (type === 'admin') {
                 document.querySelector('.login-tab:first-child').classList.add('active');
                 loginTypeInput.value = 'admin';
-                loginButton.innerHTML = '🔐 Acceder como Administrador';
+                loginButton.innerHTML = '👤 Acceder';
             } else {
                 document.querySelector('.login-tab:last-child').classList.add('active');
                 loginTypeInput.value = 'operador';
-                loginButton.innerHTML = '👤 Acceder como Operador';
+                loginButton.innerHTML = '👤 Acceder';
             }
             
             console.log('login_type set to:', loginTypeInput.value);

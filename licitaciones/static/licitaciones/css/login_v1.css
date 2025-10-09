@@ -1,6 +1,33 @@
+.logo-container {
+  display: flex;
+  justify-content: space-between; /* Coloca los logos a los extremos */
+  align-items: center; /* Centra verticalmente los logos */
+  width: 100%; /* Asegura que ocupe todo el ancho disponible */
+  margin-bottom: 20px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  
+
+}
+
+/* Estilo de los logos */
+.logo {
+  max-width: 110px; /* Ajuste para pantallas grandes */
+  height: auto; /* Mantiene proporciones */
+  object-fit: contain; /* Evita deformaciones */
+  margin-right: 45px;
+}
+
+.logo2 {
+  max-width: 220px; /* Ajuste para pantallas grandes */
+  height: auto; /* Mantiene proporciones */
+  object-fit: contain; /* Evita deformaciones */
+}
+
 
 body {
-    background: linear-gradient(135deg, #17aedc 0%, #004E7C 100%);
+    background: linear-gradient(39deg, rgba(0, 0, 0, 5) 0%, rgb(0 0 0 / 40%) 20%), url(/static/licitaciones/img/fondo.jpg);
     min-height: 100vh;
     display: flex;
     align-items: center;
@@ -9,6 +36,33 @@ body {
     margin: 0;
 }
 
+
+
+footer {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px;
+  color: rgba(255, 255, 255, 0.671);
+  background-color: #14293dea;
+  width: 100%;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  vertical-align: middle;
+}
+
+  label,
+  .register,
+  .forget,
+  footer {
+    font-size: 14px;
+  }
+
+.container-footer {
+  height: 50px; /* Espacio para evitar que el contenido se superponga con el footer */
+  
+}
 .login-container {
     background: white;
     padding: 40px;
