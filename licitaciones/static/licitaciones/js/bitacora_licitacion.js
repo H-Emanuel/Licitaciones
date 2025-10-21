@@ -4,6 +4,8 @@ window.addEventListener('DOMContentLoaded', function() {
     const fromHistorial = urlParams.get('from_historial');
     const fromDocuments = urlParams.get('from_documents');
     const licitacionId = urlParams.get('licitacion_id');
+    wireObservacionForm();
+
     
     // Configurar los botones de volver según de dónde vengamos
     if (fromHistorial === '1') {
@@ -86,13 +88,13 @@ window.addEventListener('DOMContentLoaded', function() {
 
     // --- Observaciones Bitácora ---
     function showModalObservacion(bitacoraId, texto) {
-        const modalContainer = document.querySelector('.modal-container');
+        const modalContainer = document.getElementById('modalObservacion');
         modalContainer.classList.add('active');
         document.getElementById('observacionBitacoraId').value = bitacoraId;
         document.getElementById('modalObservacionTexto').value = texto || '';
     }
     function closeModalObservacion() {
-        const modalContainer = document.querySelector('.modal-container');
+        const modalContainer = document.getElementById('modalObservacion');
         modalContainer.style.display = 'none';
        
         modalContainer.classList.remove('active');
@@ -227,39 +229,57 @@ window.addEventListener('DOMContentLoaded', function() {
     }
 
     // Manejo del formulario del modal (separado)
-    const formModalObservacion = document.getElementById('formModalObservacion');
-    if (formModalObservacion) {
-        formModalObservacion.onsubmit = function(e) {
-            e.preventDefault();
-            const bitacoraId = document.getElementById('observacionBitacoraId').value;
-            const texto = document.getElementById('modalObservacionTexto').value;
-            
-            // Crear FormData para enviar archivos también
-            const formData = new FormData();
-            formData.append('texto', texto);
-            
-            // Agregar archivos del modal si los hay
-            if (modalSelectedFiles && modalSelectedFiles.length > 0) {
-                modalSelectedFiles.forEach(file => {
-                    formData.append('archivos', file);
-                });
-            }
-            fetch(`/api/bitacora/${bitacoraId}/observacion/`, {
-                method: 'POST',
-                headers: { 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value },
-                body: formData
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.ok) { 
-                    closeModalObservacion(); 
-                    location.reload(); 
-                } else {
-                    alert('Error: ' + (data.error || 'No se pudo guardar la observación'));
-                }
-            });
-        };
+function wireObservacionForm() {
+  const form = document.getElementById('formModalObservacion');
+  if (!form) return;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    console.log('[OBS] submit interceptado');
+
+    const bitacoraId = document.getElementById('observacionBitacoraId')?.value;
+    if (!bitacoraId) { alert('Falta bitacoraId'); return; }
+
+    // setea action por si acaso (respaldo)
+    form.action = `/api/bitacora/${bitacoraId}/observacion/`;
+
+    const texto = document.getElementById('modalObservacionTexto')?.value || '';
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+
+    const fd = new FormData();
+    fd.append('texto', texto);
+
+    const files = document.getElementById('modalArchivos')?.files || [];
+    for (const f of files) fd.append('archivos', f);
+
+    try {
+      const res = await fetch(form.action, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrftoken },
+        body: fd
+      });
+
+      if (!res.ok) {
+        const t = await res.text();
+        throw new Error(`HTTP ${res.status} -> ${t.slice(0,300)}`);
+      }
+
+      const ct = res.headers.get('content-type') || '';
+      if (ct.includes('application/json')) {
+        const data = await res.json();
+        if (data.redirect) { window.location.href = data.redirect; return; }
+        if (data.ok) { window.location.reload(); return; }
+        throw new Error(data.error || 'Respuesta JSON inesperada');
+      } else {
+        window.location.reload();
+      }
+    } catch (err) {
+      console.error('[OBS] error:', err);
+      alert('No se pudo guardar la observación. Revisa consola.');
     }
+  });
+}
+
 
     // --- Mini modal de opciones para observación (admin) ---
     document.body.addEventListener('click', function(e) {

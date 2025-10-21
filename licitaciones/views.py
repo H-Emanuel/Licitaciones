@@ -1320,35 +1320,58 @@ def cerrar_licitacion_operador(request, licitacion_id):
 @csrf_exempt
 def observacion_bitacora_api(request, bitacora_id):
     bitacora = get_object_or_404(BitacoraLicitacion, id=bitacora_id)
+
+    # --- GET: devuelve texto (si existe)
     if request.method == 'GET':
+        # Si es OneToOneField con related_name='observacion'
         obs = getattr(bitacora, 'observacion', None)
         if obs:
             return JsonResponse({'ok': True, 'texto': obs.texto})
         return JsonResponse({'ok': False, 'error': 'Sin observación'})
-    elif request.method == 'POST':
-        import json
-        data = json.loads(request.body)
-        texto = data.get('texto', '').strip()
-        if not texto:
-            return JsonResponse({'ok': False, 'error': 'Texto vacío'})
-        obs, created = ObservacionBitacora.objects.get_or_create(bitacora=bitacora)
-        archivos = request.FILES.getlist('archivos')
-        for archivo in archivos:
-            DocumentoObservacion.objects.create(
-                observacion=obs,
-                archivo=archivo,
-                nombre=archivo.name
-            )
-        obs.texto = texto
-        obs.save()
-        return JsonResponse({'ok': True})
-    elif request.method == 'DELETE':
+
+    # --- DELETE: borra observación (si existe)
+    if request.method == 'DELETE':
         obs = getattr(bitacora, 'observacion', None)
         if obs:
             obs.delete()
             return JsonResponse({'ok': True})
         return JsonResponse({'ok': False, 'error': 'No existe observación'})
-    return JsonResponse({'ok': False, 'error': 'Método no permitido'}, status=405)
+
+    # --- POST: crea/actualiza y adjunta archivos
+    # Soporta application/json y multipart/form-data
+    content_type = (request.META.get('CONTENT_TYPE') or '').lower()
+
+    if 'application/json' in content_type:
+        # Cuerpo JSON
+        import json
+        try:
+            data = json.loads(request.body.decode('utf-8') or '{}')
+        except Exception:
+            return JsonResponse({'ok': False, 'error': 'JSON inválido'}, status=400)
+        texto = (data.get('texto') or '').strip()
+        archivos = []  # en JSON no vendrán archivos
+    else:
+        # FormData / x-www-form-urlencoded
+        texto = (request.POST.get('texto') or '').strip()
+        archivos = request.FILES.getlist('archivos')  # name="archivos" (sin [])
+
+    if not texto:
+        return JsonResponse({'ok': False, 'error': 'Texto vacío'}, status=400)
+
+    # Obtiene o crea la observación ligada a la bitácora
+    obs, _created = ObservacionBitacora.objects.get_or_create(bitacora=bitacora)
+    obs.texto = texto
+    obs.save()
+
+    # Adjunta archivos (si vinieron)
+    for archivo in archivos:
+        DocumentoObservacion.objects.create(
+            observacion=obs,
+            archivo=archivo,
+            nombre=archivo.name
+        )
+
+    return JsonResponse({'ok': True})
 
 @csrf_exempt
 def agregar_proyecto(request):

@@ -655,7 +655,7 @@
         <script>
             window.etapasLicitacion = JSON.parse(document.getElementById('etapas-licitacion-data').textContent);
         </script>
-        <script src="{% static 'licitaciones/js/bitacora_licitacion.js' %}"></script>
+        <script src="{% static 'licitaciones/js/bitacora_licitacion.js' %}" defer></script>
     </div>
 
     <div class="modal-container" id="modalRedestinar">
@@ -686,7 +686,7 @@
     </div>
 
     <!-- Modal para agregar/editar observación -->
-    <div class="modal-container">
+    <div class="modal-container" id="modalObservacion">
         <div class="modal-content" style="padding: 20px 20px;">
             <span id="cerrarModalObservacion" class="btn-close">&times;</span>
             <h2 id="tituloModalObservacion">💭 Observación</h2>
