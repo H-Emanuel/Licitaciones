@@ -316,7 +316,7 @@
                         <button class="btn btn-accion editar-fila icon-btn" data-id="{{ licitacion.id }}" title="Editar" {% if not es_admin %}style="visibility: hidden;"{% endif %}>
                             <span class="icono-accion">✏️</span>
                         </button>
-                        
+
                         <!-- Botón Eliminar (solo admin) -->
                         <button class="btn btn-accion eliminar-fila icon-btn" data-id="{{ licitacion.id }}" title="Eliminar" {% if not es_admin %}style="visibility: hidden;"{% endif %}>
                             <span class="icono-accion">🗑️</span>
@@ -447,7 +447,7 @@
                                     </label>
                                     <input type="text" name="iniciativa" id="iniciativaInput" required placeholder="Describa la iniciativa">
                                 </div>
-                                <div class="form-field">
+                                <!-- <div class="form-field">
                                     <label for="direccionInput">
                                         <span class="field-icon">📍</span>
                                         Dirección
@@ -460,7 +460,7 @@
                                         Institución
                                     </label>
                                     <input type="text" name="institucion" id="institucionInput" placeholder="Ingrese la institución">
-                                </div>
+                                </div> -->
                             </div>
                         </div>
 
