@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-ikn@!u*avi#gostkb^3@m_&93bc3&rly_!f#_f)&tbg&%2fjah
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.12.141','licitacionsecpla.munivalpo.cl','localhost']
+ALLOWED_HOSTS = ['*']
 
 CORS_ALLOWED_ORIGINS = [
     "7d2542fcf372.ngrok-free.app",
