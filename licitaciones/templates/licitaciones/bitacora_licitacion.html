@@ -35,7 +35,6 @@
             </div>
 
             <!-- Panel integrado para agregar observación (solo operadores) -->
-            {% if es_operador or es_operador_manual %}
             {% if licitacion.estado_fk.nombre|lower == 'en curso' %}
             <div class="bitacora-panel-operador" id="panelObservacionOperador">
                 <div class="panel-header">
@@ -509,7 +508,7 @@
                     </form>
                 </div>
             </div>
-            {% endif %}
+           
             {% endif %}
 
             <div class="bitacora-entradas">
@@ -654,7 +653,7 @@
         {{ etapas|json_script:"etapas-licitacion-data" }}
         <script>
             window.etapasLicitacion = JSON.parse(document.getElementById('etapas-licitacion-data').textContent);
-        </script>
+        </script>n 
         <script src="{% static 'licitaciones/js/bitacora_licitacion.js' %}" defer></script>
     </div>
 
@@ -677,9 +676,7 @@
 
                 <div class="modal-buttons">
                     <button type="button" id="btnCancelarRedestinar">Cancelar</button>
-                    {% if es_operador %}
                     <button type="submit" id="btnRedestinar">🔄 Redestinar</button>
-                    {% endif %}
                 </div>
             </form>
         </div>

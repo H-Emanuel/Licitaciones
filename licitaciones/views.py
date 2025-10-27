@@ -406,7 +406,7 @@ def vista_admin(request):
     context = {
         'proyectos': proyectos,
         'paginator': proyectos.paginator,
-        'operadores': User.objects.filter(perfil__rol='operador'),
+        'operadores': User.objects.filter(perfil__rol__in=['operador', 'admin']),
         'es_admin': True,
         **catalogs  # Incluir todos los catálogos
     }
@@ -2185,9 +2185,10 @@ def obtener_eventos_calendario(request):
 def api_puede_retroceder_etapa(request, licitacion_id):
     """
     API para verificar si el operador puede retroceder etapa.
-    Solo puede retroceder si su última observación no avanzó etapa.
+    Se elimina la verificación de tipo de usuario operador: permite usuarios
+    autenticados o sesiones manuales/legacy.
     """
-    # Solo operadores pueden acceder
+    # Permitir acceso si está autenticado o existe sesión manual/legacy
     if not (request.user.is_authenticated or 'operador_manual_id' in request.session or 'operador_id' in request.session):
         return JsonResponse({'ok': False, 'error': 'No autorizado'}, status=403)
     
@@ -2195,12 +2196,12 @@ def api_puede_retroceder_etapa(request, licitacion_id):
     if not licitacion:
         return JsonResponse({'ok': False, 'error': 'Licitación no encontrada'}, status=404)
     
-    # Obtener el operador actual
-    operador_user = None
-    if hasattr(request.user, 'perfil') and getattr(request.user.perfil, 'rol', None) == 'operador':
-        operador_user = request.user
-    elif 'operador_manual_id' in request.session:
+    # Obtener el "operador" actual: prefiera el user autenticado, si no usar sesiones
+    operador_user = request.user if request.user.is_authenticated else None
+    if not operador_user and 'operador_manual_id' in request.session:
         operador_user = User.objects.filter(id=request.session['operador_manual_id']).first()
+    if not operador_user and 'operador_id' in request.session:
+        operador_user = User.objects.filter(id=request.session['operador_id']).first()
     
     if not operador_user:
         return JsonResponse({'ok': False, 'puede_retroceder': False})
@@ -2213,8 +2214,7 @@ def api_puede_retroceder_etapa(request, licitacion_id):
     
     puede_retroceder = True
     
-    if ultima_bitacora:
-        # Verificar si el texto de la bitácora indica que avanzó etapa
+    if ultima_bitacora and ultima_bitacora.texto:
         texto_lower = ultima_bitacora.texto.lower()
         if 'avance automático de etapa' in texto_lower or 'avanzar etapa' in texto_lower:
             puede_retroceder = False
@@ -2230,39 +2230,39 @@ def api_puede_retroceder_etapa(request, licitacion_id):
 def api_puede_avanzar_etapa(request, licitacion_id):
     """
     API para verificar si el operador puede avanzar etapa.
-    Solo puede avanzar hay al menos una observación en etapa anterior.
+    Solo requiere usuario autenticado o sesión manual; no se verifica rol de operador.
     """
-    # Solo operadores pueden acceder
+    # Permitir acceso si está autenticado o existe sesión manual/legacy
     if not (request.user.is_authenticated or 'operador_manual_id' in request.session or 'operador_id' in request.session):
         return JsonResponse({'ok': False, 'error': 'No autorizado'}, status=403)
-    
+
     licitacion = Licitacion.objects.filter(id=licitacion_id).first()
     if not licitacion:
         return JsonResponse({'ok': False, 'error': 'Licitación no encontrada'}, status=404)
-    
-    # Obtener el operador actual
-    operador_user = None
-    if hasattr(request.user, 'perfil') and getattr(request.user.perfil, 'rol', None) == 'operador':
-        operador_user = request.user
-    elif 'operador_manual_id' in request.session:
+
+    # Obtener el "operador" actual: prefiera el user autenticado, si no usar operador_manual_id de sesión
+    operador_user = request.user if request.user.is_authenticated else None
+    if not operador_user and 'operador_manual_id' in request.session:
         operador_user = User.objects.filter(id=request.session['operador_manual_id']).first()
-    
+
     if not operador_user:
         return JsonResponse({'ok': False, 'puede_avanzar': False})
-    
-    # Buscar la etapa de última observación del operador para esta licitación
+
+    # Buscar la etapa de última observación del usuario para esta licitación
     ultima_bitacora = BitacoraLicitacion.objects.filter(
-        licitacion=licitacion, 
+        licitacion=licitacion,
         operador_user=operador_user
     ).order_by('-etapa').values_list('etapa', flat=True).first()
-    
-    puede_avanzar = False
-    if ultima_bitacora and ultima_bitacora >= licitacion.etapa_fk.id:
-        puede_avanzar = True
 
-    
+    puede_avanzar = False
+    try:
+        if ultima_bitacora and licitacion.etapa_fk and ultima_bitacora >= licitacion.etapa_fk.id:
+            puede_avanzar = True
+    except Exception:
+        puede_avanzar = False
+
     return JsonResponse({
-        'ok': True, 
+        'ok': True,
         'puede_avanzar': puede_avanzar,
         'ultima_bitacora': ultima_bitacora,
     })
