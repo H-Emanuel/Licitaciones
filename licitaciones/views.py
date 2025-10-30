@@ -461,6 +461,70 @@ def licitaciones_operador(request):
     
     return render(request, 'licitaciones/gestion_licitaciones_operador.html', context)
 
+@login_required
+def vista_vizualizador(request):
+    # Verificar que el usuario es un administrador
+    perfil = getattr(request.user, 'perfil', None)
+    if not perfil or (perfil.rol or '').strip().lower() != 'vizualizador':
+        return redirect('login')
+    # Obtener todas las licitaciones ordenadas por ID descendente
+    proyectos_list = Licitacion.objects.select_related(
+        'operador_user', 'operador_2', 'etapa_fk', 'estado_fk', 'tipo_licitacion',
+        'moneda', 'categoria', 'departamento', 'licitacion_fallida_linkeada'
+    ).prefetch_related('financiamiento').order_by('-id')
+
+    # Aplicar filtros comunes (fallidas, anuales, búsqueda)
+    proyectos_list = get_filtered_projects_list(proyectos_list, request)
+    
+    # Paginar resultados
+    proyectos = get_paginated_projects(proyectos_list, request)
+    
+    # Obtener todos los catálogos de datos
+    catalogs = get_catalog_data()
+    
+    # Construir el contexto para la plantilla
+
+    context = {
+        'proyectos': proyectos,
+        'paginator': proyectos.paginator,
+        'operadores': User.objects.filter(perfil__rol__in=['operador', 'admin']),
+        'es_vizualizador': True,
+        **catalogs  # Incluir todos los catálogos
+    }
+    return render(request, 'licitaciones/gestion_licitaciones_visita.html', context)
+
+@login_required
+def licitaciones_vizualizador(request):
+    # Verificar que el usuario es un administrador
+    perfil = getattr(request.user, 'perfil', None)
+    if not perfil or (perfil.rol or '').strip().lower() != 'admin':
+        return redirect('login')
+    # Obtener todas las licitaciones ordenadas por ID descendente
+    proyectos_list = Licitacion.objects.select_related(
+        'operador_user', 'operador_2', 'etapa_fk', 'estado_fk', 'tipo_licitacion',
+        'moneda', 'categoria', 'departamento', 'licitacion_fallida_linkeada'
+    ).prefetch_related('financiamiento').order_by('-id')
+
+    # Aplicar filtros comunes (fallidas, anuales, búsqueda)
+    proyectos_list = get_filtered_projects_list(proyectos_list, request)
+    
+    # Paginar resultados
+    proyectos = get_paginated_projects(proyectos_list, request)
+    
+    # Obtener todos los catálogos de datos
+    catalogs = get_catalog_data()
+    
+    # Construir el contexto para la plantilla
+    context = {
+        'proyectos': proyectos,
+        'paginator': proyectos.paginator,
+        'operadores': User.objects.filter(perfil__rol__in=['operador', 'admin']),
+        'es_vizualizador': True,
+        **catalogs  # Incluir todos los catálogos
+    }
+    
+    return render(request, 'licitaciones/gestion_licitaciones_visita.html', context)
+
 @csrf_exempt
 def login_view(request):
     from .models import Perfil
@@ -487,6 +551,9 @@ def login_view(request):
                 elif perfil and perfil.rol == 'operador':
                     login(request, user)
                     return redirect('vista_operador')
+                elif perfil and perfil.rol == 'vizualizador':
+                    login(request, user)
+                    return redirect('vista_vizualizador')
                 else:
                     error_msg = 'Usuario no tiene permisos de operador.'
                     return render(request, 'licitaciones/login.html', {
@@ -513,6 +580,8 @@ def login_view(request):
                         return redirect('vista_admin')
                     elif rol == 'operador':
                         return redirect('vista_operador')
+                    elif rol == 'vizualizador':
+                        return redirect('vista_vizualizador')
                     else:
                         logout(request)
                         return render(request, 'licitaciones/login.html', {
@@ -618,6 +687,7 @@ def bitacora_licitacion(request, licitacion_id):
     user_rol = None
     es_admin = False
     es_operador = False
+    es_vizualizador = False
     es_operador_manual = False
     operador_sidebar_nombre = None
     
@@ -635,6 +705,9 @@ def bitacora_licitacion(request, licitacion_id):
             if rol == 'admin':
                 es_admin = True
                 user_rol = 'admin'
+            elif rol == 'vizualizador':
+                user_rol = 'vizualizador'
+                es_vizualizador = True
             elif rol == 'operador':
                 es_operador = True
                 user_rol = 'operador'
@@ -643,13 +716,13 @@ def bitacora_licitacion(request, licitacion_id):
         pass
     
     # Método 2: Verificar si es operador por función auxiliar
-    if not (es_admin or es_operador) and es_usuario_operador(request.user):
+    if not (es_admin or es_operador or es_vizualizador) and es_usuario_operador(request.user):
         es_operador = True
         user_rol = 'operador'
         operador_sidebar_nombre = request.user.get_full_name() or request.user.username
     
     # Método 3: Verificar sessions de respaldo
-    if not (es_admin or es_operador):
+    if not (es_admin or es_operador or es_vizualizador):
         if 'operador_id' in request.session:
             es_operador = True
             user_rol = 'operador'
@@ -666,13 +739,13 @@ def bitacora_licitacion(request, licitacion_id):
                 operador_sidebar_nombre = operador_user.get_full_name() or operador_user.username
     
     # Método 4: Si viene de vista de operador y está autenticado, permitir acceso
-    if not (es_admin or es_operador or es_operador_manual) and from_operador:
+    if not (es_admin or es_operador or es_operador_manual or es_vizualizador) and from_operador:
         es_operador = True
         user_rol = 'operador'
         operador_sidebar_nombre = request.user.get_full_name() or request.user.username
     
     # Si no es admin ni operador, denegar acceso
-    if not (es_admin or es_operador or es_operador_manual):
+    if not (es_admin or es_operador or es_operador_manual or es_vizualizador):
         return HttpResponseForbidden('Solo administradores u operadores pueden acceder a la bitácora.')
     
     licitacion = get_object_or_404(Licitacion, id=licitacion_id)
@@ -957,6 +1030,7 @@ def bitacora_licitacion(request, licitacion_id):
         'es_admin': es_admin,
         'es_operador_manual': es_operador_manual,
         'es_operador': es_operador,
+        'es_vizualizador': es_vizualizador,
         'paginator': paginator,
         'operador_sidebar_nombre': operador_sidebar_nombre,
     })

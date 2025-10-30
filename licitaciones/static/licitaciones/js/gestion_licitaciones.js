@@ -81,7 +81,7 @@ async function renderEtapasSelect(select, etapas, selectedId, moneda, monto_pres
         opt.selected = etapa.id === parseInt(selectedId);
         select.appendChild(opt);
     });
-}
+} 
 
 // --- UTILIDAD GLOBAL: Filtrar etapas por tipo de licitación ---
 function getEtapasPorTipo(tipoId) {

@@ -291,6 +291,7 @@ class Perfil(models.Model):
     ROL_CHOICES = (
         ('admin', 'Administrador'),
         ('operador', 'Operador'),
+        ('vizualizador', 'Vizualizador'),
     )
     rol = models.CharField(max_length=20, choices=ROL_CHOICES)
 

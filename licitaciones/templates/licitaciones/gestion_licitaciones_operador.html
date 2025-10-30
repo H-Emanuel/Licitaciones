@@ -48,6 +48,7 @@
                             <th data-col="id_mercado_publico">ID Mercado Público</th>
                             <th data-col="orden_compra">Orden de compra</th>
                             <th data-col="fecha_estimada_adjudicacion">Fecha estimada de adjudicación</th>
+                            
                             <th data-col="operadores">Profesionales a Cargo</th>
                             <th data-col="etapa">Etapa</th>
                             <th data-col="estado">Status</th>
@@ -58,8 +59,6 @@
                             <th data-col="numero_cuenta">N° de cuenta</th>
                             <th data-col="en_plan_anual">En plan anual</th>
                             <th data-col="iniciativa">Iniciativa</th>
-                            <th data-col="direccion">Dirección</th>
-                            <th data-col="institucion">Institución</th>
                             <th data-col="departamento">Depto.</th>
                             <th data-col="monto_presupuestado">Monto Presupuestado general</th>
                             <th data-col="tipo_presupuesto">Tipo por presupuesto</th>
@@ -123,8 +122,6 @@
                     <td data-campo="numero_cuenta" data-col="numero_cuenta" data-label="N° de cuenta">{{ licitacion.numero_cuenta }}</td>
                     <td data-campo="en_plan_anual" data-col="en_plan_anual" data-label="En plan anual">{% if licitacion.en_plan_anual %}Sí{% else %}No{% endif %}</td>
                     <td data-campo="iniciativa" data-col="iniciativa" data-label="Iniciativa" title="{{ licitacion.iniciativa }}">{{ licitacion.iniciativa }}</td>
-                    <td data-campo="direccion" data-col="direccion" data-label="Dirección">{{ licitacion.direccion|default:"-" }}</td>
-                    <td data-campo="institucion" data-col="institucion" data-label="Institución">{{ licitacion.institucion|default:"-" }}</td>
                     <td data-campo="departamento" data-col="departamento" data-label="Departamento">{{ licitacion.departamento.nombre|default:licitacion.departamento }}</td>
                     <td data-campo="monto_presupuestado" data-col="monto_presupuestado" data-label="Monto Presupuestado">${{ licitacion.monto_presupuestado|floatformat:"0"|chilean_thousands }}</td>
                     <td data-campo="tipo_presupuesto" data-col="tipo_presupuesto" data-label="Tipo de presupuesto">{{ licitacion.get_tipo_presupuesto_display }}</td>

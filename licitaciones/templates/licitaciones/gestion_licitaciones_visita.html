@@ -138,11 +138,11 @@
                 <table class="tabla-proyectos">
                     <thead>
                         <tr>
+                            <th data-col="color" class="seleccionar-header"></th>
                             <th data-col="seleccionar" class="seleccionar-header"></th>
                             <th data-col="numero_pedido">N° de pedido</th>
                             <th data-col="id_mercado_publico">ID Mercado Público</th>
                             <th data-col="fecha_tentativa_termino">Fecha tentativa de término</th>
-                            <th data-col="fecha_estimada_adjudicacion">Fecha estimada de adjudicación</th>
                             <th data-col="operadores">Profesionales a Cargo</th>
                             <th data-col="etapa">Etapa</th>
                             <th data-col="estado">Status</th>
@@ -164,11 +164,11 @@
                     <tbody>
                     {% for licitacion in proyectos %}
                     <tr data-id="{{ licitacion.id }}" class="{% if not licitacion.estado_fk or licitacion.estado_fk.id == 1 %} lic-abierta {% else %} lic-cerrada {% endif %}" onclick="document.getElementById('check-{{ licitacion.id }}').click();">
+                        <td></td>
                         <td data-campo="seleccionar" data-col="seleccionar" data-label="Seleccionar"><input type="checkbox" class="licitacion-check" value="{{ licitacion.id }}" id="check-{{ licitacion.id }}" onclick="event.stopPropagation();"/></td>
                         <td data-campo="numero_pedido" data-col="numero_pedido" data-label="N° de pedido">{{ licitacion.numero_pedido }}</td>
                         <td data-campo="id_mercado_publico" data-col="id_mercado_publico" data-label="ID Mercado Público">{{ licitacion.id_mercado_publico|default:"-" }}</td>
                         <td data-campo="fecha_tentativa_termino" data-col="fecha_tentativa_termino" data-label="Fecha tentativa de término">{{ licitacion.fecha_tentativa_termino|date:"d/m/Y" }}</td>
-                        <td data-campo="fecha_estimada_adjudicacion" data-col="fecha_estimada_adjudicacion" data-label="Fecha estimada de adjudicación" >{{ licitacion.fecha_estimada_adjudicacion_publicacionportal|date:"d/m/Y"|default:"-" }}</td>
                         <td data-campo="operadores" data-col="operadores" data-label="Profesionales a Cargo">
                             <div class="operadores-container">
                                 <span class="operador-badge operador-1 {% if licitacion.get_numero_operador_activo == 1 %}activo{% endif %}" title="Operador 1: Gestiona hasta Evaluación de Ofertas" data-id="{{ licitaciones. }}">
@@ -265,25 +265,11 @@
             </div>
             
             <!-- Botón sticky para mostrar/ocultar acciones (solo admin) -->
-            {% if es_admin %}
             <div class="toggle-acciones" style="gap: 10px;">
-            <button class="btn-toggle-acciones editar-fila" data-id="" title="Editar" {% if not es_admin %}style="visibility: hidden;"{% endif %}>
-                <span class="icono-accion">✏️</span>
-            </button>
-
-            <!-- Botón Eliminar (solo admin) -->
-            <button class="btn-toggle-acciones eliminar-fila" data-id="" title="Eliminar" {% if not es_admin %}style="visibility: hidden;"{% endif %}>
-                <span class="icono-accion">🗑️</span>
-            </button>
             
             <!-- Botón Ver última observación (siempre visible) -->
             <button class="btn-toggle-acciones ultima-obs-fila" data-id="" title="Ver última observación">
                 <span class="icono-accion">📝</span>
-            </button>
-            
-            <!-- Botón Cerrar licitación (siempre visible) -->
-            <button class="btn-toggle-acciones cerrar-licitacion-fila" data-id="" title="Cerrar licitación">
-                <span class="icono-accion">🔒</span>
             </button>
 
             <!-- Botón Bitácora (siempre visible) -->
@@ -291,16 +277,15 @@
                 <span class="icono-accion">📒</span>
             </a>
             <!-- Botón Cronología (solo admin) -->
-            <button class="btn-toggle-acciones cronologia-fila" data-id="" title="Ver cronología" {% if not es_admin %}style="visibility: hidden;"{% endif %}>
+            <button class="btn-toggle-acciones cronologia-fila" data-id="" title="Ver cronología">
                 <span class="icono-accion">📅</span>
             </button>
             
             <!-- Botón Documentos (solo admin) -->
-            <button class="btn-toggle-acciones documentos-fila" data-id="" title="Ver documentos" {% if not es_admin %}style="visibility: hidden;"{% endif %}>
+            <button class="btn-toggle-acciones documentos-fila" data-id="" title="Ver documentos">
                 <span class="icono-accion">📎</span>
             </button>
             </div>
-            {% endif %}
             
             <!-- Columna sticky separada para acciones -->
             <div class="acciones-sticky hide" id="accionesSticky">
@@ -775,11 +760,6 @@
                     <div id="contenidoUltimaObsOperador" style="min-height:60px; color:#222; font-size:1.08em; text-align:left; margin-bottom:10px;"></div>
                     <div id="fechaUltimaObsOperador" style="color:#888; font-size:0.98em; text-align:right;"></div>
                 </div>
-                <!-- <div>
-                    <h3 style="color:#d9534f;">Del Administrador:</h3>
-                    <div id="contenidoUltimaObsAdmin" style="min-height:60px; color:#222; font-size:1.08em; text-align:left; margin-bottom:10px;"></div>
-                    <div id="fechaUltimaObsAdmin" style="color:#888; font-size:0.98em; text-align:right;"></div>
-                </div> -->
             </div>
         </div>
         
@@ -1030,6 +1010,8 @@
                     </div>
                 </div>
                 
+
+
                 <!-- <div class="cronologia-controles">
                     <button class="cronologia-btn retroceder" id="retrocederEtapa" title="Retroceder etapa">
                         <span class="btn-icon">⬅️</span>
@@ -1040,6 +1022,8 @@
                         Avanzar
                     </button>
                 </div> -->
+
+
             </div>
         </div>
     </div>

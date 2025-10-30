@@ -7,6 +7,8 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('administracion/', views.vista_admin, name='vista_admin'),
     path('operador/', views.vista_operador, name='vista_operador'),
+    path('vizualizador/', views.vista_vizualizador, name='vista_vizualizador'),
+
     path('estadisticas/', views.estadisticas_view, name='estadisticas'),
     path('calendario/', views.calendario_actividad, name='calendario_actividad'),
     path('', views.gestion_licitaciones, name='gestion_licitaciones'),

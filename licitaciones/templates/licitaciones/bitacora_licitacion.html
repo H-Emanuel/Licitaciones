@@ -36,7 +36,10 @@
 
             <!-- Panel integrado para agregar observación (solo operadores) -->
             {% if licitacion.estado_fk.nombre|lower == 'en curso' %}
+            {% if es_operador or es_admin %}
+            
             <div class="bitacora-panel-operador" id="panelObservacionOperador">
+                
                 <div class="panel-header">
                     <h3 class="panel-titulo">
                         <span class="panel-icono">✍️</span>
@@ -470,17 +473,17 @@
                         </div>
                         
                         <!-- Opciones adicionales -->
-                        <div class="opciones-adicionales">
+                        <!-- <div class="opciones-adicionales">
                             <div class="opcion-item">
                                 <input type="checkbox" id="marcarFallidaCheckbox" name="marcar_fallida" class="opcion-checkbox">
                                 <label for="marcarFallidaCheckbox" class="opcion-label opcion-fallida">
                                     <span class="opcion-icono">⚠️</span>
                                     Marcar licitación como <strong>FALLIDA</strong>
                                 </label>
-                            </div>
+                            </div> -->
                             
                             <!-- Tipo de falla - se muestra solo si está marcado como fallida -->
-                            <div id="tipoFallidaContainer" class="tipo-falla-container hidden">
+                            <!-- <div id="tipoFallidaContainer" class="tipo-falla-container hidden">
                                 <label for="tipoFallidaSelect" class="campo-label">
                                     <span class="label-icono">🔍</span>
                                     Tipo de falla:
@@ -492,7 +495,7 @@
                                     <option value="desierta">📋 Desierta</option>
                                 </select>
                             </div>
-                        </div>
+                        </div> -->
                         
                         <!-- Botones de acción -->
                         <div class="panel-acciones">
@@ -509,6 +512,7 @@
                 </div>
             </div>
            
+            {% endif %}
             {% endif %}
 
             <div class="bitacora-entradas">
@@ -589,13 +593,13 @@
                         </div>
                         {% endif %}
                         
-                        {% if es_admin %}
+                        <!-- {% if es_admin %}
                         <div class="entrada-admin">
                             <button class="btn-eliminar-entrada" data-id="{{ b.id }}" title="Eliminar entrada">
                                 🗑️ Eliminar entrada
                             </button>
                         </div>
-                        {% endif %}
+                        {% endif %} -->
                     </div>
                 </div>
                 {% empty %}
