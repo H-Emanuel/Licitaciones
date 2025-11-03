@@ -1919,7 +1919,7 @@ body {
 
 .info-label {
     font-size: 0.85rem;
-    color: #64748b;
+    color: #a4c9ff;
     font-weight: 600;
     margin-bottom: 6px;
     text-transform: uppercase;
@@ -1928,7 +1928,7 @@ body {
 
 .info-value {
     font-size: 1.1rem;
-    color: #0f172a;
+    color: #ffffff;
     font-weight: 700;
 }
 
