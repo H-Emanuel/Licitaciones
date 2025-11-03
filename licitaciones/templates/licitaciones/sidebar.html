@@ -13,9 +13,7 @@
         <div class="sidebar-user">
             <span class="sidebar-user-icon">👤</span>
             <span class="sidebar-user-name">
-                {% if operador_sidebar_nombre %}
-                    {{ operador_sidebar_nombre }}
-                {% elif request.user.first_name or request.user.last_name %}
+                {% if request.user.first_name or request.user.last_name %}
                     {{ request.user.first_name }} {{ request.user.last_name }}
                 {% else %}
                     {{ request.user.username|default:'Operador' }}
