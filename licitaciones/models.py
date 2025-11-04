@@ -337,6 +337,7 @@ class TipoLicitacionEtapa(models.Model):
 
 class ObservacionBitacora(models.Model):
     bitacora = models.OneToOneField(BitacoraLicitacion, on_delete=models.CASCADE, related_name='observacion')
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='bitacoras_usuario')
     texto = models.TextField(verbose_name="Observación")
     fecha = models.DateTimeField(auto_now_add=True)
 

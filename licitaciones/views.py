@@ -1435,6 +1435,7 @@ def observacion_bitacora_api(request, bitacora_id):
     # Obtiene o crea la observación ligada a la bitácora
     obs, _created = ObservacionBitacora.objects.get_or_create(bitacora=bitacora)
     obs.texto = texto
+    obs.user = request.user
     obs.save()
 
     # Adjunta archivos (si vinieron)
