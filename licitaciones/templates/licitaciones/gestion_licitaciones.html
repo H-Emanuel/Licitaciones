@@ -141,6 +141,7 @@
                             <th data-col="seleccionar" class="seleccionar-header"></th>
                             <th data-col="numero_pedido">N° de pedido</th>
                             <th data-col="id_mercado_publico">ID Mercado Público</th>
+                            <th data-col="orden_compra">Orden de compra</th>
                             <th data-col="fecha_tentativa_termino">Fecha tentativa de término</th>
                             <th data-col="fecha_estimada_adjudicacion">Fecha estimada de adjudicación</th>
                             <th data-col="operadores">Profesionales a Cargo</th>
@@ -167,6 +168,7 @@
                         <td data-campo="seleccionar" data-col="seleccionar" data-label="Seleccionar"><input type="checkbox" class="licitacion-check" value="{{ licitacion.id }}" id="check-{{ licitacion.id }}" onclick="event.stopPropagation();"/></td>
                         <td data-campo="numero_pedido" data-col="numero_pedido" data-label="N° de pedido">{{ licitacion.numero_pedido }}</td>
                         <td data-campo="id_mercado_publico" data-col="id_mercado_publico" data-label="ID Mercado Público">{{ licitacion.id_mercado_publico|default:"-" }}</td>
+                        <td data-campo="orden_compra" data-col="orden_compra" data-label="Orden de compra">{{ licitacion.orden_compra_adjudicacion|default:"-" }}</td>
                         <td data-campo="fecha_tentativa_termino" data-col="fecha_tentativa_termino" data-label="Fecha tentativa de término">{{ licitacion.fecha_tentativa_termino|date:"d/m/Y" }}</td>
                         <td data-campo="fecha_estimada_adjudicacion" data-col="fecha_estimada_adjudicacion" data-label="Fecha estimada de adjudicación" >{{ licitacion.fecha_estimada_adjudicacion_publicacionportal|date:"d/m/Y"|default:"-" }}</td>
                         <td data-campo="operadores" data-col="operadores" data-label="Profesionales a Cargo">
