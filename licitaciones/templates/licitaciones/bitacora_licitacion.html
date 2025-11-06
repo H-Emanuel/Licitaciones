@@ -240,7 +240,7 @@
                                     class="campoEtapa"
                                     placeholder="Ej: 1500000.00"
                                     min="0"
-                                    max="99999999"
+                                    max="999999999999999"
                                     value="{{ licitacion.monto_adjudicacion|default:'' }}">
                                 <div class="campo-ayuda">
                                     <span class="ayuda-icono">💡</span>
@@ -282,7 +282,7 @@
                                     name="orden_compra_adjudicacion" 
                                     class="campoEtapa"
                                     placeholder="Ej: 12345"
-                                    max=999999999
+                                    max=999999999999999
                                     value="{{ licitacion.orden_compra_adjudicacion|default:'' }}">
                             </div>
                         </div>
@@ -667,8 +667,8 @@
             let valor = this.value;
             let partes = valor.split('.');
 
-            if (partes[0].length > 8) {
-                partes[0] = partes[0].slice(0, 8);
+            if (partes[0].length > 13) {
+                partes[0] = partes[0].slice(0, 13);
             }
 
             this.value = partes.join('.');
@@ -678,8 +678,8 @@
             let valor = this.value;
             let partes = valor.split('.');
 
-            if (partes[0].length > 8) {
-                partes[0] = partes[0].slice(0, 8);
+            if (partes[0].length > 13) {
+                partes[0] = partes[0].slice(0, 13);
             }
 
             this.value = partes.join('.');
