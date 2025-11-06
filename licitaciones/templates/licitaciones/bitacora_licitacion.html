@@ -240,6 +240,7 @@
                                     class="campoEtapa"
                                     placeholder="Ej: 1500000.00"
                                     min="0"
+                                    max="99999999"
                                     value="{{ licitacion.monto_adjudicacion|default:'' }}">
                                 <div class="campo-ayuda">
                                     <span class="ayuda-icono">💡</span>
@@ -342,6 +343,7 @@
                                     class="campoEtapa"
                                     placeholder="Ej: 1500000.00"
                                     min="0"
+                                    max="8"
                                     value="{{ licitacion.monto_estimado_cotizacion|default:'' }}">
                                 <div class="campo-ayuda">
                                     <span class="ayuda-icono">💡</span>
@@ -562,7 +564,7 @@
                                     <span class="archivo-nombre">{{ doc.nombre|default:doc.archivo.name|cut:'documentos_licitacion/' }}</span>
                                     <div class="archivo-acciones">
                                         <a href="{{ doc.archivo.url }}" target="_blank" class="archivo-btn archivo-ver" title="Ver">👁️</a>
-                                        <a href="{{ doc.archivo.url }}" target="_blank" class="archivo-btn archivo-descargar" title="Descargar">⬇️</a>
+                                        <a href="{{ doc.archivo.url }}" download="{{ doc.nombre|default:doc.archivo.name|cut:'documentos_licitacion/' }}" class="archivo-btn archivo-descargar" title="Descargar" rel="noopener noreferrer">⬇️</a>
                                     </div>
                                 </div>
                                 {% endfor %}
@@ -658,7 +660,32 @@
         {{ etapas|json_script:"etapas-licitacion-data" }}
         <script>
             window.etapasLicitacion = JSON.parse(document.getElementById('etapas-licitacion-data').textContent);
-        </script>n 
+        </script>
+        <script>
+            document.getElementById('montoAdjudicadoInput').addEventListener('input', function () {
+            // Permitimos decimales, pero cortamos la parte entera a 8 dígitos
+            let valor = this.value;
+            let partes = valor.split('.');
+
+            if (partes[0].length > 8) {
+                partes[0] = partes[0].slice(0, 8);
+            }
+
+            this.value = partes.join('.');
+        });
+            document.getElementById('numeroOrdenCompraInput').addEventListener('input', function () {
+            // Permitimos decimales, pero cortamos la parte entera a 8 dígitos
+            let valor = this.value;
+            let partes = valor.split('.');
+
+            if (partes[0].length > 8) {
+                partes[0] = partes[0].slice(0, 8);
+            }
+
+            this.value = partes.join('.');
+        });
+
+        </script>
         <script src="{% static 'licitaciones/js/bitacora_licitacion.js' %}" defer></script>
     </div>
 
@@ -746,4 +773,5 @@
         </div>
     </div>
 </body>
+
 </html>
