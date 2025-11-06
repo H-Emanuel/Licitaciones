@@ -139,6 +139,7 @@
                     <thead>
                         <tr>
                             <th data-col="seleccionar" class="seleccionar-header"></th>
+                            <th data-col="iniciativa">Iniciativa</th>
                             <th data-col="numero_pedido">N° de pedido</th>
                             <th data-col="id_mercado_publico">ID Mercado Público</th>
                             <th data-col="orden_compra">Orden de compra</th>
@@ -153,7 +154,6 @@
                             <th data-col="financiamiento">Financiamiento</th>
                             <th data-col="numero_cuenta">N° de cuenta</th>
                             <th data-col="en_plan_anual">En plan anual</th>
-                            <th data-col="iniciativa">Iniciativa</th>
                             <th data-col="departamento">Depto.</th>
                             <th data-col="monto_presupuestado">Monto Presupuestado general</th>
                             <th data-col="tipo_presupuesto">Tipo por presupuesto</th>
@@ -166,6 +166,7 @@
                     {% for licitacion in proyectos %}
                     <tr data-id="{{ licitacion.id }}" class="{% if not licitacion.estado_fk or licitacion.estado_fk.id == 1 %} lic-abierta {% else %} lic-cerrada {% endif %}" onclick="document.getElementById('check-{{ licitacion.id }}').click();">
                         <td data-campo="seleccionar" data-col="seleccionar" data-label="Seleccionar"><input type="checkbox" class="licitacion-check" value="{{ licitacion.id }}" id="check-{{ licitacion.id }}" onclick="event.stopPropagation();"/></td>
+                        <td data-campo="iniciativa" data-col="iniciativa" data-label="Iniciativa" title="{{ licitacion.iniciativa }}">{{ licitacion.iniciativa }}</td>
                         <td data-campo="numero_pedido" data-col="numero_pedido" data-label="N° de pedido">{{ licitacion.numero_pedido }}</td>
                         <td data-campo="id_mercado_publico" data-col="id_mercado_publico" data-label="ID Mercado Público">{{ licitacion.id_mercado_publico|default:"-" }}</td>
                         <td data-campo="orden_compra" data-col="orden_compra" data-label="Orden de compra">{{ licitacion.orden_compra_adjudicacion|default:"-" }}</td>
@@ -217,7 +218,6 @@
                         </td>
                         <td data-campo="numero_cuenta" data-col="numero_cuenta" data-label="N° de cuenta">{{ licitacion.numero_cuenta }}</td>
                         <td data-campo="en_plan_anual" data-col="en_plan_anual" data-label="En plan anual">{% if licitacion.en_plan_anual %}Sí{% else %}No{% endif %}</td>
-                        <td data-campo="iniciativa" data-col="iniciativa" data-label="Iniciativa" title="{{ licitacion.iniciativa }}">{{ licitacion.iniciativa }}</td>
                         <td data-campo="departamento" data-col="departamento" data-label="Departamento">{{ licitacion.departamento.nombre|default:licitacion.departamento }}</td>
                         <td data-campo="monto_presupuestado" data-col="monto_presupuestado" data-label="Monto Presupuestado">${{ licitacion.monto_presupuestado|floatformat:"0"|chilean_thousands }}</td>
                         <td data-campo="tipo_presupuesto" data-col="tipo_presupuesto" data-label="Tipo de presupuesto">{{ licitacion.get_tipo_presupuesto_display }}</td>
@@ -405,14 +405,14 @@
                                         <span class="field-icon">🏛️</span>
                                         ID Mercado Público
                                     </label>
-                                    <input type="text" name="id_mercado_publico" id="idMercadoPublicoInput" placeholder="Ingrese el ID de Mercado Público">
+                                    <input type="text" name="id_mercado_publico" id="idMercadoPublicoInput" placeholder="Ingrese el ID de Mercado Público" maxlength="50">
                                 </div>
                                 <div class="form-field">
                                     <label for="numeroCuentaInput">
                                         <span class="field-icon">🏦</span>
                                         N° de cuenta
                                     </label>
-                                    <input type="text" name="numero_cuenta" id="numeroCuentaInput" required placeholder="Ingrese el número de cuenta">
+                                    <input type="text" name="numero_cuenta" id="numeroCuentaInput" required placeholder="Ingrese el número de cuenta" maxlength="30">
                                 </div>
                                 <div class="form-field">
                                     <label for="operadorSelect">
@@ -445,7 +445,7 @@
                                         <span class="field-icon">🎯</span>
                                         Iniciativa
                                     </label>
-                                    <input type="text" name="iniciativa" id="iniciativaInput" required placeholder="Describa la iniciativa">
+                                    <input type="text" name="iniciativa" id="iniciativaInput" required placeholder="Describa la iniciativa" maxlength="250">
                                 </div>
                                 
                                 <!-- <div class="form-field">
@@ -519,7 +519,7 @@
                                         Monto Presupuestado
                                     </label>
                                     <div style="display:flex; align-items:center; gap:15px; margin-top:8px;">
-                                        <input type="number" name="monto_presupuestado" id="montoPresupuestadoInput" step="0.01" placeholder="0.00" style="flex:1; min-width:200px;">
+                                        <input type="number" name="monto_presupuestado" id="montoPresupuestadoInput" step="0.01" placeholder="0.00" style="flex:1; min-width:200px;" oninput="if(this.value.length > 15) this.value = this.value.slice(0,15)">
                                         <div style="display:flex; flex-direction:column; gap:8px;">
                                             <label style="display:flex; align-items:center; gap:6px; font-size:14px; margin:0; white-space:nowrap; cursor:pointer;">
                                                 <input type="checkbox" id="montoMaximoCheck" name="tipo_monto" value="maximo" style="width:16px; height:16px; cursor:pointer;">
