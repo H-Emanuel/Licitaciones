@@ -374,7 +374,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const btnAgregar = document.getElementById('btnAgregarLicitacion');
     const modalTitulo = document.getElementById('modalTitulo');
     const licitacionFallida = document.getElementById('licitacion-fallida');
-    
+    // AQUI SE CARGA TODO LO QUE QUIERES VER EN EDITAR QUE SE CARGO PREVIAMENTE EN BASE DATOS!
     async function abrirModal(titulo, datos = null) {
         const docsText = document.querySelector('.docs-text');
         const fileInput = document.getElementById('inputDocumentos');
@@ -419,6 +419,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 operadorSelect.value = opId;
             }
         }
+        
         // Operador 2
         if (datos && (datos.operador_2 || datos.operador_2_id)) {
             const operador2Select = document.getElementById('operador2Select');
@@ -476,17 +477,49 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
         // N° de cuenta
-        if (datos && datos.numero_cuenta !== undefined) {
-            const numeroCuentaInput = document.getElementById('numeroCuentaInput');
-            if (numeroCuentaInput) numeroCuentaInput.value = datos.numero_cuenta;
+        const contenedorCuentas = document.getElementById('contenedorCuentas');
+        if (contenedorCuentas) {
+            contenedorCuentas.innerHTML = ''; 
+            
+            if (datos && datos.numero_cuenta) {
+                // --- CORRECCIÓN AQUÍ ---
+                // Antes: .split(/\s*[\/-]\s*/)  <-- Esto cortaba con guiones (-)
+                // Ahora: .split(/\s*\/\s*/)     <-- Esto SOLO corta con barras (/)
+                
+                let cuentas = datos.numero_cuenta.split(/\s*\/\s*/); 
+                
+                cuentas.forEach(c => {
+                    if(c.trim()) agregarFilaCuenta(c.trim());
+                });
+            } 
+            
+            if (contenedorCuentas.children.length === 0) {
+                agregarFilaCuenta("");
+            }
         }
         // En plan anual (select sí/no)
         if (datos && datos.en_plan_anual !== undefined) {
-            const enPlanAnualSelect = document.getElementById('enPlanAnualSelect');
-            if (enPlanAnualSelect) {
-                enPlanAnualSelect.value = datos.en_plan_anual === true || datos.en_plan_anual === 'True' ? 'True' : 'False';
-            }
+    const enPlanAnualSelect = document.getElementById('enPlanAnualSelect');
+    const boxJustificacion = document.getElementById('contenedorJustificacion');
+    const inputJustificacion = document.getElementById('justificacionInput');
+
+    if (enPlanAnualSelect) {
+        // Determinamos si es True o False (aceptando 'sí', 'si', true, 'True')
+        const esSi = ['Sí', 'si', 'true', true].includes(String(datos.en_plan_anual).toLowerCase());
+        enPlanAnualSelect.value = esSi ? 'True' : 'False';
+
+        // Lógica de visualización al cargar
+        if (esSi) {
+            boxJustificacion.style.display = 'block';
+            inputJustificacion.required = true;
+            // SI TIENES EL DATO DE JUSTIFICACIÓN EN TU JSON, CARGALO AQUÍ:
+            // inputJustificacion.value = datos.justificacion || ''; 
+        } else {
+            boxJustificacion.style.display = 'none';
+            inputJustificacion.required = false;
         }
+    }
+}
         // Pedido devuelto (checkbox)
         if (datos && datos.pedido_devuelto !== undefined) {
             const pedidoDevueltoCheck = document.getElementById('pedidoDevueltoCheckbox');
@@ -499,11 +532,62 @@ document.addEventListener("DOMContentLoaded", function () {
             const llamadoCotizacionSelect = document.getElementById('llamadoCotizacionSelect');
             if (llamadoCotizacionSelect) llamadoCotizacionSelect.value = datos.llamado_cotizacion;
         }
-        // N° de pedido
-        if (datos && datos.numero_pedido !== undefined) {
-            const numeroPedidoInput = document.getElementById('numeroPedidoInput');
-            if (numeroPedidoInput) numeroPedidoInput.value = datos.numero_pedido;
+
+        const inputCreacion = document.getElementById('fechaCreacionInput');
+    
+    if (inputCreacion) {
+        // ¿Es edición? Verificamos si hay ID
+        const esEdicion = datos && (datos.id || datos.pk);
+
+        if (esEdicion) {
+            // ============================================
+            // MODO EDICIÓN: LIBRE
+            // ============================================
+            inputCreacion.disabled = false; // Aseguramos que esté libre
+            inputCreacion.removeAttribute('disabled'); // Doble seguridad
+
+            // Lógica para poner el valor de la fecha
+            if (datos.fecha_creacion) {
+                let fechaRaw = datos.fecha_creacion.trim();
+                
+                if (fechaRaw.includes('T')) {
+                    inputCreacion.value = fechaRaw.split('T')[0];
+                } else if (fechaRaw.includes('/') || fechaRaw.includes('-')) {
+                    // Conversión DD-MM-YYYY a YYYY-MM-DD
+                    let separador = fechaRaw.includes('/') ? '/' : '-';
+                    let partes = fechaRaw.split(separador);
+                    if (partes.length === 3) {
+                        // Asumiendo formato chile: dia-mes-año -> año-mes-dia
+                        inputCreacion.value = `${partes[2]}-${partes[1]}-${partes[0]}`;
+                    } else {
+                        inputCreacion.value = fechaRaw;
+                    }
+                } else {
+                    inputCreacion.value = fechaRaw;
+                }
+            }
+
+        } else {
+            // ============================================
+            // MODO CREACIÓN: BLOQUEADO (Aquí lo bloqueamos por JS)
+            // ============================================
+            
+            // 1. Bloquear
+            inputCreacion.disabled = true;
+            
+            // 2. Poner fecha de hoy por defecto
+            const hoy = new Date();
+            const dia = String(hoy.getDate()).padStart(2, '0');
+            const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+            const anio = hoy.getFullYear();
+            inputCreacion.value = `${anio}-${mes}-${dia}`;
         }
+    }
+        // N° de pedido
+        if (numeroPedidoInput) {
+    // Si viene texto sucio "1050-RRHH...", parseInt lo convierte en "1050"
+    numeroPedidoInput.value = parseInt(datos.numero_pedido); 
+}
         // ID Mercado Público
         if (datos && datos.id_mercado_publico !== undefined) {
             const idMercadoPublicoInput = document.getElementById('idMercadoPublicoInput');
@@ -528,6 +612,12 @@ document.addEventListener("DOMContentLoaded", function () {
         if (datos && datos.departamento !== undefined) {
             const departamentoInput = formProyecto['departamento'];
             if (departamentoInput) departamentoInput.value = datos.departamento;
+        }
+        if (datos && datos.profesional_a_cargo !== undefined) {
+            const profCargoInput = document.getElementById('profesionalCargoInput');
+            if (profCargoInput) {
+                profCargoInput.value = datos.profesional_a_cargo;
+            }
         }
         // Monto presupuestado
         if (datos && datos.monto_presupuestado !== undefined) {
@@ -617,6 +707,59 @@ document.addEventListener("DOMContentLoaded", function () {
         asignarTipoPresupuesto();
         // Asegurar que el select de etapas quede con el valor correcto
         if (etapaSeleccionada) etapaSelect.value = etapaSeleccionada;
+
+        const selectPlan = document.getElementById('enPlanAnualSelect');
+    const boxJustificacion = document.getElementById('contenedorJustificacion');
+    const inputJustificacion = document.getElementById('justificacionInput');
+
+    if (selectPlan && boxJustificacion && inputJustificacion) {
+        
+        // Función auxiliar para mostrar/ocultar
+        const toggleJustificacion = (valor) => {
+             // Convertimos a string para comparar fácil
+            const valStr = String(valor).toLowerCase();
+            
+            // Si es 'true', 'sí', 'si' o '1' -> MOSTRAMOS
+            if (['true', 'sí', 'si', '1'].includes(valStr)) {
+                boxJustificacion.style.display = 'block';
+                inputJustificacion.required = true;
+            } else {
+                boxJustificacion.style.display = 'none';
+                inputJustificacion.required = false;
+            }
+        };
+
+        // 2. Establecemos el valor inicial que viene de la base de datos (variable 'datos')
+        // IMPORTANTE: Aquí usamos la variable 'datos' que fallaba antes
+        if (datos && datos.en_plan_anual !== undefined) {
+            
+            // Normalizamos para saber si es True o False
+            let esSi = ['Sí', 'si', 'true', true, 1].includes(datos.en_plan_anual);
+            // Caso especial si viene como string "True"
+            if(String(datos.en_plan_anual).toLowerCase() === 'true') esSi = true;
+
+            const valorFinal = esSi ? 'True' : 'False';
+            
+            // Asignamos al select y ejecutamos la visualización
+            selectPlan.value = valorFinal;
+            toggleJustificacion(valorFinal);
+            
+            // (Opcional) Si tienes el texto de la justificación guardado en 'datos', cárgalo aquí:
+             if (datos.justificacion_plan) {
+                inputJustificacion.value = datos.justificacion_plan;
+            } else {
+                inputJustificacion.value = ''; // Limpia el campo si no hay texto
+            }
+        }
+
+        // 3. Detectamos cuando TÚ cambias el select manualmente
+        selectPlan.onchange = function() {
+            toggleJustificacion(this.value);
+        };
+    }
+    // ---------------------------------------------------------
+    // FIN LÓGICA PLAN ANUAL
+    // ---------------------------------------------------------
     }
 
     const modalSeleccionTipo = document.getElementById('modalSeleccionTipo');
@@ -833,7 +976,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     };
 
-    // ---  BOTONES POR FILA ---
+    // ---  EDITAR  ---
 document.querySelectorAll('.editar-fila').forEach(btn => {
     btn.addEventListener('click', function() {
         const id = this.getAttribute('data-id');
@@ -885,6 +1028,7 @@ document.querySelectorAll('.editar-fila').forEach(btn => {
                 }
             }
         }
+        const fechaCreacionCell = fila.querySelector('[data-campo="fecha_creacion"]');
         const etapaCell = fila.querySelector('[data-campo="etapa"]');
         const estadoBadge = fila.querySelector('[data-campo="estado"] .estado-badge');
         const monedaCell = fila.querySelector('[data-campo="moneda"]');
@@ -971,6 +1115,7 @@ document.querySelectorAll('.editar-fila').forEach(btn => {
             id: id,
             operador: operadorId || '',
             operador_2: operador2Id || '',
+            fecha_creacion: fechaCreacionCell ? fechaCreacionCell.innerText.trim().split(' ')[0] : '',
             etapa: getIdFromCell(etapaCell, getEtapasPorTipo(getIdFromCell(fila.querySelector('[data-campo="tipo_licitacion"]'), 'tiposLicitacion')), 'etapasLicitacion'),
             estado: estadoValue,
             moneda: getIdFromCell(monedaCell, 'monedasLicitacion'),
@@ -978,6 +1123,7 @@ document.querySelectorAll('.editar-fila').forEach(btn => {
             financiamiento: getIdsFromFinanciamientoCell(financiamientoCell),
             numero_cuenta: numeroCuentaCell ? numeroCuentaCell.innerText.trim() : '',
             en_plan_anual: enPlanAnualCell ? (enPlanAnualCell.innerText.trim().toLowerCase() === 'sí' ? 'True' : 'False') : '',
+            justificacion_plan: enPlanAnualCell ? enPlanAnualCell.getAttribute('data-justificacion') : '',
             pedido_devuelto: pedidoDevueltoCell ? (pedidoDevueltoCell.innerText.trim().toLowerCase() === 'sí' ? true : false) : false,
             iniciativa: iniciativaCell ? iniciativaCell.innerText.trim() : '',
             departamento: getIdFromCell(departamentoCell, 'departamentosLicitacion'),
@@ -989,6 +1135,8 @@ document.querySelectorAll('.editar-fila').forEach(btn => {
             direccion: direccionCell ? (direccionCell.innerText.trim() === '-' ? '' : direccionCell.innerText.trim()) : '',
             institucion: institucionCell ? (institucionCell.innerText.trim() === '-' ? '' : institucionCell.innerText.trim()) : '',
             tipo_licitacion: getIdFromCell(fila.querySelector('[data-campo="tipo_licitacion"]'), 'tiposLicitacion'),
+            profesional_a_cargo: fila.querySelector('[data-campo="profesional_a_cargo"]') ? fila.querySelector('[data-campo="profesional_a_cargo"]').textContent.trim() : '',
+            
         });
     });
 });
@@ -1151,9 +1299,11 @@ formProyecto.onsubmit = async function(e) {
             } else {
                 datosJson[k] = v;
             }
+        
         } else {
             datosJson[k] = v;
         }
+
     });
     
     // Agregar tipo de monto basado en los checkboxes
@@ -1493,27 +1643,27 @@ formProyecto.onsubmit = async function(e) {
     });    // Movemos la validación al evento onsubmit principal para evitar conflictos
     // La función validarNumeroPedido se usará dentro del onsubmit
     async function validarNumeroPedido() {
-        const numeroPedidoInput = document.getElementById('numeroPedidoInput');
-        if (numeroPedidoInput && numeroPedidoInput.value) {
-            const numeroPedido = numeroPedidoInput.value.trim();
-            // Verificar si el número ya existe (excepto si es edición y no cambió)
-            const idActual = document.getElementById('proyectoId').value;
-            let url = `/api/validar_numero_pedido/?numero_pedido=${encodeURIComponent(numeroPedido)}`;
-            if (idActual) url += `&excluir_id=${idActual}`;
-            try {
-                const res = await fetch(url);
-                const data = await res.json();
-                if (data.exists) {
-                    alert('El N° de pedido ya está en uso por otra licitación. Debe ingresar uno único.');
-                    numeroPedidoInput.focus();
-                    return false;
-                }
-                return true;
-            } catch (error) {
-                console.error("Error validando número de pedido:", error);
-                return false;
-            }
-        }
+        // const numeroPedidoInput = document.getElementById('numeroPedidoInput');
+        // if (numeroPedidoInput && numeroPedidoInput.value) {
+        //     const numeroPedido = numeroPedidoInput.value.trim();
+        //     // Verificar si el número ya existe (excepto si es edición y no cambió)
+        //     const idActual = document.getElementById('proyectoId').value;
+        //     let url = `/api/validar_numero_pedido/?numero_pedido=${encodeURIComponent(numeroPedido)}`;
+        //     if (idActual) url += `&excluir_id=${idActual}`;
+        //     try {
+        //         const res = await fetch(url);
+        //         const data = await res.json();
+        //         if (data.exists) {
+        //             alert('El N° de pedido ya está en uso por otra licitación. Debe ingresar uno único.');
+        //             numeroPedidoInput.focus();
+        //             return false;
+        //         }
+        //         return true;
+        //     } catch (error) {
+        //         console.error("Error validando número de pedido:", error);
+        //         return false;
+        //     }
+        // }
         return true; // Si no hay número de pedido, consideramos válido
     }
 
@@ -2775,3 +2925,278 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+document.addEventListener('DOMContentLoaded', function() {
+    
+    const btnAgregar = document.getElementById('btnNuevoDepartamento');
+    const selectDept = document.getElementById('departamentoInput');
+
+    // Solo funciona si el botón existe en la pantalla
+    if (btnAgregar && selectDept) {
+
+        btnAgregar.addEventListener('click', function() {
+            // 1. Pedir el nombre al usuario con una ventanita simple del navegador
+            let nuevoNombre = prompt("Escriba el nombre del nuevo departamento:");
+
+            // Si el usuario escribió algo y no le dio Cancelar
+            if (nuevoNombre && nuevoNombre.trim() !== "") {
+                
+                // Obtener la URL y el Token de seguridad
+                const url = selectDept.getAttribute('data-url');
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                // 2. Enviar a Django
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify({ nombre: nuevoNombre })
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.id) {
+                        // ÉXITO: Crear la nueva opción en HTML
+                        const nuevaOpcion = document.createElement('option');
+                        nuevaOpcion.value = result.id;
+                        nuevaOpcion.text = result.nombre;
+                        nuevaOpcion.selected = true; // Lo seleccionamos automáticamente
+
+                        // Agregarla a la lista
+                        selectDept.appendChild(nuevaOpcion);
+                        
+                        alert("Departamento '" + result.nombre + "' agregado correctamente.");
+                    } else {
+                        alert("Error: " + (result.error || "No se pudo guardar"));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert("Error de conexión.");
+                });
+            }
+        });
+    }
+});
+
+function agregarFilaCuenta(valor = "") {
+    const contenedor = document.getElementById('contenedorCuentas');
+    if (!contenedor) return;
+
+    const div = document.createElement('div');
+    div.style.cssText = "display: flex; gap: 5px; align-items: center;";
+    
+    // El input visible
+    const input = document.createElement('input');
+    input.type = "text";
+    input.className = "input-cuenta-visual"; // Clase para identificarlos
+    input.value = valor;
+    input.placeholder = "Ingrese N° cuenta";
+    input.style.flex = "1"; // Que ocupe el espacio
+    
+    // Si es el primer input, lo hacemos obligatorio
+    if (contenedor.children.length === 0) {
+        input.required = true;
+    }
+
+    // Botón para borrar (solo si no es el único)
+    const btnBorrar = document.createElement('button');
+    btnBorrar.type = "button";
+    btnBorrar.innerHTML = "🗑️";
+    btnBorrar.style.cssText = "border: none; background: #ffebee; cursor: pointer; padding: 5px; border-radius: 4px;";
+    btnBorrar.onclick = function() {
+        if (contenedor.children.length > 1) {
+            div.remove();
+            actualizarInputOcultoCuentas();
+        } else {
+            input.value = ""; // Si es el último, solo limpia
+            actualizarInputOcultoCuentas();
+        }
+    };
+
+    // Evento: cada vez que escriban, actualizamos el hidden
+    input.addEventListener('input', actualizarInputOcultoCuentas);
+
+    div.appendChild(input);
+    div.appendChild(btnBorrar);
+    contenedor.appendChild(div);
+    
+    actualizarInputOcultoCuentas(); // Actualizar al agregar
+}
+
+// 2. Función que une todos los valores en el input oculto (separados por " / ")
+function actualizarInputOcultoCuentas() {
+    const inputs = document.querySelectorAll('.input-cuenta-visual');
+    const valores = [];
+    
+    inputs.forEach(inp => {
+        if (inp.value.trim() !== "") {
+            valores.push(inp.value.trim());
+        }
+    });
+
+    // Unimos con " / " (ej: "11111 / 22222")
+    const inputReal = document.getElementById('numeroCuentaReal');
+    if (inputReal) {
+        inputReal.value = valores.join(" / ");
+    }
+}
+
+// 3. Inicializar el botón de agregar
+document.addEventListener('DOMContentLoaded', function() {
+    const btnAdd = document.getElementById('btnAgregarCuentaInput');
+    if (btnAdd) {
+        btnAdd.addEventListener('click', function() {
+            agregarFilaCuenta("");
+        });
+    }
+});
+
+
+function gestionarVisibilidadFecha(esEdicion) {
+    const inputCreacion = document.getElementById('fechaCreacionInput');
+    
+    if (!inputCreacion) return;
+
+    // Buscamos el contenedor padre (div.form-group o col-md-*) para ocultar también el Label
+    const contenedor = inputCreacion.closest('.form-group') || inputCreacion.closest('.col') || inputCreacion.parentElement;
+
+    if (contenedor) {
+        if (esEdicion) {
+            // MODO EDICIÓN: Quitamos el display none (volvemos al default)
+            contenedor.style.display = ''; 
+            // Aseguramos que el input sea editable si así lo deseas
+            inputCreacion.disabled = false; 
+        } else {
+            // MODO CREACIÓN: Ocultamos todo el bloque visualmente
+            contenedor.style.display = 'none'; 
+        }
+    }
+}
+
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // 1. Capturamos tu botón de agregar
+    const btnAgregar = document.getElementById('btnAgregarLicitacion');
+    
+    if (btnAgregar) {
+        btnAgregar.addEventListener('click', function() {
+            // A. Reseteamos el formulario para que esté limpio
+            // Asegúrate que 'formProyecto' sea el ID de tu etiqueta <form>
+            const form = document.getElementById('formProyecto'); 
+            if (form) form.reset();
+
+            // B. AQUÍ ESTÁ LA CLAVE: Forzamos modo "Creación" (False)
+            // Esto llamará a la función que creamos antes para ocultar el div
+            if (typeof gestionarVisibilidadFecha === "function") {
+                gestionarVisibilidadFecha(false);
+            }
+
+            // C. Si no usas data-toggle en el HTML, abre el modal aquí:
+            // $('#tuModalId').modal('show'); 
+        });
+    }
+});
+
+document.addEventListener('click', function(event) {
+    // 1. Verificamos si el clic fue en un botón con la clase 'editar-fila'
+    // (o en el ícono del lápiz que está dentro del botón)
+    const btnEditar = event.target.closest('.editar-fila');
+
+    if (btnEditar) {
+        // ¡Detectamos clic en Editar!
+        
+        // 2. Ejecutamos la función para MOSTRAR la fecha
+        // (True = Modo Edición = Visible)
+        if (typeof gestionarVisibilidadFecha === 'function') {
+            gestionarVisibilidadFecha(true);
+        }
+        
+        // Opcional: Log para verificar en consola
+        console.log("Editando: Campo fecha activado.");
+    }
+});
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("✅ DOMContentLoaded - info general JS cargado");
+
+    const modalInfo = document.getElementById("modalInfoGeneral");
+    const cerrarModalInfo = document.getElementById("cerrarModalInfo");
+    const contenido = document.getElementById("contenidoInfoGeneral");
+
+    console.log("🔍 modalInfo:", modalInfo);
+    console.log("🔍 cerrarModalInfo:", cerrarModalInfo);
+    console.log("🔍 contenido:", contenido);
+
+    const botones = document.querySelectorAll(".info-general-fila");
+    console.log("🔘 botones .info-general-fila encontrados:", botones.length);
+
+    botones.forEach((btn, index) => {
+        console.log(`➡️ Bind click botón ${index}`, btn);
+
+        btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            console.log("🟢 CLICK info-general-fila");
+
+            const licitacionId = btn.dataset.id;
+            console.log("📌 data-id:", licitacionId);
+
+            if (!licitacionId) {
+                console.warn("⚠️ NO hay data-id en el botón");
+                alert("Selecciona una licitación primero");
+                return;
+            }
+
+            const fila = document.querySelector(`tr[data-id="${licitacionId}"]`);
+            console.log("📄 fila encontrada:", fila);
+
+            if (!fila) {
+                console.error("❌ No se encontró la fila con data-id", licitacionId);
+                alert("No se encontró la fila de la licitación");
+                return;
+            }
+
+            const get = campo => {
+                const celda = fila.querySelector(`[data-campo="${campo}"]`);
+                console.log(`🔎 campo "${campo}" →`, celda?.innerText);
+                return celda?.innerText.trim() || "-";
+            };
+
+            console.log("🧩 Construyendo contenido del modal");
+
+            contenido.innerHTML = `
+                <div class="info-grid">
+                    <div><strong>Iniciativa</strong><br>${get("iniciativa")}</div>
+                    <div><strong>N° Pedido</strong><br>${get("numero_pedido")}</div>
+                    <div><strong>Departamento</strong><br>${get("departamento")}</div>
+                    <div><strong>Profesionales</strong><br>${get("operadores")}</div>
+                    <div><strong>Estado</strong><br>${get("estado")}</div>
+                    <div><strong>Etapa</strong><br>${get("etapa")}</div>
+                    <div><strong>Tipo Licitación</strong><br>${get("tipo_licitacion")}</div>
+                    <div><strong>Monto</strong><br>${get("monto_presupuestado")}</div>
+                </div>
+            `;
+
+            console.log("📢 Abriendo modal");
+            modalInfo.classList.add("active");
+            modalInfo.style.display = "flex";
+            modalInfo.style.zIndex = "9999";
+            gestionarOverflowBody();
+        });
+    });
+
+    if (cerrarModalInfo) {
+        cerrarModalInfo.addEventListener("click", () => {
+            console.log("❎ Cerrar modal info general");
+            modalInfo.classList.remove("active");
+            modalInfo.style.display = "none";
+            gestionarOverflowBody();
+        });
+    } else {
+        console.warn("⚠️ cerrarModalInfo no encontrado");
+    }
+});
+
