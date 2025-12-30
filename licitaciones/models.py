@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
-
+from django.utils import timezone
 
 
 class Etapa(models.Model):
@@ -78,6 +78,7 @@ class Licitacion(models.Model):
     financiamiento = models.ManyToManyField('Financiamiento', related_name='licitaciones', blank=True)
     numero_cuenta = models.CharField(max_length=30, verbose_name="N° de cuenta")
     en_plan_anual = models.BooleanField(default=False, verbose_name="¿Está en el plan anual?")
+    justificacion_plan = models.TextField(blank=True, null=True, verbose_name="Justificación Plan Anual")
     iniciativa = models.CharField(max_length=255, blank=True, null=True)
     departamento = models.ForeignKey('Departamento', on_delete=models.SET_NULL, null=True, blank=True, related_name='licitaciones')
     monto_presupuestado = models.DecimalField(max_digits=15, decimal_places=2, default=0, verbose_name="Monto Presupuestado")
@@ -95,7 +96,10 @@ class Licitacion(models.Model):
         verbose_name="Tipo por presupuesto",
         null=True,
     )
-    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")
+    fecha_creacion = models.DateTimeField(
+        default=timezone.now, 
+        verbose_name="Fecha de Asignación / Creación"
+    )
     fecha_tentativa_termino = models.DateField(blank=True, null=True, verbose_name="Fecha tentativa de término")
     licitacion_fallida_linkeada = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='nuevas_licitaciones', verbose_name="Licitación fallida linkeada")
     direccion = models.CharField(max_length=255, blank=True, null=True, verbose_name="Dirección")
@@ -141,7 +145,7 @@ class Licitacion(models.Model):
 
     fecha_publicacion_mercado_publico = models.DateField(blank=True, null=True, verbose_name="Fecha de publicación en mercado público")
     fecha_cierre_ofertas_mercado_publico = models.DateField(blank=True, null=True, verbose_name="Fecha de cierre de ofertas en mercado público")
-
+    profesional_a_cargo = models.CharField(max_length=100, null=True, blank=True)
     # Tipos de licitación fallida (cuando fallida es True)
     TIPO_FALLIDA_CHOICES = [
         ('revocada', 'Revocada'),
