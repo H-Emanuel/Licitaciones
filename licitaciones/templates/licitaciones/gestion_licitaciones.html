@@ -1,6 +1,7 @@
 {% load static %}
 {% load humanize %}
 {% load chile_filters %}
+{% load mis_filtros %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -140,11 +141,12 @@
                         <tr>
                             <th data-col="seleccionar" class="seleccionar-header"></th>
                             <th data-col="iniciativa">Iniciativa</th>
+                            <th data-col="departamento">Depto.</th>
                             <th data-col="numero_pedido">N° de pedido</th>
                             <th data-col="id_mercado_publico">ID Mercado Público</th>
                             <th data-col="orden_compra">Orden de compra</th>
                             <th data-col="fecha_tentativa_termino">Fecha tentativa de término</th>
-                            <th data-col="fecha_estimada_adjudicacion">Fecha estimada de adjudicación</th>
+                            {% comment %} <th data-col="fecha_estimada_adjudicacion">Fecha estimada de adjudicación</th> {% endcomment %}
                             <th data-col="operadores">Profesionales a Cargo</th>
                             <th data-col="etapa">Etapa</th>
                             <th data-col="estado">Status</th>
@@ -154,12 +156,15 @@
                             <th data-col="financiamiento">Financiamiento</th>
                             <th data-col="numero_cuenta">N° de cuenta</th>
                             <th data-col="en_plan_anual">En plan anual</th>
-                            <th data-col="departamento">Depto.</th>
+                            
                             <th data-col="monto_presupuestado">Monto Presupuestado general</th>
                             <th data-col="tipo_presupuesto">Tipo por presupuesto</th>
                             <th data-col="llamado_cotizacion">Llamado Cotización</th>
                             <th data-col="fecha_creacion">Fecha de Asignación</th>
                             <th data-col="licitacion_fallida_linkeada">Licitación Fallida Linkeada</th>
+                            <td data-campo="profesional_a_cargo" style="display:none;">
+        {{ licitacion.profesional_a_cargo }}
+    </td>
                         </tr>
                     </thead>
                     <tbody>
@@ -167,11 +172,14 @@
                     <tr data-id="{{ licitacion.id }}" class="{% if not licitacion.estado_fk or licitacion.estado_fk.id == 1 %} lic-abierta {% else %} lic-cerrada {% endif %}" onclick="document.getElementById('check-{{ licitacion.id }}').click();">
                         <td data-campo="seleccionar" data-col="seleccionar" data-label="Seleccionar"><input type="checkbox" class="licitacion-check" value="{{ licitacion.id }}" id="check-{{ licitacion.id }}" onclick="event.stopPropagation();"/></td>
                         <td data-campo="iniciativa" data-col="iniciativa" data-label="Iniciativa" title="{{ licitacion.iniciativa }}">{{ licitacion.iniciativa }}</td>
-                        <td data-campo="numero_pedido" data-col="numero_pedido" data-label="N° de pedido">{{ licitacion.numero_pedido }}</td>
+                        <td data-campo="departamento" data-col="departamento" data-label="Departamento">{{ licitacion.departamento.nombre|default:licitacion.departamento }}</td>
+                        <td data-campo="numero_pedido" data-col="numero_pedido" data-label="N° de pedido">
+    {{ licitacion.numero_pedido }}-{{ licitacion.fecha_creacion|date:"y" }}
+</td>
                         <td data-campo="id_mercado_publico" data-col="id_mercado_publico" data-label="ID Mercado Público">{{ licitacion.id_mercado_publico|default:"-" }}</td>
                         <td data-campo="orden_compra" data-col="orden_compra" data-label="Orden de compra">{{ licitacion.orden_compra_adjudicacion|default:"-" }}</td>
                         <td data-campo="fecha_tentativa_termino" data-col="fecha_tentativa_termino" data-label="Fecha tentativa de término">{{ licitacion.fecha_tentativa_termino|date:"d/m/Y" }}</td>
-                        <td data-campo="fecha_estimada_adjudicacion" data-col="fecha_estimada_adjudicacion" data-label="Fecha estimada de adjudicación" >{{ licitacion.fecha_estimada_adjudicacion_publicacionportal|date:"d/m/Y"|default:"-" }}</td>
+                        {% comment %} <td data-campo="fecha_estimada_adjudicacion" data-col="fecha_estimada_adjudicacion" data-label="Fecha estimada de adjudicación" >{{ licitacion.fecha_estimada_adjudicacion_publicacionportal|date:"d/m/Y"|default:"-" }}</td> {% endcomment %}
                         <td data-campo="operadores" data-col="operadores" data-label="Profesionales a Cargo">
                             <div class="operadores-container">
                                 <span class="operador-badge operador-1 {% if licitacion.get_numero_operador_activo == 1 %}activo{% endif %}" title="Operador 1: Gestiona hasta Evaluación de Ofertas" data-id="{{ licitaciones. }}">
@@ -192,20 +200,24 @@
                             {{ licitacion.etapa_fk.nombre|default:'' }}
                         </td>
                         <td data-campo="estado" data-col="estado" data-label="Estado">
-                            {% if licitacion.estado_fk %}
-                                {% if licitacion.estado_fk.nombre == 'Fallida' and licitacion.tipo_fallida %}
-                                    <span class="estado-badge estado-fallida">
-                                        {{ licitacion.get_tipo_fallida_display }}
-                                    </span>
-                                {% else %}
-                                    <span class="estado-badge estado-{{ licitacion.estado_fk.nombre|slugify }}">
-                                        {{ licitacion.estado_fk.nombre }}
-                                    </span>
-                                {% endif %}
-                            {% else %}
-                                <span class="estado-badge estado-vacio">Sin estado</span>
-                            {% endif %}
-                        </td>
+    {% if licitacion.etapa_fk.nombre == "Compra finalizada" %}
+        <span class="estado-badge estado-cerrada">
+            Cerrada
+        </span>
+    {% elif licitacion.estado_fk %}
+        {% if licitacion.estado_fk.nombre == 'Fallida' and licitacion.tipo_fallida %}
+            <span class="estado-badge estado-fallida">
+                {{ licitacion.get_tipo_fallida_display }}
+            </span>
+        {% else %}
+            <span class="estado-badge estado-{{ licitacion.estado_fk.nombre|slugify }}">
+                {{ licitacion.estado_fk.nombre }}
+            </span>
+        {% endif %}
+    {% else %}
+        <span class="estado-badge estado-vacio">Sin estado</span>
+    {% endif %}
+</td>
                         <td data-campo="tipo_licitacion" data-col="tipo_licitacion" data-label="Tipo de Licitación">{{ licitacion.tipo_licitacion.nombre }}</td>
                         <td data-campo="moneda" data-col="moneda" data-label="Moneda">{{ licitacion.moneda.nombre|default:'' }}</td>
                         <td data-campo="categoria" data-col="categoria" data-label="Categoría">{{ licitacion.categoria.nombre|default:'' }}</td>
@@ -217,19 +229,31 @@
                             {% endfor %}
                         </td>
                         <td data-campo="numero_cuenta" data-col="numero_cuenta" data-label="N° de cuenta">{{ licitacion.numero_cuenta }}</td>
-                        <td data-campo="en_plan_anual" data-col="en_plan_anual" data-label="En plan anual">{% if licitacion.en_plan_anual %}Sí{% else %}No{% endif %}</td>
-                        <td data-campo="departamento" data-col="departamento" data-label="Departamento">{{ licitacion.departamento.nombre|default:licitacion.departamento }}</td>
+                        <td data-campo="en_plan_anual" 
+    data-col="en_plan_anual" 
+    data-label="En plan anual"
+    data-justificacion="{{ licitacion.justificacion_plan|default_if_none:'' }}"> {% if licitacion.en_plan_anual %}Sí{% else %}No{% endif %}
+</td>
+                        
                         <td data-campo="monto_presupuestado" data-col="monto_presupuestado" data-label="Monto Presupuestado">${{ licitacion.monto_presupuestado|floatformat:"0"|chilean_thousands }}</td>
                         <td data-campo="tipo_presupuesto" data-col="tipo_presupuesto" data-label="Tipo de presupuesto">{{ licitacion.get_tipo_presupuesto_display }}</td>
                         <td data-campo="llamado_cotizacion" data-col="llamado_cotizacion" data-label="Llamado Cotización">{{ licitacion.get_llamado_cotizacion_display|default:"-" }}</td>
                         <td data-campo="fecha_creacion" data-col="fecha_creacion" data-label="Fecha de creación">{{ licitacion.fecha_creacion|date:"d/m/Y H:i" }}</td>
                         <td data-campo="licitacion_fallida_linkeada" data-col="licitacion_fallida_linkeada" data-label="Licitación Fallida Linkeada">
-                            {% if licitacion.licitacion_fallida_linkeada %}
-                                {{ licitacion.licitacion_fallida_linkeada.numero_pedido }}
-                            {% else %}
-                                <span style="color:#bbb;">-</span>
-                            {% endif %}
-                        </td>
+    {% if licitacion.licitacion_fallida_linkeada %}
+        <a href="{% url 'bitacora_licitacion' licitacion.licitacion_fallida_linkeada.id %}" 
+           onclick="event.stopPropagation();" 
+           title="Ver bitácora de la licitación fallida"
+           style="color: #0d6efd; text-decoration: underline; font-weight: 500;">
+            {{ licitacion.licitacion_fallida_linkeada.numero_pedido }}
+        </a>
+    {% else %}
+        <span style="color:#bbb;">-</span>
+    {% endif %}
+</td>
+                        <td data-campo="profesional_a_cargo" style="display:none;">
+            {{ licitacion.profesional_a_cargo }}
+        </td>
                     </tr>
                     <script>
                         (function() {
@@ -296,6 +320,11 @@
             <button class="btn-toggle-acciones cronologia-fila" data-id="" title="Ver cronología" {% if not es_admin %}style="visibility: hidden;"{% endif %}>
                 <span class="icono-accion">📅</span>
             </button>
+            <button class="btn-toggle-acciones info-general-fila"
+        data-id=""
+        title="Información general">
+    <span class="icono-accion">ℹ️</span>
+</button>
             
             <!-- Botón Documentos (solo admin) -->
             <button class="btn-toggle-acciones documentos-fila" data-id="" title="Ver documentos" {% if not es_admin %}style="visibility: hidden;"{% endif %}>
@@ -322,10 +351,7 @@
                             <span class="icono-accion">🗑️</span>
                         </button>
                         
-                        <!-- Botón Ver última observación (siempre visible) -->
-                        <button class="btn btn-accion ultima-obs-fila icon-btn" data-id="{{ licitacion.id }}" title="Ver última observación">
-                            <span class="icono-accion">📝</span>
-                        </button>
+                       
                         
                         <!-- Botón Bitácora (siempre visible) -->
                          {% if licitacion.id %}
@@ -347,6 +373,7 @@
                     </div>
                     {% endfor %}
                 </div>
+                
             </div>
             </div>
         <div class="paginator">
@@ -408,12 +435,20 @@
                                     <input type="text" name="id_mercado_publico" id="idMercadoPublicoInput" placeholder="Ingrese el ID de Mercado Público" maxlength="50">
                                 </div>
                                 <div class="form-field">
-                                    <label for="numeroCuentaInput">
-                                        <span class="field-icon">🏦</span>
-                                        N° de cuenta
-                                    </label>
-                                    <input type="text" name="numero_cuenta" id="numeroCuentaInput" required placeholder="Ingrese el número de cuenta" maxlength="30">
-                                </div>
+    <label>
+        <span class="field-icon">🏦</span>
+        N° de cuenta(s)
+    </label>
+    
+    <div id="contenedorCuentas" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 5px;">
+        </div>
+
+    <button type="button" id="btnAgregarCuentaInput" style="background: none; border: none; color: #007bff; cursor: pointer; text-align: left; padding: 0; font-size: 0.9em;">
+        + Agregar otra cuenta
+    </button>
+
+    <input type="hidden" name="numero_cuenta" id="numeroCuentaReal">
+</div>
                                 <div class="form-field">
                                     <label for="operadorSelect">
                                         <span class="field-icon">👤</span>
@@ -427,7 +462,8 @@
                                     </select>
                                     <small class="field-help">Gestiona hasta la etapa "Evaluación de Ofertas"</small>
                                 </div>
-                                <div class="form-field">
+                                
+                                {% comment %} <div class="form-field">
                                     <label for="operador2Select">
                                         <span class="field-icon">👥</span>
                                         Operador 2 (Secundario)
@@ -439,7 +475,8 @@
                                         {% endfor %}
                                     </select>
                                     <small class="field-help">Gestiona desde después de "Evaluación de Ofertas"</small>
-                                </div>
+                                </div> {% endcomment %}
+                                {% comment %} aqui iva operador 2 que se saco por evaluador..  {% endcomment %}
                                 <div class="form-field">
                                     <label for="iniciativaInput">
                                         <span class="field-icon">🎯</span>
@@ -497,22 +534,22 @@
                                     </select>
                                 </div>
                                 <div class="form-field span-2">
-                                    <label for="financiamientoSelect">
-                                        <span class="field-icon">💳</span>
-                                        Financiamiento
-                                    </label>
-                                    <select name="financiamiento" id="financiamientoSelect" required>
-                                        {% if financiamientos %}
-                                            <option value="">Seleccione financiamiento</option>
-                                        {% else %}
-                                            <option value="">No hay financiamientos disponibles</option>
-                                        {% endif %}
-                                        {% for fin in financiamientos %}
-                                            <option value="{{ fin.id }}">{{ fin.nombre }}</option>
-                                        {% endfor %}
-                                    </select>
-                                    <small class="field-help">💡 Mantén presionado Ctrl para seleccionar múltiples opciones</small>
-                                </div>
+    <label for="financiamientoSelect">
+        <span class="field-icon">💳</span>
+        Financiamiento
+    </label>
+    <select name="financiamiento" id="financiamientoSelect" required multiple style="height: 120px;">
+        {% if financiamientos %}
+            {% else %}
+            <option value="">No hay financiamientos disponibles</option>
+        {% endif %}
+        
+        {% for fin in financiamientos %}
+            <option value="{{ fin.id }}">{{ fin.nombre }}</option>
+        {% endfor %}
+    </select>
+    <small class="field-help">💡 Mantén presionado <strong>Ctrl</strong> (o Cmd en Mac) para seleccionar múltiples opciones</small>
+</div>
                                 <div class="form-field">
                                     <label for="montoPresupuestadoInput">
                                         <span class="field-icon">💵</span>
@@ -546,60 +583,116 @@
 
                         <!-- Sección Operativa -->
                         <div class="form-section">
-                            <h3 class="section-title">
-                                <span class="section-icon">⚙️</span>
-                                Información Operativa
-                            </h3>
-                            <div class="form-grid">
-                                <div class="form-field">
-                                    <label for="enPlanAnualSelect">
-                                        <span class="field-icon">📅</span>
-                                        ¿Está en el plan anual?
-                                    </label>
-                                    <select name="en_plan_anual" id="enPlanAnualSelect" required>
-                                        <option value="">Seleccione</option>
-                                        <option value="True">✅ Sí</option>
-                                        <option value="False">❌ No</option>
-                                    </select>
-                                </div>
-                                <div class="form-field">
-                                    <label for="etapaSelect">
-                                        <span class="field-icon">⚡</span>
-                                        Etapa
-                                    </label>
-                                    <select name="etapa" id="etapaSelect" required>
-                                        <option value="">Seleccione una etapa</option>
-                                        {% for etapa in etapas %}
-                                            <option value="{{ etapa.id }}">{{ etapa.nombre }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                <div class="form-field">
-                                    <label for="departamentoInput">
-                                        <span class="field-icon">🏢</span>
-                                        Departamento
-                                    </label>
-                                    <select name="departamento" id="departamentoInput">
-                                        <option value="">Seleccione un departamento</option>
-                                        {% for departamento in departamentos %}
-                                            <option value="{{ departamento.id }}">{{ departamento.nombre }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                <div class="form-field">
-                                    <label for="llamadoCotizacionSelect">
-                                        <span class="field-icon">📞</span>
-                                        Llamado Cotización
-                                    </label>
-                                    <select name="llamado_cotizacion" id="llamadoCotizacionSelect">
-                                        <option value="">Seleccione el tipo de llamado</option>
-                                        {% for key, value in llamado_cotizacion_choices %}
-                                            <option value="{{ key }}">{{ value }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
+    <h3 class="section-title">
+        <span class="section-icon">⚙️</span>
+        Información Operativa
+    </h3>
+    <div class="form-grid">
+        
+        <div class="form-field">
+    <label for="fechaCreacionInput">
+        <span class="field-icon">📅</span>
+        Fecha de Asignación (Inicio)
+    </label>
+    <input type="date" 
+           name="fecha_creacion" 
+           id="fechaCreacionInput" 
+           class="form-control" 
+           required> 
+    <small class="field-help">💡 Modifica esta fecha para recalcular los plazos.</small>
+</div>
+        <div class="form-field">
+    <label for="enPlanAnualSelect">
+        <span class="field-icon">📅</span>
+        ¿Está en el plan anual?
+    </label>
+    <select name="en_plan_anual" id="enPlanAnualSelect" required>
+        <option value="">Seleccione</option>
+        <option value="True">✅ Sí</option>
+        <option value="False">❌ No</option>
+    </select>
+</div>
+
+<div id="contenedorJustificacion" class="form-field span-2" style="display: none;">
+    <label for="justificacionInput">
+        <span class="field-icon">📝</span>
+        Justificación del Plan
+    </label>
+    <textarea 
+        name="justificacion_plan" 
+        id="justificacionInput" 
+        placeholder="Indique el motivo por el cual está/no está en el plan anual..." 
+        rows="2"
+        style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; resize: vertical;">
+    </textarea>
+</div>
+
+        <div class="form-field">
+            <label for="etapaSelect">
+                <span class="field-icon">⚡</span>
+                Etapa
+            </label>
+            <select name="etapa" id="etapaSelect" required>
+                <option value="">Seleccione una etapa</option>
+                {% for etapa in etapas %}
+                    <option value="{{ etapa.id }}">{{ etapa.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-field">
+            <label for="departamentoInput">
+                <span class="field-icon">🏢</span>
+                Departamento
+            </label>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <select name="departamento" 
+                        id="departamentoInput" 
+                        class="campo-normal" 
+                        style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"
+                        data-url="/ajax/crear-departamento/">
+                    <option value="">Seleccione...</option>
+                    {% for departamento in departamentos %}
+                        <option value="{{ departamento.id }}">{{ departamento.nombre }}</option>
+                    {% endfor %}
+                </select>
+                <button type="button" 
+                        id="btnNuevoDepartamento" 
+                        title="Agregar nuevo departamento"
+                        style="padding: 8px 12px; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 4px; font-weight: bold;">
+                    ➕
+                </button>
+            </div>
+        </div>
+
+        <div class="form-field">
+    <div class="form-group">
+        <label for="profesionalCargoInput" class="form-label">
+            <span class="field-icon">👷</span> Profesional a Cargo
+        </label>
+        <input type="text" 
+               name="profesional_a_cargo" 
+               id="profesionalCargoInput" 
+               class="form-control" 
+               placeholder="Nombre del profesional"
+               maxlength="100">
+    </div>
+</div>
+
+        <div class="form-field">
+            <label for="llamadoCotizacionSelect">
+                <span class="field-icon">📞</span>
+                Llamado Cotización
+            </label>
+            <select name="llamado_cotizacion" id="llamadoCotizacionSelect">
+                <option value="">Seleccione el tipo de llamado</option>
+                {% for key, value in llamado_cotizacion_choices %}
+                    <option value="{{ key }}">{{ value }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+</div>
 
                         <!-- Sección Documentos -->
                         <div class="form-section">
@@ -1045,6 +1138,34 @@
             </div>
         </div>
     </div>
+
+    {% comment %} <div id="modalInfoGeneral" class="modal-container modern-modal" style="display:none;">
+    <div class="modal-content" style="max-width:600px;">
+        <div class="modal-header">
+            <h2 class="modal-title">
+                <span class="modal-icon">ℹ️</span>
+                Información General
+            </h2>
+            <span class="btn-close" id="cerrarModalInfo">&times;</span>
+        </div>
+
+        <div class="modal-body" id="contenidoInfoGeneral">
+            <!-- Se llena por JS -->
+            <div style="text-align:center;">Cargando información…</div>
+        </div>
+    </div>
+</div> {% endcomment %}
+
+<div id="modalInfoGeneral" class="modal-container modern-modal">
+    <div class="modal-content modal-info-general">
+        <div class="modal-header">
+            <h2>📌 Información General de la Licitación</h2>
+            <span id="cerrarModalInfo" class="btn-close">&times;</span>
+        </div>
+
+        <div id="contenidoInfoGeneral"></div>
+    </div>
+</div>
 
 <!-- Exportar etapas y tipos al JS -->
 {{ etapas|json_script:"etapas-licitacion-data" }}
