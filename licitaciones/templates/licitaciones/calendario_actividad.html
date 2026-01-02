@@ -20,12 +20,10 @@
                 <div class="filtro-grupo">
                     <label for="selectAño">Año:</label>
                     <select id="selectAño" class="filtro-select">
-    {% for año in años_disponibles %}
-        <option value="{{ año }}" {% if año == año_actual %}selected{% endif %}>{{ año }}</option>
-    {% endfor %}
-
-    <option value="{{ año_actual|add:'1' }}">{{ año_actual|add:'1' }}</option>
-</select>
+                        {% for año in años_disponibles %}
+                            <option value="{{ año }}" {% if año == año_actual %}selected{% endif %}>{{ año }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
                 <div class="filtro-grupo">
                     <label for="selectMes">Mes:</label>
