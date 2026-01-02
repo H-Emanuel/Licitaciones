@@ -16,18 +16,28 @@
         </div>
         
         <div class="calendario-controles">
-            <div class="filtros-fecha">
-                <div class="filtro-grupo">
-                    <label for="selectAño">Año:</label>
-                    <select id="selectAño" class="filtro-select">
-                        {% for año in años_disponibles %}
-                            <option value="{{ año }}" {% if año == año_actual %}selected{% endif %}>{{ año }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="filtro-grupo">
-                    <label for="selectMes">Mes:</label>
-                    <select id="selectMes" class="filtro-select">
+    <div class="filtros-fecha">
+
+        <div class="filtro-grupo">
+            <label for="selectAño">Año:</label>
+            <select id="selectAño" class="filtro-select">
+                {# 1. Años anteriores disponibles (Historial) #}
+                {% for año in años_disponibles %}
+                    {% if año < año_actual %}
+                        <option value="{{ año }}">{{ año }}</option>
+                    {% endif %}
+                {% endfor %}
+
+                {# 2. Año Actual (Siempre visible y SELECCIONADO por defecto) #}
+                <option value="{{ año_actual }}" selected>{{ año_actual }}</option>
+
+                {# 3. Año Siguiente (Siempre disponible) #}
+                <option value="{{ año_actual|add:'1' }}">{{ año_actual|add:'1' }}</option>
+            </select>
+        </div>
+        <div class="filtro-grupo">
+            <label for="selectMes">Mes:</label>
+            <select id="selectMes" class="filtro-select">
                         <option value="">Todos los meses</option>
                         <option value="1" {% if mes_actual == 1 %}selected{% endif %}>Enero</option>
                         <option value="2" {% if mes_actual == 2 %}selected{% endif %}>Febrero</option>
