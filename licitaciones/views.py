@@ -1897,27 +1897,37 @@ def exportar_todas_licitaciones_excel(request):
         
         for licitacion in licitaciones:
             licitaciones_data.append({
-                'ID': licitacion.id,
+                
+    'Tipo Licitación': str(licitacion.tipo_licitacion) if licitacion.tipo_licitacion else '',
+    'Iniciativa': licitacion.iniciativa,
+    'Estado': (
+        'Cerrado'
+        if licitacion.etapa_fk 
+        and licitacion.etapa_fk.nombre.strip().lower() == 'compra finalizada'
+        else str(licitacion.estado_fk) if licitacion.estado_fk else ''
+    ),
+    'Etapa': str(licitacion.etapa_fk) if licitacion.etapa_fk else '',
+    'Departamento': str(licitacion.departamento) if licitacion.departamento else '',
                 'N° Pedido': licitacion.numero_pedido,
                 'ID Mercado Público': licitacion.id_mercado_publico or '-',
                 'Orden de compra': licitacion.orden_compra_adjudicacion or '-',
                 'Fecha tentativa de término': licitacion.fecha_tentativa_termino.strftime('%d/%m/%Y') if licitacion.fecha_tentativa_termino else '',
                 'N° Cuenta': licitacion.numero_cuenta,
-                'Profesional a Cargo 1': licitacion.operador_user.get_full_name() if licitacion.operador_user else licitacion.operador_user.username if licitacion.operador_user else '',
-                'Profesional a Cargo 2': licitacion.operador_user.get_full_name() if licitacion.operador_user else licitacion.operador_user.username if licitacion.operador_user else '',
-                'Tipo Licitación': str(licitacion.tipo_licitacion) if licitacion.tipo_licitacion else '',
+                'Tipo por presupuesto': str(licitacion.tipo_presupuesto) if licitacion.tipo_presupuesto else '',              
                 'Moneda': str(licitacion.moneda) if licitacion.moneda else '',
+                'Monto Presupuestado': licitacion.monto_presupuestado,
                 'Categoría': str(licitacion.categoria) if licitacion.categoria else '',
                 'Financiamiento': ', '.join([str(f) for f in licitacion.financiamiento.all()]),
                 'En plan anual': 'Sí' if licitacion.en_plan_anual else 'No',
+                'Justificación plan anual': (
+    licitacion.justificacion_plan
+    if licitacion.justificacion_plan
+    else ''
+),
                 'Pedido devuelto': 'Sí' if licitacion.pedido_devuelto else 'No',
-                'Iniciativa': licitacion.iniciativa,
-                'Etapa': str(licitacion.etapa_fk) if licitacion.etapa_fk else '',
-                'Estado': str(licitacion.estado_fk) if licitacion.estado_fk else '',
-                'Departamento': str(licitacion.departamento) if licitacion.departamento else '',
-                'Monto Presupuestado': licitacion.monto_presupuestado,
-                'Tipo por presupuesto': str(licitacion.tipo_presupuesto) if licitacion.tipo_presupuesto else '',
                 'Llamado Cotización': licitacion.get_llamado_cotizacion_display() or '',
+                'Profesional a Cargo 1': licitacion.operador_user.get_full_name() if licitacion.operador_user else licitacion.operador_user.username if licitacion.operador_user else '',
+                'Profesional a Cargo 2': licitacion.operador_user.get_full_name() if licitacion.operador_user else licitacion.operador_user.username if licitacion.operador_user else '',
                 'Fecha de creación': licitacion.fecha_creacion.strftime('%d/%m/%Y %H:%M') if licitacion.fecha_creacion else '',
             })
         
