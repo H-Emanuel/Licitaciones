@@ -147,9 +147,9 @@
                             <th data-col="iniciativa">Iniciativa</th>
                             <th data-col="departamento">Depto.</th>
                             <th data-col="numero_pedido" style="white-space: nowrap;">
-    <a href="?page=1&orden={% if request.GET.orden == 'numero_pedido' %}-numero_pedido{% else %}numero_pedido{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.solo_anuales %}&solo_anuales={{ request.GET.solo_anuales }}{% endif %}{% if request.GET.solo_fallidas %}&solo_fallidas={{ request.GET.solo_fallidas }}{% endif %}{% if request.GET.operador %}&operador={{ request.GET.operador }}{% endif %}" 
+    <a href="?page=1{% if request.GET.orden == 'numero_pedido' %}&orden=-numero_pedido{% elif request.GET.orden == '-numero_pedido' %}{# Aquí no ponemos orden para borrarlo #}{% else %}&orden=numero_pedido{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.solo_anuales %}&solo_anuales={{ request.GET.solo_anuales }}{% endif %}{% if request.GET.solo_fallidas %}&solo_fallidas={{ request.GET.solo_fallidas }}{% endif %}{% if request.GET.operador %}&operador={{ request.GET.operador }}{% endif %}" 
        style="color: inherit; text-decoration: none; display: flex; align-items: center; gap: 5px; cursor: pointer;"
-       title="Ordenar por N° de pedido">
+       title="Ordenar por N° de pedido (Click 3 veces para quitar)">
         
         N° de pedido
         
@@ -157,6 +157,7 @@
             <span style="font-size: 0.8em; color: #0d6efd;">▲</span>
         {% elif request.GET.orden == '-numero_pedido' %}
             <span style="font-size: 0.8em; color: #0d6efd;">▼</span>
+            <span style="font-size: 0.6em; color: #999;" title="Click para quitar orden">✕</span>
         {% else %}
             <span style="font-size: 0.8em; opacity: 0.3;">⇅</span>
         {% endif %}
