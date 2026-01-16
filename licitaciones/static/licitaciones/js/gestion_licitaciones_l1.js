@@ -3102,6 +3102,32 @@ document.addEventListener('click', function(event) {
         console.log("Editando: Campo fecha activado.");
     }
 });
+
+window.aplicarFiltroOperador = function(operadorId) {
+    console.log("Filtrando por operador:", operadorId);
+
+    const params = new URLSearchParams(window.location.search);
+    
+    if (operadorId) {
+        params.set('operador', operadorId);
+    } else {
+        params.delete('operador');
+    }
+    
+    // Siempre volver a la página 1 al filtrar
+    params.set('page', '1'); 
+    
+    // Recargar la página
+    window.location.search = params.toString();
+};
+
+// Si tienes aquí tu código de ordenamiento (el de las flechitas), 
+// asegúrate de que esté dentro de un DOMContentLoaded:
+document.addEventListener('DOMContentLoaded', function() {
+   // Aquí tu código de ordenar columnas (addEventListeners, etc.)
+   // ...
+});
+
 document.addEventListener("DOMContentLoaded", () => {
     console.log("✅ DOMContentLoaded - info general JS cargado");
 
