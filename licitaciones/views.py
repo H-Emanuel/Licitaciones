@@ -491,6 +491,21 @@ def vista_admin(request):
 
     # Aplicar filtros comunes (fallidas, anuales, búsqueda)
     proyectos_list = get_filtered_projects_list(proyectos_list, request)
+
+    operador_id = request.GET.get('operador')
+    if operador_id:
+        # Filtramos por el ID del operador (asumiendo que es el operador principal)
+        proyectos_list = proyectos_list.filter(operador_user__id=operador_id)
+        
+    #orden por numero de pedido.
+    orden = request.GET.get('orden', '')
+    
+    if orden == 'numero_pedido':
+        # Ordenar de menor a mayor
+        proyectos_list = proyectos_list.order_by('numero_pedido')
+    elif orden == '-numero_pedido':
+        # Ordenar de mayor a menor
+        proyectos_list = proyectos_list.order_by('-numero_pedido')
     
     # Paginar resultados
     proyectos = get_paginated_projects(proyectos_list, request)
