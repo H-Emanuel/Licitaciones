@@ -72,23 +72,27 @@
         
         <!-- Botones de filtro superiores -->
         <div class="botones-superiores">
-            <button id="btnFiltrarAnuales" class="btn{% if request.GET.solo_anuales == '1' %} active{% endif %}">
-                Anuales
-            </button>
-            <button id="btnFiltrarFallidas" class="btn{% if request.GET.solo_fallidas == '1' %} active{% endif %}">
-                Fallidas
-            </button>
-            {% if request.GET.solo_anuales == '1' or request.GET.solo_fallidas == '1' or request.GET.q %}
-            <button id="btnMostrarTodas" class="btn mostrar-todas">
-                <span class="btn-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Capa_1" x="0px" y="0px" height="18" width="18" viewBox="0 0 525.166 525.166" style="enable-background:new 0 0 525.166 525.166;" xml:space="preserve">
-                            <path d="M448.245,76.92l69.626-69.626H332.186v185.685l69.648-69.648c76.847,76.825,76.847,201.659,0,278.484   c-23.413,23.457-51.509,39.977-81.224,48.686v67.788c46.695-10.437,91.201-33.588,127.656-70.02   C550.803,345.623,550.803,179.543,448.245,76.92z M123.351,401.814c-76.847-76.825-76.847-201.659,0-278.484   c23.413-23.457,51.487-39.955,81.224-48.664V6.878c-46.695,10.437-91.201,33.588-127.656,70.02   c-102.558,102.624-102.558,268.703,0,371.349L7.292,517.873h185.685V332.188L123.351,401.814z"/>
-                    </svg>
-                </span>
-                Mostrar Todas
-            </button>
-            {% endif %}
-        </div>
+    <button id="btnFiltrarAnuales" class="btn{% if request.GET.solo_anuales == '1' %} active{% endif %}">
+        Anuales
+    </button>
+    <button id="btnFiltrarFallidas" class="btn{% if request.GET.solo_fallidas == '1' %} active{% endif %}">
+        Fallidas
+    </button>
+    {% if request.GET.solo_anuales == '1' or request.GET.solo_fallidas == '1' or request.GET.q %}
+    <button id="btnMostrarTodas" class="btn mostrar-todas">
+        Mostrar Todas
+    </button>
+    {% endif %}
+
+    <select id="filtroOperador" class="btn" style="margin-left: 10px; background-color: white; color: #333; border: 1px solid #ccc; max-width: 200px;" onchange="aplicarFiltroOperador(this.value)">
+        <option value="">Todos los operadores</option>
+        {% for op in operadores %}
+            <option value="{{ op.id }}" {% if request.GET.operador == op.id|stringformat:"s" %}selected{% endif %}>
+                {{ op.get_full_name|default:op.username }}
+            </option>
+        {% endfor %}
+    </select>
+    </div>
         
         <!-- Botones de acción principales -->
         <div class="botones-accion-principales">
@@ -142,7 +146,22 @@
                             <th data-col="seleccionar" class="seleccionar-header"></th>
                             <th data-col="iniciativa">Iniciativa</th>
                             <th data-col="departamento">Depto.</th>
-                            <th data-col="numero_pedido">N° de pedido</th>
+                            <th data-col="numero_pedido" style="white-space: nowrap;">
+    <a href="?page=1&orden={% if request.GET.orden == 'numero_pedido' %}-numero_pedido{% else %}numero_pedido{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.solo_anuales %}&solo_anuales={{ request.GET.solo_anuales }}{% endif %}{% if request.GET.solo_fallidas %}&solo_fallidas={{ request.GET.solo_fallidas }}{% endif %}{% if request.GET.operador %}&operador={{ request.GET.operador }}{% endif %}" 
+       style="color: inherit; text-decoration: none; display: flex; align-items: center; gap: 5px; cursor: pointer;"
+       title="Ordenar por N° de pedido">
+        
+        N° de pedido
+        
+        {% if request.GET.orden == 'numero_pedido' %}
+            <span style="font-size: 0.8em; color: #0d6efd;">▲</span>
+        {% elif request.GET.orden == '-numero_pedido' %}
+            <span style="font-size: 0.8em; color: #0d6efd;">▼</span>
+        {% else %}
+            <span style="font-size: 0.8em; opacity: 0.3;">⇅</span>
+        {% endif %}
+    </a>
+</th>
                             <th data-col="id_mercado_publico">ID Mercado Público</th>
                             <th data-col="orden_compra">Orden de compra</th>
                             <th data-col="fecha_tentativa_termino">Fecha tentativa de término</th>
@@ -377,20 +396,22 @@
             </div>
             </div>
         <div class="paginator">
-            {% if proyectos.has_previous %}
-                <a href="?page={{ proyectos.previous_page_number }}{% if request.GET.solo_anuales %}&solo_anuales={{ request.GET.solo_anuales }}{% endif %}{% if request.GET.solo_fallidas %}&solo_fallidas={{ request.GET.solo_fallidas }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="btn">Anterior</a>
-            {% endif %}
-            {% for num in proyectos.paginator.page_range %}
-                {% if proyectos.number == num %}
-                    <span class="btn active">{{ num }}</span>
-                {% else %}
-                    <a href="?page={{ num }}{% if request.GET.solo_anuales %}&solo_anuales={{ request.GET.solo_anuales }}{% endif %}{% if request.GET.solo_fallidas %}&solo_fallidas={{ request.GET.solo_fallidas }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="btn">{{ num }}</a>
-                {% endif %}
-            {% endfor %}
-            {% if proyectos.has_next %}
-                <a href="?page={{ proyectos.next_page_number }}{% if request.GET.solo_anuales %}&solo_anuales={{ request.GET.solo_anuales }}{% endif %}{% if request.GET.solo_fallidas %}&solo_fallidas={{ request.GET.solo_fallidas }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="btn">Siguiente</a>
-            {% endif %}
-        </div>
+    {% if proyectos.has_previous %}
+        <a href="?page={{ proyectos.previous_page_number }}{% if request.GET.orden %}&orden={{ request.GET.orden }}{% endif %}{% if request.GET.solo_anuales %}&solo_anuales={{ request.GET.solo_anuales }}{% endif %}{% if request.GET.solo_fallidas %}&solo_fallidas={{ request.GET.solo_fallidas }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.operador %}&operador={{ request.GET.operador }}{% endif %}" class="btn">Anterior</a>
+    {% endif %}
+
+    {% for num in proyectos.paginator.page_range %}
+        {% if proyectos.number == num %}
+            <span class="btn active">{{ num }}</span>
+        {% else %}
+            <a href="?page={{ num }}{% if request.GET.orden %}&orden={{ request.GET.orden }}{% endif %}{% if request.GET.solo_anuales %}&solo_anuales={{ request.GET.solo_anuales }}{% endif %}{% if request.GET.solo_fallidas %}&solo_fallidas={{ request.GET.solo_fallidas }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.operador %}&operador={{ request.GET.operador }}{% endif %}" class="btn">{{ num }}</a>
+        {% endif %}
+    {% endfor %}
+
+    {% if proyectos.has_next %}
+        <a href="?page={{ proyectos.next_page_number }}{% if request.GET.orden %}&orden={{ request.GET.orden }}{% endif %}{% if request.GET.solo_anuales %}&solo_anuales={{ request.GET.solo_anuales }}{% endif %}{% if request.GET.solo_fallidas %}&solo_fallidas={{ request.GET.solo_fallidas }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.operador %}&operador={{ request.GET.operador }}{% endif %}" class="btn">Siguiente</a>
+    {% endif %}
+</div>
         <!-- ================================= -->
         <!-- MODAL AGREGAR/EDITAR LICITACIÓN -->
         <!-- ================================= -->
