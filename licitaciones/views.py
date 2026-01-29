@@ -1786,7 +1786,9 @@ def exportar_licitacion_excel(request, licitacion_id):
     tipo = request.GET.get('tipo', 'licitacion')
     licitacion = get_object_or_404(Licitacion, id=licitacion_id)
     output = io.BytesIO()
-    writer = pd.ExcelWriter(output, engine='xlsxwriter')
+    writer = pd.ExcelWriter(output, engine='xlsxwriter', 
+                        date_format='dd/mm/yyyy', 
+                        datetime_format='dd/mm/yyyy')
 
     # Create workbook and header format
     workbook = writer.book
@@ -1949,6 +1951,36 @@ def exportar_todas_licitaciones_excel(request):
         # Crear DataFrame y exportar a Excel
         df_licit = pd.DataFrame(licitaciones_data)
         df_licit.to_excel(writer, sheet_name='Licitaciones', index=False)
+
+        df_licit = pd.DataFrame(licitaciones_data)
+
+        # 1) Fechas (date)
+        df_licit['Fecha tentativa de término'] = pd.to_datetime(
+            df_licit['Fecha tentativa de término'],
+            errors='coerce',
+            dayfirst=True
+        ).dt.date
+
+        # 2) Fecha con hora (datetime)
+        df_licit['Fecha de creación'] = pd.to_datetime(
+            df_licit['Fecha de creación'],
+            errors='coerce',
+            dayfirst=True
+        )
+
+        # Si viene con timezone (Django), lo deja "naive" para Excel:
+        # (solo si tiene tz; si no, no pasa nada)
+        try:
+            df_licit['Fecha de creación'] = df_licit['Fecha de creación'].dt.tz_localize(None)
+        except Exception:
+            pass
+
+        # 3) Números
+        df_licit['Monto Presupuestado'] = pd.to_numeric(
+            df_licit['Monto Presupuestado'],
+            errors='coerce'
+        )
+
         
         # Ajustar anchos de columna y formato
         worksheet = writer.sheets['Licitaciones']
@@ -1957,7 +1989,32 @@ def exportar_todas_licitaciones_excel(request):
             worksheet.set_column(i, i, column_width)
         for col_num, value in enumerate(df_licit.columns.values):
             worksheet.write(0, col_num, value, header_format)
+            
+        df_licit.to_excel(writer, sheet_name='Licitaciones', index=False)
+        worksheet = writer.sheets['Licitaciones']
+        workbook = writer.book
+
+        date_format = workbook.add_format({'num_format': 'dd/mm/yyyy'})
+        datetime_format = workbook.add_format({'num_format': 'dd/mm/yyyy hh:mm'})
+        money_format = workbook.add_format({'num_format': '#,##0.00'})  # o '#,##0' si sin decimales
+
+        FORMATOS = {
+            'Fecha tentativa de término': date_format,
+            'Fecha de creación': datetime_format,
+            'Monto Presupuestado': money_format,
+        }
+
+        for col_num, value in enumerate(df_licit.columns.values):
+            worksheet.write(0, col_num, value, header_format)
+
+        for i, col in enumerate(df_licit.columns):
+            width = max(df_licit[col].astype(str).map(len).max(), len(col)) + 2
+            worksheet.set_column(i, i, width, FORMATOS.get(col))
+
         
+
+    
+
         writer.close()
         output.seek(0)
         
